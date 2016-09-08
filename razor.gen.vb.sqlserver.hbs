@@ -72,7 +72,12 @@ Partial Public Class {{xSettings.TableAliasPrefix}}{{Alias}}
 {{/if}}
 .
 {{#if PrimaryKeys}}
-    Public Shared Sub Delete(ByRef pRowData As {{xSettings.DataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}})
+.
+	Public Shared Sub Delete(ByRef pRowData As {{xSettings.DataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}})
+		Delete(pRowData, Nothing)
+	End Sub
+.
+    Public Shared Sub Delete(ByRef pRowData As {{xSettings.DataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}}, ByRef pTransaction as SqlClient.SqlTransaction)
         Dim zSQL As String = ""
         Dim zMode As String = ""
 .
@@ -88,12 +93,18 @@ Partial Public Class {{xSettings.TableAliasPrefix}}{{Alias}}
             zCmd.Parameters.Add(New SQLParameter("@{{xSettings.ColumnAliasPrefix}}{{Alias}}", pRowData.{{xSettings.ColumnAliasPrefix}}{{Alias}}))
 			{{/each}}
 .
+			zCmd.Transaction=pTransaction
             razor.UtilSQLServer.ExecuteNonQuery(zCmd)
         End If
 .
     End Sub
 .
 	Public Shared Sub Delete({{#each PrimaryKeys}}{{xNotFirst ", "}}p{{xSettings.ColumnAliasPrefix}}{{Alias}} As {{LanguageType}}{{/each}})
+    	Delete({{#each PrimaryKeys}}{{xNotFirst ", "}}p{{xSettings.ColumnAliasPrefix}}{{Alias}}{{/each}}, Nothing)
+    End Sub	
+.
+.
+	Public Shared Sub Delete({{#each PrimaryKeys}}{{xNotFirst ", "}}p{{xSettings.ColumnAliasPrefix}}{{Alias}} As {{LanguageType}}{{/each}}, ByRef pTransaction as SqlClient.SqlTransaction)
         Dim zSQL As String = ""
         Dim zMode As String = ""
 .
@@ -108,11 +119,16 @@ Partial Public Class {{xSettings.TableAliasPrefix}}{{Alias}}
             zCmd.Parameters.Add(New SQLParameter("@{{xSettings.ColumnAliasPrefix}}{{Alias}}", p{{xSettings.ColumnAliasPrefix}}{{Alias}}))
 			{{/each}}
 .
+			zCmd.Transaction=pTransaction
             razor.UtilSQLServer.ExecuteNonQuery(zCmd)
 .
     End Sub	
 .
     Public Shared Sub Save(ByRef pRowData As {{xSettings.DataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}})
+		Save(pRowData, Nothing)
+	End Sub
+.
+    Public Shared Sub Save(ByRef pRowData As {{xSettings.DataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}}, ByRef pTransaction as SqlClient.SqlTransaction)
         Dim zSQL As String = ""
         Dim zMode As String = ""
 		DIm zExistInDB as Long = -1
@@ -129,6 +145,7 @@ Partial Public Class {{xSettings.TableAliasPrefix}}{{Alias}}
 			{{/each}}
 .
 			'if zExistInDB > 0  then  PK exists in the DB
+  		    zCmdDoesExist.Transaction = pTransaction
 			zExistInDB = razor.UtilSQLServer.ExecuteScalar(zCmdDoesExist)
 		End If
 .
@@ -190,6 +207,7 @@ Partial Public Class {{xSettings.TableAliasPrefix}}{{Alias}}
 		{{/xIfAll}}
 		{{/each}}
 .
+		zCmd.Transaction=pTransaction
         If zMode = "INSERTnoKey" Then
 	        Dim zLastId As Long = 0
 	        zLastId = razor.UtilSQLServer.ExecuteNonQueryRowId(zCmd)
@@ -209,7 +227,11 @@ Partial Public Class {{xSettings.TableAliasPrefix}}{{Alias}}
 .
 	End Sub
 .
-    Public Shared Function LoadByPrimaryKey({{#each PrimaryKeys}}{{xNotFirst ", "}}p{{xSettings.ColumnAliasPrefix}}{{Alias}} As {{LanguageType}}{{/each}}, Optional pObject as {{xSettings.DataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}} = Nothing) As {{xSettings.DataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}}
+	Public Shared Function LoadByPrimaryKey({{#each PrimaryKeys}}{{xNotFirst ", "}}p{{xSettings.ColumnAliasPrefix}}{{Alias}} As {{LanguageType}}{{/each}}, Optional pObject as {{xSettings.DataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}} = Nothing) As {{xSettings.DataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}}
+		Return LoadByPrimaryKey({{#each PrimaryKeys}}{{xNotFirst ", "}}p{{xSettings.ColumnAliasPrefix}}{{Alias}}{{/each}}, Nothing, pObject)
+	End Function
+	
+    Public Shared Function LoadByPrimaryKey({{#each PrimaryKeys}}{{xNotFirst ", "}}p{{xSettings.ColumnAliasPrefix}}{{Alias}} As {{LanguageType}}{{/each}}, pTransaction as SqlClient.SqlTransaction, Optional pObject as {{xSettings.DataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}} = Nothing) As {{xSettings.DataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}}
         Dim zReturn As New {{xSettings.DataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}}
         Dim zSQL As String = "SELECT * FROM [{{Schema}}].[{{Name}}] WHERE {{#each PrimaryKeys}}{{xNotFirst ' AND '}}[{{Name}}] = @{{xSettings.ColumnAliasPrefix}}{{Alias}}{{/each}}"
         Dim zCmd As New SQLCommand
@@ -221,6 +243,7 @@ Partial Public Class {{xSettings.TableAliasPrefix}}{{Alias}}
 		{{#each PrimaryKeys}}
     	zCmd.Parameters.Add(New SQLParameter("@{{xSettings.ColumnAliasPrefix}}{{Alias}}", p{{xSettings.ColumnAliasPrefix}}{{Alias}}))
 		{{/each}}
+		zCmd.Transaction=pTransaction
         zReader = razor.UtilSQLServer.ExecuteReader(zCmd)
 .
         While zReader.Read
@@ -241,6 +264,10 @@ Partial Public Class {{xSettings.TableAliasPrefix}}{{Alias}}
 .
 	{{#each Indexes}}
 	Public Shared Function LoadByIDX_{{Name}}({{#each Columns}}{{xNotFirst ", "}}p{{xSettings.ColumnAliasPrefix}}{{Alias}} As {{LanguageType}}{{/each}}) As List(Of {{xSettings.DataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{../Alias}})
+		Return LoadByIDX_{{Name}}({{#each Columns}}{{xNotFirst ", "}}p{{xSettings.ColumnAliasPrefix}}{{Alias}}{{/each}}, Nothing)
+	End Function
+	
+	Public Shared Function LoadByIDX_{{Name}}({{#each Columns}}{{xNotFirst ", "}}p{{xSettings.ColumnAliasPrefix}}{{Alias}} As {{LanguageType}}{{/each}}, pTransaction As SqlClient.SqlTransaction) As List(Of {{xSettings.DataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{../Alias}})
         Dim zReturn As New List(Of {{xSettings.DataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{../Alias}})
         Dim zSQL As String = "SELECT * FROM [{{../Schema}}].[{{../Name}}] WHERE {{#each Columns}}{{xNotFirst ' AND '}}[{{Name}}] = @{{xSettings.ColumnAliasPrefix}}{{Alias}}{{/each}}"
         Dim zCmd As New SQLCommand
@@ -250,6 +277,7 @@ Partial Public Class {{xSettings.TableAliasPrefix}}{{Alias}}
 		{{#each Columns}}{{#xIfNotAny IsComputed IsConcurrency "===" true}}
     	zCmd.Parameters.Add(New SQLParameter("@{{xSettings.ColumnAliasPrefix}}{{Alias}}", p{{xSettings.ColumnAliasPrefix}}{{Alias}}))
 		{{/xIfNotAny}}{{/each}}
+		zCmd.Transaction=pTransaction
         zReader = razor.UtilSQLServer.ExecuteReader(zCmd)
 .
         While zReader.Read
@@ -311,8 +339,11 @@ Partial Public Class {{xSettings.TableAliasPrefix}}{{Alias}}
 #End Region
 .
 {{/if}}
+	Public Shared Function LoadData(pSQL As String) As List(Of {{xSettings.DataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}})
+		Return LoadData(pSQL, Nothing)
+	End Function
 .
-    Public Shared Function LoadData(pSQL As String) As List(Of {{xSettings.DataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}})
+    Public Shared Function LoadData(pSQL As String, ByRef pTransaction as SqlClient.SqlTransaction) As List(Of {{xSettings.DataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}})
         Dim zReturn As New List(Of {{xSettings.DataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}})
         Dim zSQL As String = "SELECT * FROM [{{Schema}}].[{{Name}}]"
         Dim zCmd As New SQLCommand
@@ -321,6 +352,7 @@ Partial Public Class {{xSettings.TableAliasPrefix}}{{Alias}}
         If pSQL <> "" Then zSQL = pSQL
 .
         zCmd.CommandText = zSQL
+		zCmd.Transaction=pTransaction
         zReader = razor.UtilSQLServer.ExecuteReader(zCmd)
 .
         While zReader.Read
@@ -369,8 +401,11 @@ Partial Public Class {{xSettings.TableAliasPrefix}}{{Alias}}
     End Function
 .
 #Region "Reflection Based LoadData Functions"
+	Public Shared Function LoadData(Of T)(pSQL As String) As List(Of T)
+		Return LoadData(Of T)(pSQL, Nothing)
+	End Function
 .
-    Public Shared Function LoadData(Of T)(pSQL As String) As List(Of T)
+    Public Shared Function LoadData(Of T)(pSQL As String, ByRef pTransaction As SqlClient.SqlTransaction) As List(Of T)
         Dim zReturn As New List(Of T)
         Dim zSQL As String = "SELECT * FROM [{{Schema}}].[{{Name}}]"
         Dim zCmd As New SQLCommand
@@ -379,6 +414,7 @@ Partial Public Class {{xSettings.TableAliasPrefix}}{{Alias}}
         If pSQL <> "" Then zSQL = pSQL
 .
         zCmd.CommandText = zSQL
+		zCmd.Transaction=pTransaction
         zReader = razor.UtilSQLServer.ExecuteReader(zCmd)
 .
         While zReader.Read
@@ -400,7 +436,12 @@ Partial Public Class {{xSettings.TableAliasPrefix}}{{Alias}}
         Return zReturn
     End Function
 .
+
     Public Shared Function LoadData(Of T)(Optional pCommand As SqlCommand = Nothing) As List(Of T)
+		Return LoadData(Of T)(Nothing, pCommand)
+	End Function
+	
+    Public Shared Function LoadData(Of T)(ByRef pTransaction as SqlClient.SqlTransaction, Optional pCommand As SqlCommand = Nothing) As List(Of T)
         Dim zReturn As New List(Of T)
         Dim zSQL As String = "SELECT * FROM [{{Schema}}].[{{Name}}]"
         Dim zCmd As New SQLCommand

@@ -147,9 +147,10 @@ Partial Public Class UtilSQLServer
 .
     Public Shared Function ExecuteNonQuery(pCommand As SqlCommand) As Integer
         Dim zReturn As Integer = 0
-        pCommand.Connection = razor.UtilSQLServer.GetConnectionObject
-.
-        Using pCommand.Connection
+        
+        If IsNothing(pCommand.Transaction) Then
+            pCommand.Connection = razor.UtilSQLServer.GetConnectionObject
+            Using pCommand.Connection
             Using pCommand
                 Try
                     zReturn = pCommand.ExecuteNonQuery()
@@ -158,6 +159,13 @@ Partial Public Class UtilSQLServer
                 End Try
             End Using
         End Using
+        Else
+            pCommand.Connection = pCommand.Transaction.Connection   
+            Using pCommand
+                zReturn = pCommand.ExecuteNonQuery()
+            End Using           
+        End If
+       
 .
         Return zReturn
     End Function
@@ -170,30 +178,47 @@ Partial Public Class UtilSQLServer
 .
     Public Shared Function ExecuteNonQueryRowId(pCommand As SqlCommand) As Long
         Dim zReturn As Long = 0
-        pCommand.Connection = razor.UtilSQLServer.GetConnectionObject
-        Using pCommand.Connection
-            Using pCommand
-                Try
+        
+        If IsNothing(pCommand.Transaction) Then
+            pCommand.Connection = razor.UtilSQLServer.GetConnectionObject
+            Using pCommand.Connection
+                Using pCommand
+                    Try
+                        pCommand.ExecuteNonQuery()
+                        pCommand.CommandText = "SELECT @@IDENTITY"
+                        zReturn = pCommand.ExecuteScalar()
+                    Finally
+                        pCommand.Connection.Close()
+                    End Try
+                End Using
+            End Using
+
+        Else
+            pCommand.Connection = pCommand.Transaction.Connection   
+                Using pCommand
                     pCommand.ExecuteNonQuery()
                     pCommand.CommandText = "SELECT @@IDENTITY"
                     zReturn = pCommand.ExecuteScalar()
-                Finally
-                    pCommand.Connection.Close()
-                End Try
-            End Using
-        End Using
+                End Using           
+        End If      
 .
         Return zReturn
     End Function
 .
     Public Shared Function ExecuteReader(pCommand As SqlCommand) As SqlDataReader
-        If pCommand.Connection Is Nothing Then
-            pCommand.Connection = razor.UtilSQLServer.GetConnectionObject
-        End If
-.
         pCommand.CommandTimeout = 120
         Dim zReader As SqlDataReader
-        zReader = pCommand.ExecuteReader(System.Data.CommandBehavior.CloseConnection)
+    
+        If pCommand.Connection Is Nothing Then
+            If IsNothing(pCommand.Transaction) Then
+                pCommand.Connection = razor.UtilSQLServer.GetConnectionObject
+                zReader = pCommand.ExecuteReader(System.Data.CommandBehavior.CloseConnection)           
+            Else
+                pCommand.Connection = pCommand.Transaction.Connection   
+                zReader = pCommand.ExecuteReader()
+            End If
+        End If
+.
         Return zReader
     End Function
 .
@@ -251,16 +276,25 @@ Partial Public Class UtilSQLServer
 .
     Public Shared Function ExecuteScalar(pCommand As SqlCommand) As Object
         Dim zReturn As Object = 0
-        pCommand.Connection = razor.UtilSQLServer.GetConnectionObject
-        Using pCommand.Connection
-            Using pCommand
-                Try
+        
+        If IsNothing(pCommand.Transaction) Then
+            pCommand.Connection = razor.UtilSQLServer.GetConnectionObject
+            Using pCommand.Connection
+                Using pCommand
+                    Try
+                        zReturn = pCommand.ExecuteScalar()
+                    Finally
+                        pCommand.Connection.Close()
+                    End Try
+                End Using
+            End Using       
+        Else
+            pCommand.Connection = pCommand.Transaction.Connection
+                Using pCommand
                     zReturn = pCommand.ExecuteScalar()
-                Finally
-                    pCommand.Connection.Close()
-                End Try
-            End Using
-        End Using
+                End Using
+        End If
+        
 .
         Return zReturn
     End Function
