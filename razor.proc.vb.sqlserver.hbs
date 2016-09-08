@@ -1,0 +1,52 @@
+{{!===============================================================}}
+{{! Release: razor proc (experimental)                            }}
+{{!===============================================================}}
+{{! Update: 01/29/2016 - Initial version                          }}
+{{! Update: 05/21/2016 - Name change to razor procedure           }}
+{{! Update: 06/07/2016 - Added namespace of razor                 }}
+{{!===============================================================}}
+{{! This template currently only works with a SQLServer database  }}
+{{!                                                               }}
+{{! Known Issues:                                                 }}
+{{!                                                               }}
+{{!                                                               }}
+{{!                                                               }}
+{{!===============================================================}}
+'/===============================================================\
+'| razor procedure (experimental)                                |
+'|---------------------------------------------------------------|
+'|  Template: razor.proc.vb.sqlserver (experimental version)     |
+'|   Website: http://www.pigford.net/razor                       |
+'|                                                               |
+'| Known Issues:                                                 |
+'\===============================================================/
+.
+Namespace razor
+Public Class UtilStoredProc
+{{#each Items}}
+.
+    Public Function Exec{{Alias}}({{#each Parameters}}{{xNotFirst ", "}}p{{Alias}} As {{LanguageType}}{{/each}}) As DataTable
+        Dim zReturn As DataTable
+        Dim zCmd As New SqlClient.SqlCommand
+.
+        zCmd.CommandText = "{{Name}}"
+        zCmd.CommandType = CommandType.StoredProcedure
+.
+		{{#each Parameters}}
+        zCmd.Parameters.AddWithValue("{{Name}}", p{{Alias}})
+		{{/each}}
+.
+        Dim zReader As SqlClient.SqlDataReader
+        zReader = UtilSQLServer.ExecuteReader(zCmd)
+        zReturn = New DataTable
+        zReturn.Load(zReader)
+        zReader.Close()
+.
+        Return zReturn
+    End Function
+.
+{{/each}}
+End Class
+End Namespace
+.
+{{xFile "UtilStoredProc" path=xSettings.OutputPath prefix=xSettings.TableAliasPrefix suffix="" ext="vb"}}

@@ -1,0 +1,881 @@
+{{!============================================================}}
+{{! Release: razor engine (experimental)                       }}
+{{!============================================================}}
+{{! Update:  7/24/2015 - Fixed missing xfile command bottom of }}
+{{!                      this file.                            }}
+{{! Update:  6/15/2015 - Added this header and comment         }}
+{{! Update:  8/12/2015 - Added IsNumber, IsKeySet, & ExecScalar}}
+{{! Update: 10/15/2015 - Added Threading.AutoResetEvent        }}
+{{! Update: 12/23/2015 - Removed Threading.AutoResetEvent      }}
+{{! Update: 12/23/2015 - Added support for dynamic connections }}
+{{! Update: 12/28/2015 - Added Using support for connections   }}
+{{! Update: 12/28/2015 - Added the PersistSecurity option      }}
+{{! Update: 12/28/2015 - Added parse routines for auth info    }}
+{{! Update:  1/27/2016 - Changed ExecuteScalar to return object}}
+{{!                      instead of an int datatype.           }}
+{{! Update: 03/23/2016 - Added ExecuteDataTable and support for}}
+{{!                      query class via the extends methods.  }}
+{{! Update: 03/24/2016 - Moved query base class into engine.   }}
+{{! Update: 03/25/2016 - Added query data colum type classes.  }}
+{{! Update: 03/29/2016 - Fixed comma in non trusted connection }}
+{{! Update: 05/03/2016 - Added CountAll support to query       }}
+{{! Update: 05/03/2016 - Added support for string in GroupCount}}
+{{! Update: 05/04/2016 - Added support for IN and NOT IN to    }}
+{{!                      StringDataColumn class.               }}
+{{! Update: 05/09/2016 - Added string support to Order by      }}
+{{! Update: 05/19/2016 - Fixed issue with NotIn loop, and added}}
+{{!                      support for NOT LIKE operator.        }}
+{{! Update: 05/21/2016 - Name change to razor engine           }}
+{{! Update: 05/21/2016 - BREAKING CHANGE - Change Where from   }}
+{{!                      method to a class.  Added AND, OR,    }}
+{{!                      Conjuctive AND/OR, Paren support      }}
+{{! Update: 05/25/2016 - Fixed bug with case sensitive servers }}
+{{! Update: 05/25/2016 - Set a default return value for _AND   }}
+{{! Update: 06/02/2016 - Added DoubleDataColumn support        }}
+{{! Update: 06/02/2016 - Added namespace of razor              }}
+{{! Update: 06/03/2016 - Disabled namespace of razor           }}
+{{! Update: 06/06/2016 - Added implied parens to AND and OR    }}
+{{! Update: 06/07/2016 - Added namespace of razor              }}
+{{! Update: 06/09/2016 - Added Single data type support        }}
+{{! Update: 06/09/2016 - Added support for distinct            }}
+{{!============================================================}}
+{{! This engine template only works with a SQL Server database }}
+{{!============================================================}}
+'/===============================================================\
+'| razor engine (experimental)                                   |
+'|---------------------------------------------------------------|
+'|  Template: razor.engine.vb.sqlserver (experimental version)   |
+'|   Website: http://www.pigford.net/razor                       |
+'|                                                               |
+'\===============================================================/
+.
+Imports System.Data.SqlClient
+Imports System.Text.RegularExpressions
+Imports System.Runtime.CompilerServices
+.
+Namespace razor
+.
+Partial Public Class UtilSQLServer
+.
+    Public Shared ServerName As String = ""
+    Public Shared DatabaseName As String = ""
+    Public Shared UserName As String = ""
+    Public Shared Password As String = ""
+    Public Shared Trusted As Boolean = False
+    Public Shared PersistSecurityInfo As Boolean = False
+    Private Shared _ConnectionString As String = ""
+.
+    Public Shared Function LastChar(pIn As String, pLastChar As String) As String
+        If Right(pIn, 1) = pLastChar Then
+            Return pIn
+        Else
+            Return pIn & pLastChar
+        End If
+    End Function
+.
+    Public Shared Function GetConnectionObject() As SqlConnection
+        Dim zConnection As New SqlConnection
+        zConnection.ConnectionString = _ConnectionString
+        zConnection.Open()
+        Return zConnection
+    End Function
+.
+    Public Shared ReadOnly Property ConnectionString As String
+        Get
+            Return _ConnectionString
+        End Get
+    End Property
+.
+    Public Shared Sub SetConnection(Optional pConnectionString As String = "")
+        Dim zConnectionString As String = ""
+        Dim zSQLUserConnectionString As String = "PersistSecurityInfo=##PersistSec##;Server=##ServerName##;Database=##DatabaseName##;User Id=##UserName##;Password=##Password##;"
+        Dim zTrustedConnectionString As String = "Server=##ServerName##;Database=##DatabaseName##;Trusted_Connection=True;"
+.
+        If pConnectionString.Length > 0 Then
+            zConnectionString = pConnectionString
+        Else
+            If Trusted Then
+                zConnectionString = zTrustedConnectionString
+            Else
+                zConnectionString = zSQLUserConnectionString
+                zConnectionString = zConnectionString.Replace("##UserName##", UserName)
+                zConnectionString = zConnectionString.Replace("##Password##", Password)
+            End If
+            zConnectionString = zConnectionString.Replace("##PersistSec##", PersistSecurityInfo.ToString)
+            zConnectionString = zConnectionString.Replace("##ServerName##", ServerName)
+            zConnectionString = zConnectionString.Replace("##DatabaseName##", DatabaseName)
+        End If
+.
+        _ConnectionString = zConnectionString
+.
+        Dim zCon As SqlClient.SqlConnection = GetConnectionObject()
+        DatabaseName = zCon.Database
+        ServerName = zCon.DataSource
+        UserName = GetUserID()
+        Password = GetPassword()
+        zCon.Dispose()
+        zCon = Nothing
+.
+    End Sub
+.
+    <Obsolete("This method is deprecated, use SetConnection/GetConnectionObject instead.")>
+    Public Shared Sub OpenDatabase(Optional pConnectionString As String = "")
+.
+    End Sub
+.
+    <Obsolete("This method is deprecated, database is autoclosed.")>
+    Public Shared Sub CloseDatabase()
+.
+    End Sub
+.
+    Public Shared Function ExecuteNonQuery(pCommandText As String) As Integer
+        Dim zReturn As Integer = 0
+        Dim zCmd As New SqlCommand
+        zCmd.CommandText = pCommandText
+        zReturn = razor.UtilSQLServer.ExecuteNonQuery(zCmd)
+        Return zReturn
+    End Function
+.
+    Public Shared Function ExecuteNonQuery(pCommand As SqlCommand) As Integer
+        Dim zReturn As Integer = 0
+        pCommand.Connection = razor.UtilSQLServer.GetConnectionObject
+.
+        Using pCommand.Connection
+            Using pCommand
+                Try
+                    zReturn = pCommand.ExecuteNonQuery()
+                Finally
+                    pCommand.Connection.Close()
+                End Try
+            End Using
+        End Using
+.
+        Return zReturn
+    End Function
+.
+    Public Shared Function ExecuteNonQueryRowId(pCommandText As String) As Long
+        Dim zCmd As New SqlCommand
+        zCmd.CommandText = pCommandText
+        Return razor.UtilSQLServer.ExecuteNonQueryRowId(zCmd)
+    End Function
+.
+    Public Shared Function ExecuteNonQueryRowId(pCommand As SqlCommand) As Long
+        Dim zReturn As Long = 0
+        pCommand.Connection = razor.UtilSQLServer.GetConnectionObject
+        Using pCommand.Connection
+            Using pCommand
+                Try
+                    pCommand.ExecuteNonQuery()
+                    pCommand.CommandText = "SELECT @@IDENTITY"
+                    zReturn = pCommand.ExecuteScalar()
+                Finally
+                    pCommand.Connection.Close()
+                End Try
+            End Using
+        End Using
+.
+        Return zReturn
+    End Function
+.
+    Public Shared Function ExecuteReader(pCommand As SqlCommand) As SqlDataReader
+        If pCommand.Connection Is Nothing Then
+            pCommand.Connection = razor.UtilSQLServer.GetConnectionObject
+        End If
+.
+        pCommand.CommandTimeout = 120
+        Dim zReader As SqlDataReader
+        zReader = pCommand.ExecuteReader(System.Data.CommandBehavior.CloseConnection)
+        Return zReader
+    End Function
+.
+    Public Shared Function ExecuteDataTable(pCommandText As String) As DataTable
+        Return ExecuteDataTable(New SqlCommand(pCommandText))
+    End Function
+.
+    Public Shared Function ExecuteDataTable(pCommand As SqlCommand) As DataTable
+        If pCommand.Connection Is Nothing Then
+            pCommand.Connection = razor.UtilSQLServer.GetConnectionObject
+        End If
+.
+        pCommand.CommandTimeout = 120
+        Dim zReader As SqlDataReader
+        zReader = pCommand.ExecuteReader(System.Data.CommandBehavior.CloseConnection)
+.
+        Dim zTable As New DataTable
+        zTable.Load(zReader)
+        zReader.Close()
+        Return zTable
+    End Function
+.
+    Public Shared Function IsKeySet(pParm As Object) As Boolean
+        'default to false
+        Dim zReturn As Boolean = False
+        If pParm = Nothing Then
+            Return zReturn
+        End If
+        Dim result As String = pParm.GetType().ToString()
+        result = result.Replace("System.", String.Empty)
+        Select Case result
+            Case "String", "Char "
+                If pParm <> Nothing Then
+                    zReturn = True
+                End If
+            Case "Int32", "Double"
+                If Convert.ToDouble(pParm.ToString()) > 0 Then
+                    zReturn = True
+                End If
+            Case Else
+                zReturn = False
+        End Select
+        Return zReturn
+    End Function
+.
+    Public Shared Function IsNumber(pParm As Object) As Boolean
+        Dim zReturn As Boolean = False
+        Dim result As String = pParm.GetType().ToString()
+        result = result.Replace("System.", String.Empty)
+        If result <> "String" Or result <> "Char" Then
+            zReturn = True
+        End If
+        Return zReturn
+    End Function
+.
+    Public Shared Function ExecuteScalar(pCommand As SqlCommand) As Object
+        Dim zReturn As Object = 0
+        pCommand.Connection = razor.UtilSQLServer.GetConnectionObject
+        Using pCommand.Connection
+            Using pCommand
+                Try
+                    zReturn = pCommand.ExecuteScalar()
+                Finally
+                    pCommand.Connection.Close()
+                End Try
+            End Using
+        End Using
+.
+        Return zReturn
+    End Function
+.
+    Private Shared Function GetUserID() As String
+        Dim zUserRegex As String = "((User).*?(=.+?))(?:;)"
+        If Regex.IsMatch(razor.UtilSQLServer.ConnectionString, zUserRegex) Then
+            Dim zMatch As Match = Regex.Match(razor.UtilSQLServer.ConnectionString, zUserRegex)
+            Dim zUserID() As String = Split(zMatch.Value, "=")
+            Dim zUserIDValue As String = zUserID(1)
+            Return Left(zUserIDValue, Len(zUserIDValue) - 1)
+        Else
+            Return ""
+        End If
+    End Function
+.
+    Private Shared Function GetPassword() As String
+        Dim zUserRegex As String = "((Password).*?(=.+?))(?:;)"
+        If Regex.IsMatch(razor.UtilSQLServer.ConnectionString, zUserRegex) Then
+            Dim zMatch As Match = Regex.Match(razor.UtilSQLServer.ConnectionString, zUserRegex)
+            Dim zPassword() As String = Split(zMatch.Value, "=")
+            Dim zPasswordValue As String = zPassword(1)
+            Return Left(zPasswordValue, Len(zPasswordValue) - 1)
+        Else
+            Return ""
+        End If
+.
+    End Function
+.
+    Public Enum ConjuctionOperatorEnum
+        [And]
+        [Or]
+    End Enum
+.
+    Public Class [WhereStatement]
+        Private Const __AND As String = "AND"
+        Private Const __OR As String = "OR"
+        Private Const __OPENPAREN As String = "("
+        Private Const __CLOSEPAREN As String = ")"
+        Protected Friend _Text As New List(Of String)
+        Private _ConjuctionOperator As ConjuctionOperatorEnum = ConjuctionOperatorEnum.And
+        Private _NeedConjunction As Boolean = False
+        Private _OpenParen As Integer = 0
+.
+        Public Sub SetConjuction(pOperator As ConjuctionOperatorEnum)
+            _ConjuctionOperator = pOperator
+        End Sub
+.
+        Public Sub [OpenParen]()
+            _OpenParen = _OpenParen + 1
+        End Sub
+.
+        Public Sub [CloseParen]()
+            SetCloseParen()
+        End Sub
+.
+        Public Sub [Add](pItem As Object)
+            Dim zItem(0) As Object
+            zItem(0) = pItem
+            BuildExpressionList(zItem, __AND)
+        End Sub
+.
+        Public Sub [And](ParamArray pItems() As Object)
+            OpenParen()
+            BuildExpressionList(pItems, __AND)
+			CloseParen()
+        End Sub
+.
+        Public Sub [Or](ParamArray pItems() As Object)
+            OpenParen()
+            BuildExpressionList(pItems, __OR)
+			CloseParen()
+        End Sub
+.
+        Private Function GetConjunctionOperator(pValue As ConjuctionOperatorEnum) As String
+            Select Case pValue
+                Case ConjuctionOperatorEnum.And
+                    Return __AND
+                Case ConjuctionOperatorEnum.Or
+                    Return __OR
+            End Select
+			Return __AND
+        End Function
+.
+        Private Sub SetOpenParen()
+            Dim zRepeat As Integer = 0
+            For zRepeat = 0 To _OpenParen - 1
+                _Text.Add(__OPENPAREN)
+                _OpenParen = _OpenParen - 1
+            Next
+        End Sub
+.
+        Private Sub SetCloseParen()
+            _Text.Add(__CLOSEPAREN)
+        End Sub
+.
+        Private Sub BuildExpressionList(pItems() As Object, pOperator As String)
+            If _NeedConjunction Then _Text.Add(GetConjunctionOperator(_ConjuctionOperator))
+            If _OpenParen Then SetOpenParen()
+            _Text.Add(Join(pItems, Space(1) & pOperator & Space(1)))
+            'If _CloseParen Then SetCloseParen()
+            _NeedConjunction = True
+        End Sub
+.
+    End Class
+.
+    Public MustInherit Class Query
+        Public [Where] As New WhereStatement
+        Private _FirstColumn As String = ""
+        Private _TableName As String = ""
+        Private _Top As Integer = 0
+        Private _PageSize As Integer = 0
+        Private _PageNumber As Integer = 0
+        Private _Select As New List(Of String)
+        Private _Where As New List(Of String)
+        Private _OrderBy As New List(Of String)
+        Private _GroupCount As New List(Of String)
+        Private _CountAll As Boolean = False
+	    Private _Distinct As Boolean = False
+.
+        Protected Property FirstColumn() As String
+            Get
+                Return _FirstColumn
+            End Get
+            Set(pColumn As String)
+                _FirstColumn = pColumn
+            End Set
+        End Property
+.
+        Protected Property TableName() As String
+            Get
+                Return _TableName
+            End Get
+            Set(pTable As String)
+                _TableName = pTable
+            End Set
+        End Property
+.
+        Public Property [CountAll]() As Boolean
+            Get
+                Return _CountAll
+            End Get
+            Set(pValue As Boolean)
+                _CountAll = pValue
+            End Set
+        End Property
+.
+        Public Property [Distinct]() As Boolean
+            Get
+                Return _Distinct
+            End Get
+            Set(pValue As Boolean)
+                _Distinct = pValue
+            End Set
+        End Property
+.
+        Public Property [Top]() As Integer
+            Get
+                Return _Top
+            End Get
+            Set(pLimit As Integer)
+                _Top = pLimit
+            End Set
+        End Property
+.
+        Public Property PageSize() As Integer
+            Get
+                Return _PageSize
+            End Get
+            Set(pSize As Integer)
+                _PageSize = pSize
+            End Set
+        End Property
+.
+        Public Property PageNumber() As Integer
+            Get
+                Return _PageNumber
+            End Get
+            Set(pNumber As Integer)
+                _PageNumber = pNumber
+            End Set
+        End Property
+.
+        Private Function PageStart() As Integer
+            Return Me.PageSize * (Me.PageNumber - 1) + 1
+        End Function
+.
+        Private Function PageEnd() As Integer
+            Return PageStart() + Me.PageSize - 1
+        End Function
+.
+        Public Sub [Select](ParamArray pColumns() As Object)
+            _Select.Clear()
+            For Each zItem In pColumns
+                _Select.Add(zItem.ColumnName)
+            Next
+        End Sub
+.
+        Public Sub [SelectAll]()
+            _Select.Clear()
+            _Select.Add("*")
+        End Sub
+.
+        Public Sub [GroupCount](ParamArray pItems() As Object)
+            For Each zItem In pItems
+                If TypeOf zItem Is String Then
+                    _GroupCount.Add(zItem)
+                Else
+                    _GroupCount.Add(zItem.ColumnName)
+                End If
+            Next
+        End Sub
+.
+        Public Sub [OrderBy](ParamArray pOrderByItems() As Object)
+            For Each zItem In pOrderByItems
+                If TypeOf zItem Is String Then
+                    _OrderBy.Add(zItem)
+                Else
+                    _OrderBy.Add(zItem.ToString)
+                End If
+            Next
+        End Sub
+.
+        Public Function QueryText() As String
+            Dim zSQL As String = ""
+.
+            If Me.PageSize > 0 Then
+                zSQL = zSQL & "SELECT * "
+                zSQL = zSQL & "FROM "
+                zSQL = zSQL & "(SELECT [src].*, "
+                zSQL = zSQL & "ROW_NUMBER() OVER("
+                If _OrderBy.Count = 0 Then
+                    zSQL = zSQL & "ORDER BY [src]." & FirstColumn() & " Asc) AS [ROWNUMBER] "
+                Else
+                    zSQL = zSQL & "ORDER BY " & String.Join(", ", _OrderBy) & ") AS [ROWNUMBER] "
+                End If
+                zSQL = zSQL & "FROM ("
+.
+                'Select
+                zSQL = zSQL & "SELECT "
+                If _Top > 0 Then
+                    zSQL = zSQL & "TOP " & CStr(_Top) & " "
+                Else
+                    zSQL = zSQL & "TOP 100 PERCENT "
+                End If
+                zSQL = zSQL & String.Join(", ", _Select) & " "
+.
+                'FROM
+                zSQL = zSQL & "FROM " & TableName() & " "
+.
+                'WHERE
+                If Where._Text.Count > 0 Then
+                    zSQL = zSQL & "WHERE" & Space(1) & String.Join(" ", Where._Text) & Space(1)
+                End If
+.
+                'ORDER BY
+                If _OrderBy.Count > 0 Then
+                    zSQL = zSQL & "ORDER BY " & String.Join(", ", _OrderBy)
+                End If
+.
+                zSQL = zSQL & ") [src]"
+                zSQL = zSQL & ") [src] "
+.
+                zSQL = zSQL & "WHERE [ROWNUMBER] "
+                zSQL = zSQL & "BETWEEN " & PageStart() & " AND " & PageEnd()
+            Else
+                'Select
+                zSQL = zSQL & "SELECT "
+                If _CountAll Then
+                    zSQL = zSQL & "COUNT(*) AS [totalcount] "
+                ElseIf _GroupCount.Count > 0 Then
+                    zSQL = zSQL & String.Join(", ", _GroupCount) & ", COUNT(*) AS [itemcount] "
+				ElseIf _Distinct Then
+					zSQL = zSQL & "DISTINCT "
+                Else
+                    If _Top > 0 Then zSQL = zSQL & "TOP " & CStr(_Top) & " "
+                    zSQL = zSQL & String.Join(", ", _Select) & " "
+                End If
+.
+                'FROM
+                zSQL = zSQL & "FROM " & TableName() & " "
+.
+                'WHERE
+                If Where._Text.Count > 0 Then
+                    zSQL = zSQL & "WHERE" & Space(1) & String.Join(" ", Where._Text) & Space(1)
+                End If
+.
+                If _GroupCount.Count > 0 Then
+                    zSQL = zSQL & "GROUP BY " & String.Join(", ", _GroupCount) & " "
+                End If
+.
+                'ORDER BY
+                If _OrderBy.Count > 0 Then
+                    zSQL = zSQL & "ORDER BY " & String.Join(", ", _OrderBy) & " "
+                End If
+.
+            End If
+.
+            Return zSQL
+        End Function
+    End Class
+.
+    Public MustInherit Class DataColumn
+        Public ColumnName As String
+.
+        Public Overloads Function IsNull() As String
+            Return ColumnName & " IS NULL"
+        End Function
+.
+        Public Overloads Function IsNotNull() As String
+            Return ColumnName & " IS NOT NULL"
+        End Function
+.
+        Public Overloads Function Ascending() As String
+            Return ColumnName & " ASC "
+        End Function
+.
+        Public Overloads Function Descending() As String
+            Return ColumnName & " DESC "
+        End Function
+.
+    End Class
+.
+    Public Class StringDataColumn
+        Inherits DataColumn
+.
+        Public Overloads Function Equals(pValue As String) As String
+            Return ColumnName & " = " & SQuote(pValue)
+        End Function
+.
+        Public Overloads Function NotEqual(pValue As String) As String
+            Return ColumnName & " <> " & SQuote(pValue)
+        End Function
+.
+        Public Overloads Function BeginsWith(pValue As String) As String
+            Return ColumnName & " LIKE " & SQuote(pValue & "%")
+        End Function
+.
+        Public Overloads Function EndsWith(pValue As String) As String
+            Return ColumnName & " LIKE " & SQuote("%" & pValue)
+        End Function
+.
+        Public Overloads Function Contains(pValue As String) As String
+            Return ColumnName & " LIKE " & SQuote("%" & pValue & "%")
+        End Function
+.
+        Public Overloads Function NotContains(pValue As String) As String
+            Return ColumnName & " NOT LIKE " & SQuote("%" & pValue & "%")
+        End Function
+.
+		Public Overloads Function [In](pValue() As String) As String
+            Dim zNdx As Integer = 0
+            For zNdx = 0 To UBound(pValue)
+                pValue(zNdx) = SQuote(pValue(zNdx))
+            Next
+.
+            Return ColumnName & " IN (" & Join(pValue, ",") & ")"
+        End Function
+.
+        Public Overloads Function [NotIn](pValue() As String) As String
+            Dim zNdx As Integer = 0
+            For zNdx = 0 To UBound(pValue)
+                pValue(zNdx) = SQuote(pValue(zNdx))
+            Next
+.
+            Return ColumnName & " NOT IN (" & Join(pValue, ",") & ")"
+        End Function
+    End Class
+.
+    Public Class IntegerDataColumn
+        Inherits DataColumn
+.
+        Public Overloads Function Equals(pValue As Integer) As String
+            Return ColumnName & " = " & CStr(pValue)
+        End Function
+.
+        Public Overloads Function NotEqual(pValue As Integer) As String
+            Return ColumnName & " <> " & CStr(pValue)
+        End Function
+.
+        Public Overloads Function GreaterThan(pValue As Integer) As String
+            Return ColumnName & " > " & CStr(pValue)
+        End Function
+.
+        Public Overloads Function GreaterThanEqual(pValue As Integer) As String
+            Return ColumnName & " >= " & CStr(pValue)
+        End Function
+.
+        Public Overloads Function LessThan(pValue As Integer) As String
+            Return ColumnName & " < " & CStr(pValue)
+        End Function
+.
+        Public Overloads Function LessThanEqual(pValue As Integer) As String
+            Return ColumnName & " <= " & CStr(pValue)
+        End Function
+    End Class
+.
+    Public Class LongDataColumn
+        Inherits DataColumn
+.
+        Public Overloads Function Equals(pValue As Long) As String
+            Return ColumnName & " = " & CStr(pValue)
+        End Function
+.
+        Public Overloads Function NotEqual(pValue As Long) As String
+            Return ColumnName & " <> " & CStr(pValue)
+        End Function
+.
+        Public Overloads Function GreaterThan(pValue As Long) As String
+            Return ColumnName & " > " & CStr(pValue)
+        End Function
+.
+        Public Overloads Function GreaterThanEqual(pValue As Long) As String
+            Return ColumnName & " >= " & CStr(pValue)
+        End Function
+.
+        Public Overloads Function LessThan(pValue As Long) As String
+            Return ColumnName & " < " & CStr(pValue)
+        End Function
+.
+        Public Overloads Function LessThanEqual(pValue As Long) As String
+            Return ColumnName & " <= " & CStr(pValue)
+        End Function
+    End Class
+.
+    Public Class ShortDataColumn
+        Inherits DataColumn
+.
+        Public Overloads Function Equals(pValue As Short) As String
+            Return ColumnName & " = " & CStr(pValue)
+        End Function
+.
+        Public Overloads Function NotEqual(pValue As Short) As String
+            Return ColumnName & " <> " & CStr(pValue)
+        End Function
+.
+        Public Overloads Function GreaterThan(pValue As Short) As String
+            Return ColumnName & " > " & CStr(pValue)
+        End Function
+.
+        Public Overloads Function GreaterThanEqual(pValue As Short) As String
+            Return ColumnName & " >= " & CStr(pValue)
+        End Function
+.
+        Public Overloads Function LessThan(pValue As Short) As String
+            Return ColumnName & " < " & CStr(pValue)
+        End Function
+.
+        Public Overloads Function LessThanEqual(pValue As Short) As String
+            Return ColumnName & " <= " & CStr(pValue)
+        End Function
+    End Class
+.
+    Public Class SingleDataColumn
+        Inherits DataColumn
+.
+        Public Overloads Function Equals(pValue As Single) As String
+            Return ColumnName & " = " & CStr(pValue)
+        End Function
+.
+        Public Overloads Function NotEqual(pValue As Single) As String
+            Return ColumnName & " <> " & CStr(pValue)
+        End Function
+.
+        Public Overloads Function GreaterThan(pValue As Single) As String
+            Return ColumnName & " > " & CStr(pValue)
+        End Function
+.
+        Public Overloads Function GreaterThanEqual(pValue As Single) As String
+            Return ColumnName & " >= " & CStr(pValue)
+        End Function
+.
+        Public Overloads Function LessThan(pValue As Single) As String
+            Return ColumnName & " < " & CStr(pValue)
+        End Function
+.
+        Public Overloads Function LessThanEqual(pValue As Single) As String
+            Return ColumnName & " <= " & CStr(pValue)
+        End Function
+    End Class
+.
+    Public Class ByteDataColumn
+        Inherits DataColumn
+.
+        Public Overloads Function Equals(pValue As Byte) As String
+            Return ColumnName & " = " & CStr(pValue)
+        End Function
+.
+        Public Overloads Function NotEqual(pValue As Byte) As String
+            Return ColumnName & " <> " & CStr(pValue)
+        End Function
+.
+        Public Overloads Function GreaterThan(pValue As Byte) As String
+            Return ColumnName & " > " & CStr(pValue)
+        End Function
+.
+        Public Overloads Function GreaterThanEqual(pValue As Byte) As String
+            Return ColumnName & " >= " & CStr(pValue)
+        End Function
+.
+        Public Overloads Function LessThan(pValue As Byte) As String
+            Return ColumnName & " < " & CStr(pValue)
+        End Function
+.
+        Public Overloads Function LessThanEqual(pValue As Byte) As String
+            Return ColumnName & " <= " & CStr(pValue)
+        End Function
+    End Class
+.
+    Public Class DecimalDataColumn
+        Inherits DataColumn
+.
+        Public Overloads Function Equals(pValue As Decimal) As String
+            Return ColumnName & " = " & CStr(pValue)
+        End Function
+.
+        Public Overloads Function NotEqual(pValue As Decimal) As String
+            Return ColumnName & " <> " & CStr(pValue)
+        End Function
+.
+        Public Overloads Function GreaterThan(pValue As Decimal) As String
+            Return ColumnName & " > " & CStr(pValue)
+        End Function
+.
+        Public Overloads Function GreaterThanEqual(pValue As Decimal) As String
+            Return ColumnName & " >= " & CStr(pValue)
+        End Function
+.
+        Public Overloads Function LessThan(pValue As Decimal) As String
+            Return ColumnName & " < " & CStr(pValue)
+        End Function
+.
+        Public Overloads Function LessThanEqual(pValue As Decimal) As String
+            Return ColumnName & " <= " & CStr(pValue)
+        End Function
+    End Class
+.
+    Public Class DoubleDataColumn
+        Inherits DataColumn
+.
+        Public Overloads Function Equals(pValue As Double) As String
+            Return ColumnName & " = " & CStr(pValue)
+        End Function
+.
+        Public Overloads Function NotEqual(pValue As Double) As String
+            Return ColumnName & " <> " & CStr(pValue)
+        End Function
+.
+        Public Overloads Function GreaterThan(pValue As Double) As String
+            Return ColumnName & " > " & CStr(pValue)
+        End Function
+.
+        Public Overloads Function GreaterThanEqual(pValue As Double) As String
+            Return ColumnName & " >= " & CStr(pValue)
+        End Function
+.
+        Public Overloads Function LessThan(pValue As Double) As String
+            Return ColumnName & " < " & CStr(pValue)
+        End Function
+.
+        Public Overloads Function LessThanEqual(pValue As Double) As String
+            Return ColumnName & " <= " & CStr(pValue)
+        End Function
+    End Class
+.
+    Public Class BooleanDataColumn
+        Inherits DataColumn
+.
+        Private Function Bit(pValue As Boolean) As Integer
+            If pValue Then
+                Return 1
+            Else
+                Return 0
+            End If
+        End Function
+.
+        Public Overloads Function Equals(pValue As Boolean) As String
+            Return ColumnName & " = " & CStr(Bit(pValue))
+        End Function
+.
+        Public Overloads Function NotEqual(pValue As Boolean) As String
+            Return ColumnName & " <> " & CStr(Bit(pValue))
+        End Function
+    End Class
+.
+    Public Class DateTimeDataColumn
+        Inherits DataColumn
+.
+        Public Overloads Function Equals(pValue As DateTime) As String
+            Return ColumnName & " = " & SQuote(pValue)
+        End Function
+.
+        Public Overloads Function NotEqual(pValue As DateTime) As String
+            Return ColumnName & " <> " & SQuote(pValue)
+        End Function
+.
+        Public Overloads Function GreaterThan(pValue As DateTime) As String
+            Return ColumnName & " > " & SQuote(pValue)
+        End Function
+.
+        Public Overloads Function GreaterThanEqual(pValue As DateTime) As String
+            Return ColumnName & " >= " & SQuote(pValue)
+        End Function
+.
+        Public Overloads Function LessThan(pValue As DateTime) As String
+            Return ColumnName & " < " & SQuote(pValue)
+        End Function
+.
+        Public Overloads Function LessThanEqual(pValue As DateTime) As String
+            Return ColumnName & " <= " & SQuote(pValue)
+        End Function
+.
+        Public Overloads Function Between(pValueBegin As DateTime, pValueEnd As DateTime) As String
+            Return ColumnName & " BETWEEN " & SQuote(pValueBegin) & " AND " & SQuote(pValueEnd)
+        End Function
+    End Class
+End Class
+.
+Module modStringLib
+    Public Function SQuote(pIn As String) As String
+        Return Chr(39) & pIn & Chr(39)
+    End Function
+End Module
+End Namespace
+.
+{{xFile "UtilSQLServer" path=xSettings.OutputPath prefix="" suffix="" ext="vb"}}
+.
