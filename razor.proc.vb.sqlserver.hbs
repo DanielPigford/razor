@@ -1,3 +1,11 @@
+'/===============================================================\
+'| razor procedure (experimental) - rev 4.2.12                   |
+'|---------------------------------------------------------------|
+'|  Template: razor.proc.vb.sqlserver (experimental version)     |
+'|   Website: http://www.pigford.net/razor                       |
+'|                                                               |
+'| Known Issues:                                                 |
+'\===============================================================/
 {{!===============================================================}}
 {{! Release: razor proc (experimental)                            }}
 {{!===============================================================}}
@@ -12,14 +20,6 @@
 {{!                                                               }}
 {{!                                                               }}
 {{!===============================================================}}
-'/===============================================================\
-'| razor procedure (experimental)                                |
-'|---------------------------------------------------------------|
-'|  Template: razor.proc.vb.sqlserver (experimental version)     |
-'|   Website: http://www.pigford.net/razor                       |
-'|                                                               |
-'| Known Issues:                                                 |
-'\===============================================================/
 .
 Namespace razor
 Public Class UtilStoredProc
@@ -32,9 +32,9 @@ Public Class UtilStoredProc
         zCmd.CommandText = "{{Name}}"
         zCmd.CommandType = CommandType.StoredProcedure
 .
-		{{#each Parameters}}
+        {{#each Parameters}}
         zCmd.Parameters.AddWithValue("{{Name}}", p{{Alias}})
-		{{/each}}
+        {{/each}}
 .
         Dim zReader As SqlClient.SqlDataReader
         zReader = UtilSQLServer.ExecuteReader(zCmd)

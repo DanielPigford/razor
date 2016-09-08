@@ -1,3 +1,10 @@
+'/===============================================================\
+'| razor engine (experimental) - rev 4.2.612                     |
+'|---------------------------------------------------------------|
+'|  Template: razor.engine.vb.sqlserver (experimental version)   |
+'|   Website: http://www.pigford.net/razor                       |
+'|                                                               |
+'\===============================================================/
 {{!============================================================}}
 {{! Release: razor engine (experimental)                       }}
 {{!============================================================}}
@@ -38,16 +45,18 @@
 {{! Update: 06/07/2016 - Added namespace of razor              }}
 {{! Update: 06/09/2016 - Added Single data type support        }}
 {{! Update: 06/09/2016 - Added support for distinct            }}
+{{! Update: 06/23/2016 - Fixed Paren support for nested        }}
+{{!                      expressions.                          }}
+{{! Update: 06/23/2016 - Fixed bug with hanging paren prior to }}
+{{!                      expression.                           }}
+{{! Update: 07/26/2016 - Added Equals method to force datatype }}
+{{! Update: 07/27/2016 - Added case-insensitive option for     }}
+{{!                      for string comparison.                }}
+{{! Update: 08/12/2016 - Fixed bug with DISTINCT not including }}
+{{!                      the SQL predicate.                    }}
 {{!============================================================}}
 {{! This engine template only works with a SQL Server database }}
 {{!============================================================}}
-'/===============================================================\
-'| razor engine (experimental)                                   |
-'|---------------------------------------------------------------|
-'|  Template: razor.engine.vb.sqlserver (experimental version)   |
-'|   Website: http://www.pigford.net/razor                       |
-'|                                                               |
-'\===============================================================/
 .
 Imports System.Data.SqlClient
 Imports System.Text.RegularExpressions
@@ -295,6 +304,8 @@ Partial Public Class UtilSQLServer
         Private _ConjuctionOperator As ConjuctionOperatorEnum = ConjuctionOperatorEnum.And
         Private _NeedConjunction As Boolean = False
         Private _OpenParen As Integer = 0
+        Private _DictParenExpressionPresent As New Dictionary(Of Integer, Boolean)
+        Private _ParenNdx As Integer = 0
 .
         Public Sub SetConjuction(pOperator As ConjuctionOperatorEnum)
             _ConjuctionOperator = pOperator
@@ -302,10 +313,14 @@ Partial Public Class UtilSQLServer
 .
         Public Sub [OpenParen]()
             _OpenParen = _OpenParen + 1
+            _ParenNdx = _ParenNdx + 1
+            _DictParenExpressionPresent.Add(_ParenNdx, False)
         End Sub
 .
         Public Sub [CloseParen]()
             SetCloseParen()
+            _DictParenExpressionPresent.Remove(_ParenNdx)
+            _ParenNdx = _ParenNdx - 1
         End Sub
 .
         Public Sub [Add](pItem As Object)
@@ -317,13 +332,13 @@ Partial Public Class UtilSQLServer
         Public Sub [And](ParamArray pItems() As Object)
             OpenParen()
             BuildExpressionList(pItems, __AND)
-			CloseParen()
+            CloseParen()
         End Sub
 .
         Public Sub [Or](ParamArray pItems() As Object)
             OpenParen()
             BuildExpressionList(pItems, __OR)
-			CloseParen()
+            CloseParen()
         End Sub
 .
         Private Function GetConjunctionOperator(pValue As ConjuctionOperatorEnum) As String
@@ -333,7 +348,7 @@ Partial Public Class UtilSQLServer
                 Case ConjuctionOperatorEnum.Or
                     Return __OR
             End Select
-			Return __AND
+            Return __AND
         End Function
 .
         Private Sub SetOpenParen()
@@ -345,7 +360,11 @@ Partial Public Class UtilSQLServer
         End Sub
 .
         Private Sub SetCloseParen()
-            _Text.Add(__CLOSEPAREN)
+            If _DictParenExpressionPresent.Item(_ParenNdx) = True Then
+                _Text.Add(__CLOSEPAREN)
+            Else
+                _OpenParen = _OpenParen - 1
+            End If
         End Sub
 .
         Private Sub BuildExpressionList(pItems() As Object, pOperator As String)
@@ -354,6 +373,13 @@ Partial Public Class UtilSQLServer
             _Text.Add(Join(pItems, Space(1) & pOperator & Space(1)))
             'If _CloseParen Then SetCloseParen()
             _NeedConjunction = True
+            SetParenExpressionPresent(_ParenNdx, True)
+        End Sub
+.
+        Private Sub SetParenExpressionPresent(pIndexLevel As Integer, pValue As Boolean)
+            For xNdx = 1 To pIndexLevel
+                _DictParenExpressionPresent.Item(xNdx) = pValue
+            Next
         End Sub
 .
     End Class
@@ -370,7 +396,7 @@ Partial Public Class UtilSQLServer
         Private _OrderBy As New List(Of String)
         Private _GroupCount As New List(Of String)
         Private _CountAll As Boolean = False
-	    Private _Distinct As Boolean = False
+        Private _Distinct As Boolean = False
 .
         Protected Property FirstColumn() As String
             Get
@@ -524,9 +550,8 @@ Partial Public Class UtilSQLServer
                     zSQL = zSQL & "COUNT(*) AS [totalcount] "
                 ElseIf _GroupCount.Count > 0 Then
                     zSQL = zSQL & String.Join(", ", _GroupCount) & ", COUNT(*) AS [itemcount] "
-				ElseIf _Distinct Then
-					zSQL = zSQL & "DISTINCT "
                 Else
+                    If _Distinct Then zSQL = zSQL & "DISTINCT "
                     If _Top > 0 Then zSQL = zSQL & "TOP " & CStr(_Top) & " "
                     zSQL = zSQL & String.Join(", ", _Select) & " "
                 End If
@@ -557,6 +582,11 @@ Partial Public Class UtilSQLServer
     Public MustInherit Class DataColumn
         Public ColumnName As String
 .
+        <Obsolete("You must use a matching typed variable when using Equals comparison.", True)>
+        Public Overrides Function Equals(obj As Object) As Boolean
+            Return MyBase.Equals(obj)
+        End Function
+.
         Public Overloads Function IsNull() As String
             Return ColumnName & " IS NULL"
         End Function
@@ -578,46 +608,79 @@ Partial Public Class UtilSQLServer
     Public Class StringDataColumn
         Inherits DataColumn
 .
-        Public Overloads Function Equals(pValue As String) As String
-            Return ColumnName & " = " & SQuote(pValue)
+        Public Overloads Function Equals(pValue As String, Optional isCaseSensitive As Boolean = False) As String
+            If Not isCaseSensitive Then
+                Return "UPPER(" & ColumnName & ") = " & SQuote(pValue.ToUpper)
+            Else
+                Return ColumnName & " = " & SQuote(pValue)
+            End If
         End Function
 .
-        Public Overloads Function NotEqual(pValue As String) As String
-            Return ColumnName & " <> " & SQuote(pValue)
+        Public Overloads Function NotEqual(pValue As String, Optional isCaseSensitive As Boolean = False) As String
+            If Not isCaseSensitive Then
+                Return "UPPER(" & ColumnName & ") <> " & SQuote(pValue.ToUpper)
+            Else
+                Return ColumnName & " <> " & SQuote(pValue)
+            End If
         End Function
 .
-        Public Overloads Function BeginsWith(pValue As String) As String
-            Return ColumnName & " LIKE " & SQuote(pValue & "%")
+        Public Overloads Function BeginsWith(pValue As String, Optional isCaseSensitive As Boolean = False) As String
+            If Not isCaseSensitive Then
+                Return "UPPER(" & ColumnName & ") LIKE " & SQuote(pValue.ToUpper & "%")
+            Else
+                Return ColumnName & " LIKE " & SQuote(pValue & "%")
+            End If
         End Function
 .
-        Public Overloads Function EndsWith(pValue As String) As String
-            Return ColumnName & " LIKE " & SQuote("%" & pValue)
+        Public Overloads Function EndsWith(pValue As String, Optional isCaseSensitive As Boolean = False) As String
+            If Not isCaseSensitive Then
+                Return "UPPER(" & ColumnName & ") LIKE " & SQuote("%" & pValue.ToUpper)
+            Else
+                Return ColumnName & " LIKE " & SQuote("%" & pValue)
+            End If
         End Function
 .
-        Public Overloads Function Contains(pValue As String) As String
-            Return ColumnName & " LIKE " & SQuote("%" & pValue & "%")
+        Public Overloads Function Contains(pValue As String, Optional isCaseSensitive As Boolean = False) As String
+            If Not isCaseSensitive Then
+                Return "UPPER(" & ColumnName & ") LIKE " & SQuote("%" & pValue.ToUpper & "%")
+            Else
+                Return ColumnName & " LIKE " & SQuote("%" & pValue & "%")
+            End If
         End Function
 .
-        Public Overloads Function NotContains(pValue As String) As String
-            Return ColumnName & " NOT LIKE " & SQuote("%" & pValue & "%")
+        Public Overloads Function NotContains(pValue As String, Optional isCaseSensitive As Boolean = False) As String
+            If Not isCaseSensitive Then
+                Return "UPPER(" & ColumnName & ") NOT LIKE " & SQuote("%" & pValue.ToUpper & "%")
+            Else
+                Return ColumnName & " NOT LIKE " & SQuote("%" & pValue & "%")
+            End If
         End Function
 .
-		Public Overloads Function [In](pValue() As String) As String
+        Public Overloads Function [In](pValue() As String, Optional isCaseSensitive As Boolean = False) As String
             Dim zNdx As Integer = 0
             For zNdx = 0 To UBound(pValue)
+                pValue(zNdx) = pValue(zNdx).ToUpper
+                pValue(zNdx) = SQuote(pValue(zNdx))
+            Next
+            If Not isCaseSensitive Then
+                Return "UPPER(" & ColumnName & ") IN (" & Join(pValue, ",") & ")"
+            Else
+                Return ColumnName & " IN (" & Join(pValue, ",") & ")"
+            End If
+        End Function
+.
+        Public Overloads Function [NotIn](pValue() As String, Optional isCaseSensitive As Boolean = False) As String
+            Dim zNdx As Integer = 0
+            For zNdx = 0 To UBound(pValue)
+                pValue(zNdx) = pValue(zNdx).ToUpper
                 pValue(zNdx) = SQuote(pValue(zNdx))
             Next
 .
-            Return ColumnName & " IN (" & Join(pValue, ",") & ")"
-        End Function
-.
-        Public Overloads Function [NotIn](pValue() As String) As String
-            Dim zNdx As Integer = 0
-            For zNdx = 0 To UBound(pValue)
-                pValue(zNdx) = SQuote(pValue(zNdx))
-            Next
-.
-            Return ColumnName & " NOT IN (" & Join(pValue, ",") & ")"
+            If Not isCaseSensitive Then
+                Return "UPPER(" & ColumnName & ") NOT IN (" & Join(pValue, ",") & ")"
+            Else
+                Return ColumnName & " NOT IN (" & Join(pValue, ",") & ")"
+            End If
         End Function
     End Class
 .

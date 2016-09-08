@@ -1,3 +1,14 @@
+{{#each Items}}
+'/===============================================================\
+'| razor data (experimental) - rev 4.2.865                       |
+'|---------------------------------------------------------------|
+'|  Template: gen.vb.sqlserver (experimental version)            |
+'|   Website: http://www.pigford.net/razor                       |
+'|                                                               |
+'| Known Issues:                                                 |
+'|  Data Types not supported due to type mapping issues: money,  |
+'| date, varchar(1), nvarchar(1)                                 |
+'\===============================================================/
 {{!===============================================================}}
 {{! Release: razor data (experimental)                            }}
 {{!===============================================================}}
@@ -49,17 +60,6 @@
 {{!                                                               }}
 {{!                                                               }}
 {{!===============================================================}}
-'/===============================================================\
-'| razor data (experimental)                                     |
-'|---------------------------------------------------------------|
-'|  Template: gen.vb.sqlserver (experimental version)      |
-'|   Website: http://www.pigford.net/razor                       |
-'|                                                               |
-'| Known Issues:                                                 |
-'|  Data Types not supported due to type mapping issues: money,  |
-'| date, varchar(1), nvarchar(1)                                 |
-'\===============================================================/
-{{#each Items}}
 Imports System.Data.SqlClient
 .
 Namespace razor
@@ -531,9 +531,9 @@ End Namespace
 {{!===============================================================}}
 {{#each Items}}
 /*/===============================================================\
-  | razor JSON (experimental)                                     |
+  | razor JSON (experimental) - rev 4.2.11                        |
   |---------------------------------------------------------------|
-  |  Template: gen.vb.sqlserver (experimental version)      |
+  |  Template: gen.vb.sqlserver (experimental version)            |
   |   Website: http://www.pigford.net/razor                       |
   |                                                               |
   | Known Issues:                                                 |
@@ -562,9 +562,9 @@ End Namespace
 {{!===============================================================}}
 {{#each Items}}
 /===============================================================\
-| razor doc (experimental)                                      |
+| razor doc (experimental) - rev 4.2.14                         |
 |---------------------------------------------------------------|
-|  Template: gen.vb.sqlserver (experimental version)      |
+|  Template: gen.vb.sqlserver (experimental version)            |
 |   Website: http://www.pigford.net/razor                       |
 |                                                               |
 | Known Issues:                                                 |
@@ -596,6 +596,7 @@ End Namespace
 {{! Update: 06/02/2016 - Added namespace of razor                 }}
 {{! Update: 06/03/2016 - Disabled namespace of razor              }}
 {{! Update: 06/07/2016 - Added namespace of razor                 }}
+{{! Update: 08/24/2016 - Added schema to table name function      }}
 {{!===============================================================}}
 {{! This template currently only works with a SQLServer database  }}
 {{!                                                               }}
@@ -606,9 +607,9 @@ End Namespace
 {{!===============================================================}}
 {{#each Items}}
 '/===============================================================\
-'| razor query (experimental)                                    |
+'| razor query (experimental) - rev 4.2.269                      |
 '|---------------------------------------------------------------|
-'|  Template: gen.vb.sqlserver (experimental version)      |
+'|  Template: gen.vb.sqlserver (experimental version)            |
 '|   Website: http://www.pigford.net/razor                       |
 '|                                                               |
 '| Known Issues:                                                 |
@@ -679,7 +680,7 @@ Public Class {{xSettings.QueryAliasPrefix}}{{Alias}}
     End Function
 .
 	Private Function _TableName() As String
-        Return "[{{Name}}]"
+        Return "[{{Schema}}].[{{Name}}]"
     End Function
 .
     Private Function _FirstColumn() As String
