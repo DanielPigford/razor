@@ -1,7 +1,7 @@
 {{#each Items}}
 <!--
 /===============================================================\
-| razor grid (experimental) - rev 4.2.1                         |
+| razor grid (experimental) - rev 4.2.2                         |
 |---------------------------------------------------------------|
 |  Template: razor.grid.html (experimental version)             |
 |   Website: http://www.pigford.net/razor                       |
@@ -43,7 +43,7 @@
 {{#each Items}}
 /*
 /===============================================================\
-| razor grid (experimental) - rev 4.2.1                         |
+| razor grid (experimental) - rev 4.2.2                         |
 |---------------------------------------------------------------|
 |  Template: razor.grid (experimental version)                  |
 |   Website: http://www.pigford.net/razor                       |
@@ -66,7 +66,7 @@ function fillGridData() {
     var zData = "";
     try {
         $.ajax({
-            url: "../REST/RestService.svc/GetGridData_{{Alias}}",
+            url: "../REST/RestService_Grid.svc/GetGridData_{{Alias}}",
             data: zData,
             type: "POST",
             cache: false,
