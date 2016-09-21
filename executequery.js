@@ -23,7 +23,7 @@ connection.on('debug', function(text) {
 );
 
 function executeStatement() {
-    request = new Request("SELECT TOP 5 * FROM razor_data_types;", function (err) {
+    request = new Request("SELECT TOP 15 * FROM razor_data_types;", function (err) {
         if (err) {
             console.log(err);
         }
