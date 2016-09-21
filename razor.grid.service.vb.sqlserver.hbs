@@ -1,0 +1,120 @@
+'/=========================================================================\
+'| razor grid (experimental) - rev 4.2.1                                   |
+'|-------------------------------------------------------------------------|
+'|  Template: razor.grid.iservice.vb.sqlserver (experimental version)      |
+'|   Website: http://www.pigford.net/razor                                 |
+'\=========================================================================/
+{{!===============================================================}}
+{{! Release: razor grid iservice vb sql server (experimental)     }}
+{{!===============================================================}}
+{{! Update: 09/21/2016 - Initial version                          }}
+{{!===============================================================}}
+{{!                                                               }}
+{{!===============================================================}}
+Imports System.Collections.Generic
+Imports System.Linq
+Imports System.Text
+Imports System.ServiceModel
+Imports System.ServiceModel.Web
+.
+Namespace Contracts
+    <ServiceContract()>
+    Public Interface IRestService_Grid
+.
+    {{#each Items}}
+        <OperationContract> _
+        <WebInvoke(ResponseFormat:=WebMessageFormat.Json, RequestFormat:=WebMessageFormat.Json, BodyStyle:=WebMessageBodyStyle.WrappedRequest)> _
+        Function GetGridData_{{Alias}}() As System.IO.Stream
+.
+        <WebInvoke(ResponseFormat:=WebMessageFormat.Json, RequestFormat:=WebMessageFormat.Json, BodyStyle:=WebMessageBodyStyle.WrappedRequest)> _
+        Function GetDropdownData_{{Alias}}() As System.IO.Stream
+    {{/each}}
+.
+    End Interface
+End Namespace
+{{xFile "IRestService_Grid" path=xSettings.OutputPath ext="vb"}}
+.
+'/==========================================================================\
+'| razor grid (experimental) - rev 4.2.1                                    |
+'|--------------------------------------------------------------------------|
+'|  Template: razor.grid.service.vb.sqlserver (experimental version)        |
+'|   Website: http://www.pigford.net/razor                                  |
+'\==========================================================================/
+{{!===============================================================}}
+{{! Release: razor grid service vb sql server  (experimental)     }}
+{{!===============================================================}}
+{{! Update: 09/21/2016 - Initial version                          }}
+{{!===============================================================}}
+{{!                                                               }}
+{{!===============================================================}}
+Namespace Service
+    Public Class RestService_Grid
+        Implements IRestService_Grid
+.
+    {{#each Items}}
+        Public Function GetGridData_{{Alias}}() As IO.Stream Implements IRestService_Grid.GetGridData_{{Alias}}
+            Dim zReturn As System.IO.Stream
+            Dim zJSON As New Dictionary(Of String, Object)
+            Dim util As New TelerikTemplates_Core.UtilFillData
+            Dim parm As String = "{{Name}}" 
+.
+            Try
+                'Dim util As New UtilLogin2
+                zJSON.Add("isSuccess", True)
+                zJSON.Add("message", "")
+                zJSON.Add("data", util.RetrieveData(parm))
+                zReturn = JsonWrap(Newtonsoft.Json.JsonConvert.SerializeObject(zJSON))
+.
+            Catch ex As Exception
+                zJSON.Add("isSuccess", False)
+                zJSON.Add("message", ex.Message)
+                zJSON.Add("data", Nothing)
+                zReturn = JsonWrap(Newtonsoft.Json.JsonConvert.SerializeObject(zJSON))
+.
+            End Try
+            Return zReturn
+        End Function
+.
+        Public Function GetDropdownData_{{Alias}}() As IO.Stream Implements IRestService_Grid.GetDropdownData_{{Alias}}
+            Dim zReturn As System.IO.Stream
+            Dim zJSON As New Dictionary(Of String, Object)
+            Dim util As New TelerikTemplates_Core.UtilFillData
+            Dim parm As String = "{{Name}}"     
+.
+            Try
+                'Dim util As New UtilLogin2
+                zJSON.Add("isSuccess", True)
+                zJSON.Add("message", "")
+                zJSON.Add("data", util.RetrieveData(parm))
+                zReturn = JsonWrap(Newtonsoft.Json.JsonConvert.SerializeObject(zJSON))
+.
+            Catch ex As Exception
+                zJSON.Add("isSuccess", False)
+                zJSON.Add("message", ex.Message)
+                zJSON.Add("data", Nothing)
+                zReturn = JsonWrap(Newtonsoft.Json.JsonConvert.SerializeObject(zJSON))
+.
+            End Try
+            Return zReturn
+        End Function
+    {{/each}}
+.
+        ' HELPER FUNCTION FOR RETURNING JSON
+        Private Function JsonpWrap(pCallback As String, pIn As String) As System.IO.Stream
+            Dim zReturn As String = ""
+            zReturn = pCallback & "(" & pIn & ");"
+            ServiceModel.Web.WebOperationContext.Current.OutgoingResponse.ContentType = "application/javascript"
+            Return New System.IO.MemoryStream(Encoding.UTF8.GetBytes(zReturn))
+        End Function
+.
+        Private Function JsonWrap(pIn As String) As System.IO.Stream
+            Dim zReturn As String = ""
+            zReturn = pIn
+            ServiceModel.Web.WebOperationContext.Current.OutgoingResponse.ContentType = "application/javascript"
+            Return New System.IO.MemoryStream(Encoding.UTF8.GetBytes(zReturn))
+        End Function
+.
+    End Class
+End Namespace
+{{xFile RestService_Grid path=xSettings.OutputPath ext="svc"}}
+.
