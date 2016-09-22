@@ -1,6 +1,6 @@
 {{#each Items}}
 '/===============================================================\
-'| razor data (experimental) - rev 4.2.866                       |
+'| razor data (experimental) - rev 4.2.867                       |
 '|---------------------------------------------------------------|
 '|  Template: gen.vb.sqlserver (experimental version)            |
 '|   Website: http://www.pigford.net/razor                       |
@@ -51,6 +51,7 @@
 {{! Update: 06/03/2016 - Disabled namespace of razor              }}
 {{! Update: 06/07/2016 - Added namespace of razor                 }}
 {{! Update: 09/08/2016 - Added SQL Transaction support            }}
+{{! Update: 09/22/2016 - Added interface support to row class     }}
 {{!===============================================================}}
 {{! This template currently only works with a SQLServer database  }}
 {{!                                                               }}
@@ -482,9 +483,10 @@ Partial Public Class {{xSettings.TableAliasPrefix}}{{Alias}}
 End Class
 .
 Partial Public Class {{xSettings.DataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}}
+    Implements I{{xSettings.DataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}}
 .
- 	Public Event Loaded()
-	Public Event Saved()
+ 	Public Event Loaded() Implements I{{xSettings.DataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}}.Loaded
+	Public Event Saved() Implements I{{xSettings.DataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}}.Saved
 .
     Public Sub RaiseLoadedEvent()
         RaiseEvent Loaded()
@@ -494,7 +496,7 @@ Partial Public Class {{xSettings.DataObjectPrefix}}{{xSettings.TableAliasPrefix}
         RaiseEvent Saved()
     End Sub
 	{{#each Columns}}{{#xIfNotAny IsComputed IsConcurrency "===" true}}
-    Public Property {{xSettings.ColumnAliasPrefix}}{{Alias}}() As {{DotNet_NullableType}}
+    Public Property {{xSettings.ColumnAliasPrefix}}{{Alias}}() As {{DotNet_NullableType}} Implements I{{xSettings.DataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{../../Alias}}.{{xSettings.ColumnAliasPrefix}}{{Alias}}
 		Get
 			Return m_{{xSettings.ColumnAliasPrefix}}{{Alias}}
 		End Get
@@ -509,18 +511,15 @@ Partial Public Class {{xSettings.DataObjectPrefix}}{{xSettings.TableAliasPrefix}
 .
 	{{/xIfNotAny}}{{/each}}
 .
-	Public Function IsDirty(pIndex As FieldIndex) As Boolean
+	Public Function IsDirty(pIndex As {{xSettings.DataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}}.FieldIndex) As Boolean Implements I{{xSettings.DataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}}.IsDirty
 		Return m_IsDirty(pIndex)
 	End Function
 .
-	''' <summary>
-    ''' Determines if the row has pending changes.
-    ''' </summary>
-    Public Function IsDirty() As Boolean
+    Public Function IsDirty() As Boolean Implements I{{xSettings.DataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}}.IsDirty
         Return m_IsDirty.Contains(True)
     End Function
 .
-	Public Sub SetIsDirty(pDirty As Boolean)
+	Public Sub SetIsDirty(pDirty As Boolean) Implements I{{xSettings.DataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}}.SetIsDirty
 	{{#each Columns}}{{#xIfNotAny IsComputed IsConcurrency "===" true}}
 		m_IsDirty(FieldIndex.{{xSettings.ColumnAliasPrefix}}{{Alias}}) = pDirty
 	{{/xIfNotAny}}{{/each}}
@@ -551,6 +550,18 @@ Partial Public Class {{xSettings.DataObjectPrefix}}{{xSettings.TableAliasPrefix}
     End Function
 .
 End Class
+.
+    Public Interface I{{xSettings.DataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}}
+        Event Loaded()
+        Event Saved()
+	{{#each Columns}}{{#xIfNotAny IsComputed IsConcurrency "===" true}}
+        Property {{xSettings.ColumnAliasPrefix}}{{Alias}}() As {{DotNet_NullableType}}
+	{{/xIfNotAny}}{{/each}}
+        Function IsDirty(pIndex As {{xSettings.DataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}}.FieldIndex) As Boolean
+        Function IsDirty() As Boolean
+        Sub SetIsDirty(pDirty As Boolean)
+    End Interface
+.
 End Namespace
 .
 {{xFile Alias path=xSettings.OutputPath prefix=xSettings.TableAliasPrefix suffix="" ext="vb"}}
