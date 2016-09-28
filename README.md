@@ -10,3 +10,5 @@ razor is a set of handlebar templates to build .NET source code based on databas
 * Generate source code
 * Download zip file
 * Add to your solution
+
+Alternately you can download M2G Desktop (Windows only) and use the templates directly on your development workstation.  See my2ndgeneration.com for details.
