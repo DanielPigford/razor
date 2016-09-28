@@ -1,6 +1,6 @@
 {{#each Items}}
 '/===============================================================\
-'| razor data (experimental) - rev 4.2.868   EXPERIMENTAL        |
+'| razor data (experimental) - rev 4.2.869   EXPERIMENTAL        |
 '|---------------------------------------------------------------|
 '|  Template: gen.vb.sqlserver (experimental version)            |
 '|   Website: http://www.pigford.net/razor                       |
@@ -54,7 +54,7 @@
 {{! Update: 09/22/2016 - Added interface support to row class     }}
 {{! Update: 09/27/2016 - Added support for data class subclassing }}
 {{!                      Removed optionals, formalized overloads  }}
-{{! Update: 09/28/2016 - Fixed indentation level                  }}
+{{! Update: 09/28/2016 - Fixed indentation level and missing dots }}
 {{!===============================================================}}
 {{! This template currently only works with a SQLServer database  }}
 {{!                                                               }}
@@ -719,6 +719,7 @@ End Namespace
 {{! Update: 06/03/2016 - Disabled namespace of razor              }}
 {{! Update: 06/07/2016 - Added namespace of razor                 }}
 {{! Update: 08/24/2016 - Added schema to table name function      }}
+{{! Update: 09/28/2016 - Fixed indentation level                  }}
 {{!===============================================================}}
 {{! This template currently only works with a SQLServer database  }}
 {{!                                                               }}
@@ -729,7 +730,7 @@ End Namespace
 {{!===============================================================}}
 {{#each Items}}
 '/===============================================================\
-'| razor query (experimental) - rev 4.2.269                      |
+'| razor query (experimental) - rev 4.2.270                      |
 '|---------------------------------------------------------------|
 '|  Template: gen.vb.sqlserver (experimental version)            |
 '|   Website: http://www.pigford.net/razor                       |
@@ -738,78 +739,78 @@ End Namespace
 '\===============================================================/
 .
 Namespace razor
-Public Class {{xSettings.QueryAliasPrefix}}{{Alias}}
-    Inherits razor.UtilSQLServer.Query
+    Public Class {{xSettings.QueryAliasPrefix}}{{Alias}}
+        Inherits razor.UtilSQLServer.Query
 .
-    Private _Members As New Dictionary(Of String, Object)
+        Private _Members As New Dictionary(Of String, Object)
 .
-	{{#each Columns}}
-	{{#xIfNotAny IsComputed IsConcurrency "===" true}}
-    Public {{xSettings.ColumnAliasPrefix}}{{Alias}} As New razor.UtilSQLServer.{{LanguageType}}DataColumn
-	{{/xIfNotAny}}
-	{{/each}}
+        {{#each Columns}}
+        {{#xIfNotAny IsComputed IsConcurrency "===" true}}
+        Public {{xSettings.ColumnAliasPrefix}}{{Alias}} As New razor.UtilSQLServer.{{LanguageType}}DataColumn
+        {{/xIfNotAny}}
+        {{/each}}
 .
-    Public Sub New()
-        MyBase.FirstColumn = _FirstColumn()
-        MyBase.TableName = _TableName()
-	{{#each Columns}}
-		{{#xIfNotAny IsComputed IsConcurrency "===" true}}
-        {{xSettings.ColumnAliasPrefix}}{{Alias}}.ColumnName = "[{{Name}}]"
-		{{/xIfNotAny}}
-	{{/each}}
+        Public Sub New()
+            MyBase.FirstColumn = _FirstColumn()
+            MyBase.TableName = _TableName()
+        {{#each Columns}}
+            {{#xIfNotAny IsComputed IsConcurrency "===" true}}
+            {{xSettings.ColumnAliasPrefix}}{{Alias}}.ColumnName = "[{{Name}}]"
+            {{/xIfNotAny}}
+        {{/each}}
 .
-	{{#each Columns}}
-		{{#xIfNotAny IsComputed IsConcurrency "===" true}}
-        _Members.Add("{{xSettings.ColumnAliasPrefix}}{{Alias}}", {{xSettings.ColumnAliasPrefix}}{{Alias}})
-		{{/xIfNotAny}}
-	{{/each}}
-    End Sub
+        {{#each Columns}}
+            {{#xIfNotAny IsComputed IsConcurrency "===" true}}
+            _Members.Add("{{xSettings.ColumnAliasPrefix}}{{Alias}}", {{xSettings.ColumnAliasPrefix}}{{Alias}})
+            {{/xIfNotAny}}
+        {{/each}}
+        End Sub
 .
-    Public Function Member(pObjectName As String) As Object
-        Dim zReturn As Object = Nothing
-        If _Members.ContainsKey(pObjectName) Then
-            zReturn = _Members.Item(pObjectName)
-        Else
-            Throw New System.Exception("pObjectName=[" & pObjectName & "] does not exist in member dictionary.")
-        End If
-        Return zReturn
-    End Function
+        Public Function Member(pObjectName As String) As Object
+            Dim zReturn As Object = Nothing
+            If _Members.ContainsKey(pObjectName) Then
+                zReturn = _Members.Item(pObjectName)
+            Else
+                Throw New System.Exception("pObjectName=[" & pObjectName & "] does not exist in member dictionary.")
+            End If
+            Return zReturn
+        End Function
 .
-    Public Function MemberColumn(pObjectName As String) As String
-        Select Case pObjectName
-		{{#each Columns}}
-		{{#xIfNotAny IsComputed IsConcurrency "===" true}}
-	        Case "{{xSettings.ColumnAliasPrefix}}{{Alias}}"
-				Return "[{{Name}}]"
-		{{/xIfNotAny}}
-		{{/each}}
-            Case Else
-                Throw New System.Exception("pObjectName=[" & pObjectName & "] does not exist in column list.")
-        End Select
-    End Function
+        Public Function MemberColumn(pObjectName As String) As String
+            Select Case pObjectName
+            {{#each Columns}}
+            {{#xIfNotAny IsComputed IsConcurrency "===" true}}
+                Case "{{xSettings.ColumnAliasPrefix}}{{Alias}}"
+                    Return "[{{Name}}]"
+            {{/xIfNotAny}}
+            {{/each}}
+                Case Else
+                    Throw New System.Exception("pObjectName=[" & pObjectName & "] does not exist in column list.")
+            End Select
+        End Function
 .
-    Public Function MemberLangType(pObjectName As String) As String
-        Select Case pObjectName
-		{{#each Columns}}
-		{{#xIfNotAny IsComputed IsConcurrency "===" true}}
-	        Case "{{xSettings.ColumnAliasPrefix}}{{Alias}}"
-				Return "{{LanguageType}}"
-		{{/xIfNotAny}}
-		{{/each}}
-            Case Else
-                Throw New System.Exception("pObjectName=[" & pObjectName & "] does not exist in column list.")
-        End Select
-    End Function
+        Public Function MemberLangType(pObjectName As String) As String
+            Select Case pObjectName
+            {{#each Columns}}
+            {{#xIfNotAny IsComputed IsConcurrency "===" true}}
+                Case "{{xSettings.ColumnAliasPrefix}}{{Alias}}"
+                    Return "{{LanguageType}}"
+            {{/xIfNotAny}}
+            {{/each}}
+                Case Else
+                    Throw New System.Exception("pObjectName=[" & pObjectName & "] does not exist in column list.")
+            End Select
+        End Function
 .
-	Private Function _TableName() As String
-        Return "[{{Schema}}].[{{Name}}]"
-    End Function
+        Private Function _TableName() As String
+            Return "[{{Schema}}].[{{Name}}]"
+        End Function
 .
-    Private Function _FirstColumn() As String
-        Return "[{{Columns.[0].Name}}]"
-    End Function
+        Private Function _FirstColumn() As String
+            Return "[{{Columns.[0].Name}}]"
+        End Function
 .
-End Class
+    End Class
 End namespace
 .
 {{xFile Alias path=xSettings.OutputPath prefix=xSettings.QueryAliasPrefix suffix="" ext="vb"}}
