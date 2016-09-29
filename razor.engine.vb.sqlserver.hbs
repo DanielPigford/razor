@@ -1,5 +1,5 @@
 '/===============================================================\
-'| razor engine (experimental) - rev 4.2.615                     |
+'| razor engine (experimental) - rev 4.2.616                     |
 '|---------------------------------------------------------------|
 '|  Template: razor.engine.vb.sqlserver (experimental version)   |
 '|   Website: http://www.pigford.net/razor                       |
@@ -58,6 +58,7 @@
 {{! Update: 09/29/2016 - Fixed logic error in reader function  }}
 {{!                      when transactions were added.         }}
 {{! Update: 09/29/2016 - Added IN/NOT IN support for numbers   }}
+{{! Update: 09/29/2016 - Added support for TimeSpan data type  }}
 {{!============================================================}}
 {{! This engine template only works with a SQL Server database }}
 {{!============================================================}}
@@ -151,7 +152,7 @@ Namespace razor
 .
         Public Shared Function ExecuteNonQuery(pCommand As SqlCommand) As Integer
             Dim zReturn As Integer = 0
-            
+.
             If IsNothing(pCommand.Transaction) Then
                 pCommand.Connection = razor.UtilSQLServer.GetConnectionObject
                 Using pCommand.Connection
@@ -1089,7 +1090,39 @@ Namespace razor
                 Return ColumnName & " BETWEEN " & SQuote(pValueBegin) & " AND " & SQuote(pValueEnd)
             End Function
         End Class
-    End Class
+.
+        Public Class TimeSpanDataColumn
+        	Inherits DataColumn
+.
+            Public Overloads Function Equals(pValue As TimeSpan) As String
+                Return ColumnName & " = " & SQuote(pValue.ToString)
+            End Function
+.
+            Public Overloads Function NotEqual(pValue As TimeSpan) As String
+                Return ColumnName & " <> " & SQuote(pValue.ToString)
+            End Function
+.
+            Public Overloads Function GreaterThan(pValue As TimeSpan) As String
+                Return ColumnName & " > " & SQuote(pValue.ToString)
+            End Function
+.
+            Public Overloads Function GreaterThanEqual(pValue As TimeSpan) As String
+                Return ColumnName & " >= " & SQuote(pValue.ToString)
+            End Function
+.
+            Public Overloads Function LessThan(pValue As TimeSpan) As String
+                Return ColumnName & " < " & SQuote(pValue.ToString)
+            End Function
+.
+            Public Overloads Function LessThanEqual(pValue As TimeSpan) As String
+                Return ColumnName & " <= " & SQuote(pValue.ToString)
+            End Function
+.
+            Public Overloads Function Between(pValueBegin As TimeSpan, pValueEnd As TimeSpan) As String
+                Return ColumnName & " BETWEEN " & SQuote(pValueBegin.ToString) & " AND " & SQuote(pValueEnd.ToString)
+            End Function
+        End Class
+	End Class
 .
     Module modStringLib
         Public Function SQuote(pIn As String) As String

@@ -1,6 +1,6 @@
 {{#each Items}}
 '/===============================================================\
-'| razor data (experimental) - rev 4.2.870   EXPERIMENTAL        |
+'| razor data (experimental) - rev 4.2.871   EXPERIMENTAL        |
 '|---------------------------------------------------------------|
 '|  Template: gen.vb.sqlserver (experimental version)            |
 '|   Website: http://www.pigford.net/razor                       |
@@ -56,6 +56,7 @@
 {{!                      Removed optionals, formalized overloads  }}
 {{! Update: 09/28/2016 - Fixed indentation level and missing dots }}
 {{! Update: 09/29/2016 - Fixed issue with reflection based PK     }}
+{{! Update: 09/29/2016 - Added support for TimeSpan datatype      }}
 {{!===============================================================}}
 {{! This template currently only works with a SQLServer database  }}
 {{!                                                               }}
@@ -406,13 +407,13 @@ Namespace razor
 .
         End function
 .
-        Public Shared Function ReadDataRow(pReader As SqlClient.SqlDataReader, ByRef pObject As Object)
-                {{#each Columns}}{{#xIfNotAny IsComputed IsConcurrency "===" true}}
-                If Not pReader.IsDBNull(pReader.GetOrdinal("{{Name}}")) Then pObject.{{xSettings.ColumnAliasPrefix}}{{Alias}} = pReader.GetSql{{DotNet_Type}}(pReader.GetOrdinal("{{Name}}")).value		
-                {{/xIfNotAny}}{{/each}}
-                pObject.SetIsDirty(False)
-                Return pObject
-        End	 Function
+		Public Shared Function ReadDataRow(pReader As SqlClient.SqlDataReader, ByRef pObject As Object)
+			{{#each Columns}}{{#xIfNotAny IsComputed IsConcurrency "===" true}}
+			If Not pReader.IsDBNull(pReader.GetOrdinal("{{Name}}")) Then pObject.{{xSettings.ColumnAliasPrefix}}{{Alias}} = DirectCast(pReader.GetSqlValue(pReader.GetOrdinal("{{Name}}")).value, {{DotNet_Type}})		
+			{{/xIfNotAny}}{{/each}}
+			pObject.SetIsDirty(False)
+			Return pObject
+		End	 Function
 .
     #Region "Reflection Based Load Functions"
 .
