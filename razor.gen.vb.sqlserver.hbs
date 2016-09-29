@@ -1,6 +1,6 @@
 {{#each Items}}
 '/===============================================================\
-'| razor data (experimental) - rev 4.2.869   EXPERIMENTAL        |
+'| razor data (experimental) - rev 4.2.870   EXPERIMENTAL        |
 '|---------------------------------------------------------------|
 '|  Template: gen.vb.sqlserver (experimental version)            |
 '|   Website: http://www.pigford.net/razor                       |
@@ -55,6 +55,7 @@
 {{! Update: 09/27/2016 - Added support for data class subclassing }}
 {{!                      Removed optionals, formalized overloads  }}
 {{! Update: 09/28/2016 - Fixed indentation level and missing dots }}
+{{! Update: 09/29/2016 - Fixed issue with reflection based PK     }}
 {{!===============================================================}}
 {{! This template currently only works with a SQLServer database  }}
 {{!                                                               }}
@@ -416,6 +417,7 @@ Namespace razor
     #Region "Reflection Based Load Functions"
 .
     {{#if IsTable}}
+        {{#if PrimaryKeys}}
         Public Shared Function LoadByPrimaryKey(Of T)({{#each PrimaryKeys}}{{xNotFirst ", "}}p{{xSettings.ColumnAliasPrefix}}{{Alias}} As {{LanguageType}}{{/each}}) As T
             Return LoadByPrimaryKey(Of T)({{#each PrimaryKeys}}{{xNotFirst ", "}}p{{xSettings.ColumnAliasPrefix}}{{Alias}}{{/each}}, Nothing, Nothing)
         End Function
@@ -451,6 +453,7 @@ Namespace razor
             End If
 .
         End Function
+        {{/if}}
     {{/if}}
 .
         {{#each Indexes}}
