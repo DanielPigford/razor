@@ -1,29 +1,14 @@
-# README #
+# razor #
 
-This README would normally document whatever steps are necessary to get your application up and running.
-
-### What is this repository for? ###
-
-* Quick summary
-* Version
-* [Learn Markdown](https://bitbucket.org/tutorials/markdowndemo)
+razor is a set of handlebar templates to build .NET source code based on database schemas.  The goal of the templates are to generate 100% source code based on the .NET framework.  No third party database components are required to use the generated source code.
 
 ### How do I get set up? ###
 
-* Summary of set up
-* Configuration
-* Dependencies
-* Database configuration
-* How to run tests
-* Deployment instructions
+* Register for an M2G account (my2ndgeneration.com)
+* Upload your database schema using M2G upload tool
+* Select a razor template and database tables
+* Generate source code
+* Download zip file
+* Add to your solution
 
-### Contribution guidelines ###
-
-* Writing tests
-* Code review
-* Other guidelines
-
-### Who do I talk to? ###
-
-* Repo owner or admin
-* Other community or team contact
+Alternately you can download M2G Desktop (Windows only) and use the templates directly on your development workstation.  See my2ndgeneration.com for details.
