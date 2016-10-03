@@ -1,6 +1,6 @@
 {{#each Items}}
 '/===============================================================\
-'| razor data (experimental) - rev 4.2.871   EXPERIMENTAL        |
+'| razor data (experimental) - rev 4.2.872   EXPERIMENTAL        |
 '|---------------------------------------------------------------|
 '|  Template: gen.vb.sqlserver (experimental version)            |
 '|   Website: http://www.pigford.net/razor                       |
@@ -57,6 +57,7 @@
 {{! Update: 09/28/2016 - Fixed indentation level and missing dots }}
 {{! Update: 09/29/2016 - Fixed issue with reflection based PK     }}
 {{! Update: 09/29/2016 - Added support for TimeSpan datatype      }}
+{{! Update: 10/03/2016 - Added support for SafeRead in RowReader  }}
 {{!===============================================================}}
 {{! This template currently only works with a SQLServer database  }}
 {{!                                                               }}
@@ -88,11 +89,11 @@ Namespace razor
             Delete(pRowData, Nothing, pDeleteEventUserState)
         End Sub
 .
-        Public Shared Sub Delete(ByRef pRowData As I{{xSettings.DataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}}, ByRef pTransaction as SqlClient.SqlTransaction)
+        Public Shared Sub Delete(ByRef pRowData As I{{xSettings.DataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}}, ByRef pTransaction As SqlClient.SqlTransaction)
             Delete(pRowData, pTransaction, Nothing)
         End Sub
 .
-        Public Shared Sub Delete(ByRef pRowData As I{{xSettings.DataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}}, ByRef pTransaction as SqlClient.SqlTransaction, pDeleteEventUserState As Object)
+        Public Shared Sub Delete(ByRef pRowData As I{{xSettings.DataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}}, ByRef pTransaction As SqlClient.SqlTransaction, pDeleteEventUserState As Object)
             Dim zSQL As String = ""
             Dim zMode As String = ""
 .
@@ -125,11 +126,11 @@ Namespace razor
             Delete({{#each PrimaryKeys}}{{xNotFirst ", "}}p{{xSettings.ColumnAliasPrefix}}{{Alias}}{{/each}}, Nothing, pDeleteEventUserState)
         End Sub	
 .
-        Public Shared Sub Delete({{#each PrimaryKeys}}{{xNotFirst ", "}}p{{xSettings.ColumnAliasPrefix}}{{Alias}} As {{LanguageType}}{{/each}}, ByRef pTransaction as SqlClient.SqlTransaction)
+        Public Shared Sub Delete({{#each PrimaryKeys}}{{xNotFirst ", "}}p{{xSettings.ColumnAliasPrefix}}{{Alias}} As {{LanguageType}}{{/each}}, ByRef pTransaction As SqlClient.SqlTransaction)
         Delete({{#each PrimaryKeys}}{{xNotFirst ", "}}p{{xSettings.ColumnAliasPrefix}}{{Alias}}{{/each}}, pTransaction, Nothing)
         End Sub	
 .
-        Public Shared Sub Delete({{#each PrimaryKeys}}{{xNotFirst ", "}}p{{xSettings.ColumnAliasPrefix}}{{Alias}} As {{LanguageType}}{{/each}}, ByRef pTransaction as SqlClient.SqlTransaction, pDeleteEventUserState As Object)
+        Public Shared Sub Delete({{#each PrimaryKeys}}{{xNotFirst ", "}}p{{xSettings.ColumnAliasPrefix}}{{Alias}} As {{LanguageType}}{{/each}}, ByRef pTransaction As SqlClient.SqlTransaction, pDeleteEventUserState As Object)
         Dim zObj As {{xSettings.DataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}} = LoadByPrimaryKey({{#each PrimaryKeys}}{{xNotFirst ", "}}p{{xSettings.ColumnAliasPrefix}}{{Alias}}{{/each}}, pTransaction, Nothing)
         Delete(zObj, pTransaction, pDeleteEventUserState)
         End Sub	
@@ -142,15 +143,15 @@ Namespace razor
             Save(pRowData, pTransaction, Nothing)
         End Sub
 .
-        Public Shared Sub Save(ByRef pRowData As {{xSettings.DataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}}, ByRef pTransaction as SqlClient.SqlTransaction, pSavedEventUserState As Object)
+        Public Shared Sub Save(ByRef pRowData As {{xSettings.DataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}}, ByRef pTransaction As SqlClient.SqlTransaction, pSavedEventUserState As Object)
             Dim zSQL As String = ""
             Dim zMode As String = ""
-            DIm zExistInDB as Long = -1
+            DIm zExistInDB As Long = -1
             If {{#each PrimaryKeys}}razor.UtilSQLServer.IsKeySet(pRowData.{{xSettings.ColumnAliasPrefix}}{{Alias}}){{#xNotLast}} And {{/xNotLast}}{{/each}} Then
 .
                 zSQL = "SELECT COUNT(*) from [{{Schema}}].[{{Name}}] WHERE {{#each PrimaryKeys}}[{{Name}}] = @{{xSettings.ColumnAliasPrefix}}{{Alias}}{{#xNotLast}} AND {{/xNotLast}}{{/each}}"
 .
-                Dim zCmdDoesExist as New SQLCommand
+                Dim zCmdDoesExist As New SQLCommand
 .
                 zCmdDoesExist.CommandText = zSQL
 .
@@ -248,11 +249,11 @@ Namespace razor
             Return LoadByPrimaryKey({{#each PrimaryKeys}}{{xNotFirst ", "}}p{{xSettings.ColumnAliasPrefix}}{{Alias}}{{/each}}, Nothing, pLoadEventUserState)
         End Function
 .
-        Public Shared Function LoadByPrimaryKey({{#each PrimaryKeys}}{{xNotFirst ", "}}p{{xSettings.ColumnAliasPrefix}}{{Alias}} As {{LanguageType}}{{/each}}, pTransaction as SqlClient.SqlTransaction) As {{xSettings.DataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}}
+        Public Shared Function LoadByPrimaryKey({{#each PrimaryKeys}}{{xNotFirst ", "}}p{{xSettings.ColumnAliasPrefix}}{{Alias}} As {{LanguageType}}{{/each}}, pTransaction As SqlClient.SqlTransaction) As {{xSettings.DataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}}
             Return LoadByPrimaryKey({{#each PrimaryKeys}}{{xNotFirst ", "}}p{{xSettings.ColumnAliasPrefix}}{{Alias}}{{/each}}, pTransaction, Nothing)
         End Function
 .
-        Public Shared Function LoadByPrimaryKey({{#each PrimaryKeys}}{{xNotFirst ", "}}p{{xSettings.ColumnAliasPrefix}}{{Alias}} As {{LanguageType}}{{/each}}, pTransaction as SqlClient.SqlTransaction, pLoadEventUserState As Object) As {{xSettings.DataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}}
+        Public Shared Function LoadByPrimaryKey({{#each PrimaryKeys}}{{xNotFirst ", "}}p{{xSettings.ColumnAliasPrefix}}{{Alias}} As {{LanguageType}}{{/each}}, pTransaction As SqlClient.SqlTransaction, pLoadEventUserState As Object) As {{xSettings.DataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}}
             Dim zReturn As New {{xSettings.DataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}}
             Dim zSQL As String = "SELECT * FROM [{{Schema}}].[{{Name}}] WHERE {{#each PrimaryKeys}}{{xNotFirst ' AND '}}[{{Name}}] = @{{xSettings.ColumnAliasPrefix}}{{Alias}}{{/each}}"
             Dim zCmd As New SQLCommand
@@ -407,9 +408,9 @@ Namespace razor
 .
         End function
 .
-		Public Shared Function ReadDataRow(pReader As SqlClient.SqlDataReader, ByRef pObject As Object)
+		Public Shared Function ReadDataRow(pReader As SqlClient.SqlDataReader, ByRef pObject As {{xSettings.DataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}})
 			{{#each Columns}}{{#xIfNotAny IsComputed IsConcurrency "===" true}}
-			If Not pReader.IsDBNull(pReader.GetOrdinal("{{Name}}")) Then pObject.{{xSettings.ColumnAliasPrefix}}{{Alias}} = DirectCast(pReader.GetSqlValue(pReader.GetOrdinal("{{Name}}")).value, {{DotNet_Type}})		
+			If Not pReader.IsDBNull(pReader.GetOrdinal("{{Name}}")) Then pObject.{{xSettings.ColumnAliasPrefix}}{{Alias}} = UtilSQLServer.SafeReader.SafeRead{{DotNet_Type}}(pReader, "{{Name}}")
 			{{/xIfNotAny}}{{/each}}
 			pObject.SetIsDirty(False)
 			Return pObject
@@ -431,7 +432,7 @@ Namespace razor
             Return LoadByPrimaryKey(Of T)({{#each PrimaryKeys}}{{xNotFirst ", "}}p{{xSettings.ColumnAliasPrefix}}{{Alias}}{{/each}}, pTransaction, Nothing)
         End Function
 .
-        Public Shared Function LoadByPrimaryKey(Of T)({{#each PrimaryKeys}}{{xNotFirst ", "}}p{{xSettings.ColumnAliasPrefix}}{{Alias}} As {{LanguageType}}{{/each}}, pTransaction as SqlClient.SqlTransaction, pLoadEventUserState As Object) As T
+        Public Shared Function LoadByPrimaryKey(Of T)({{#each PrimaryKeys}}{{xNotFirst ", "}}p{{xSettings.ColumnAliasPrefix}}{{Alias}} As {{LanguageType}}{{/each}}, pTransaction As SqlClient.SqlTransaction, pLoadEventUserState As Object) As T
 .
             Dim zReturn As Object = Activator.CreateInstance(Of T)()
             If Not TypeOf zReturn Is {{xSettings.DataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}} Then Throw New ArgumentException("Generic type is not type of {{xSettings.DataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}}.","T")
@@ -491,17 +492,17 @@ Namespace razor
 .
         {{/each}}
         Public Shared Function LoadData(Of T)(pSQL As String) As List(Of T)
-            Dim zCmd as New SqlClient.SqlCommand(pSQL)
+            Dim zCmd As New SqlClient.SqlCommand(pSQL)
             Return LoadData(Of T)(zCmd, Nothing, Nothing)
         End Function
 .
         Public Shared Function LoadData(Of T)(pSQL As String, pLoadEventUserState As Object) As List(Of T)
-            Dim zCmd as New SqlClient.SqlCommand(pSQL)
+            Dim zCmd As New SqlClient.SqlCommand(pSQL)
             Return LoadData(Of T)(zCmd, Nothing, pLoadEventUserState)
         End Function
 .
         Public Shared Function LoadData(Of T)(pSQL As String, ByRef pTransaction As SqlClient.SqlTransaction, pLoadEventUserState As Object) As List(Of T)
-            Dim zCmd as New SqlClient.SqlCommand(pSQL)
+            Dim zCmd As New SqlClient.SqlCommand(pSQL)
             Return LoadData(Of T)(zCmd, pTransaction, pLoadEventUserState)
         End Function
 .
@@ -525,7 +526,7 @@ Namespace razor
             Return LoadData(Of T)(pCommand, pTransaction, Nothing)
         End Function
 .
-        Public Shared Function LoadData(Of T)(pCommand As SqlCommand, ByRef pTransaction as SqlClient.SqlTransaction, pLoadEventUserState As Object) As List(Of T)
+        Public Shared Function LoadData(Of T)(pCommand As SqlCommand, ByRef pTransaction As SqlClient.SqlTransaction, pLoadEventUserState As Object) As List(Of T)
             Dim zReturn As New List(Of T)
             Dim zSQL As String = "SELECT * FROM [{{Schema}}].[{{Name}}]"
             Dim zCmd As New SQLCommand

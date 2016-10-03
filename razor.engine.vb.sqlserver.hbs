@@ -1,5 +1,5 @@
 '/===============================================================\
-'| razor engine (experimental) - rev 4.2.616                     |
+'| razor engine (experimental) - rev 4.2.617                     |
 '|---------------------------------------------------------------|
 '|  Template: razor.engine.vb.sqlserver (experimental version)   |
 '|   Website: http://www.pigford.net/razor                       |
@@ -59,6 +59,7 @@
 {{!                      when transactions were added.         }}
 {{! Update: 09/29/2016 - Added IN/NOT IN support for numbers   }}
 {{! Update: 09/29/2016 - Added support for TimeSpan data type  }}
+{{! Update: 10/03/2016 - Added SafeReader class to wrap reader }}
 {{!============================================================}}
 {{! This engine template only works with a SQL Server database }}
 {{!============================================================}}
@@ -421,6 +422,44 @@ Namespace razor
                 Next
             End Sub
 .
+        End Class
+.
+        Public Class SafeReader
+            Public Shared Function SafeReadInt16(ByRef pReader As SqlClient.SqlDataReader, pColumn As String) As Int16
+                Return pReader.GetInt32(pReader.GetOrdinal(pColumn))
+            End Function
+.
+            Public Shared Function SafeReadInt32(ByRef pReader As SqlClient.SqlDataReader, pColumn As String) As Int32
+                Return pReader.GetInt32(pReader.GetOrdinal(pColumn))
+            End Function
+.
+            Public Shared Function SafeReadInt64(ByRef pReader As SqlClient.SqlDataReader, pColumn As String) As Int64
+                Return pReader.GetInt64(pReader.GetOrdinal(pColumn))
+            End Function
+.
+            Public Shared Function SafeReadString(ByRef pReader As SqlClient.SqlDataReader, pColumn As String) As String
+                Return pReader.GetString(pReader.GetOrdinal(pColumn))
+            End Function
+.
+            Public Shared Function SafeReadDateTime(ByRef pReader As SqlClient.SqlDataReader, pColumn As String) As DateTime
+                Return pReader.GetSqlDateTime(pReader.GetOrdinal(pColumn))
+            End Function
+.
+            Public Shared Function SafeReadDecimal(ByRef pReader As SqlClient.SqlDataReader, pColumn As String) As Decimal
+                Return pReader.GetDecimal(pReader.GetOrdinal(pColumn))
+            End Function
+.
+            Public Shared Function SafeReadBoolean(ByRef pReader As SqlClient.SqlDataReader, pColumn As String) As Boolean
+                Return pReader.GetBoolean(pReader.GetOrdinal(pColumn))
+            End Function
+.
+            Public Shared Function SafeReadDate(ByRef pReader As SqlClient.SqlDataReader, pColumn As String) As Date
+                Return pReader.GetDateTime(pReader.GetOrdinal(pColumn))
+            End Function
+.
+            Public Shared Function SafeReadTimeSpan(ByRef pReader As SqlClient.SqlDataReader, pColumn As String) As TimeSpan
+                Return pReader.GetTimeSpan(pReader.GetOrdinal(pColumn))
+            End Function
         End Class
 .
         Public MustInherit Class Query
