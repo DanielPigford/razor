@@ -1,5 +1,5 @@
 '/===============================================================\
-'| razor engine (experimental) - rev 4.2.620                     |
+'| razor engine (experimental) - rev 4.2.621                     |
 '|---------------------------------------------------------------|
 '|  Template: razor.engine.vb.sqlserver (experimental version)   |
 '|   Website: http://www.pigford.net/razor                       |
@@ -63,6 +63,7 @@
 {{! Update: 10/03/2016 - Fixed bug for Int16 datatype          }}
 {{! Update: 10/03/2016 - Added SafeReader support for Real     }}
 {{! Update: 10/03/2016 - Added four new type support           }}
+{{! Update: 10/03/2016 - Added date date type to query class   }}
 {{!============================================================}}
 {{! This engine template only works with a SQL Server database }}
 {{!============================================================}}
@@ -1157,6 +1158,38 @@ Namespace razor
             End Function
 .
             Public Overloads Function Between(pValueBegin As DateTime, pValueEnd As DateTime) As String
+                Return ColumnName & " BETWEEN " & SQuote(pValueBegin) & " AND " & SQuote(pValueEnd)
+            End Function
+        End Class
+.
+        Public Class DateDataColumn
+            Inherits DataColumn
+.
+            Public Overloads Function Equals(pValue As Date) As String
+                Return ColumnName & " = " & SQuote(pValue)
+            End Function
+.
+            Public Overloads Function NotEqual(pValue As Date) As String
+                Return ColumnName & " <> " & SQuote(pValue)
+            End Function
+.
+            Public Overloads Function GreaterThan(pValue As Date) As String
+                Return ColumnName & " > " & SQuote(pValue)
+            End Function
+.
+            Public Overloads Function GreaterThanEqual(pValue As Date) As String
+                Return ColumnName & " >= " & SQuote(pValue)
+            End Function
+.
+            Public Overloads Function LessThan(pValue As Date) As String
+                Return ColumnName & " < " & SQuote(pValue)
+            End Function
+.
+            Public Overloads Function LessThanEqual(pValue As Date) As String
+                Return ColumnName & " <= " & SQuote(pValue)
+            End Function
+.
+            Public Overloads Function Between(pValueBegin As Date, pValueEnd As Date) As String
                 Return ColumnName & " BETWEEN " & SQuote(pValueBegin) & " AND " & SQuote(pValueEnd)
             End Function
         End Class
