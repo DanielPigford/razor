@@ -1,5 +1,5 @@
 '/===============================================================\
-'| razor engine (experimental) - rev 4.2.619                     |
+'| razor engine (experimental) - rev 4.2.620                     |
 '|---------------------------------------------------------------|
 '|  Template: razor.engine.vb.sqlserver (experimental version)   |
 '|   Website: http://www.pigford.net/razor                       |
@@ -62,6 +62,7 @@
 {{! Update: 10/03/2016 - Added SafeReader class to wrap reader }}
 {{! Update: 10/03/2016 - Fixed bug for Int16 datatype          }}
 {{! Update: 10/03/2016 - Added SafeReader support for Real     }}
+{{! Update: 10/03/2016 - Added four new type support           }}
 {{!============================================================}}
 {{! This engine template only works with a SQL Server database }}
 {{!============================================================}}
@@ -466,6 +467,18 @@ Namespace razor
             Public Shared Function SafeReadSingle(ByRef pReader As SqlClient.SqlDataReader, pColumn As String) As Single
                 Return pReader.GetSqlSingle(pReader.GetOrdinal(pColumn))
             End Function
+.
+            Public Shared Function SafeReadDouble(ByRef pReader As SqlClient.SqlDataReader, pColumn As String) As Double
+                Return pReader.GetDouble(pReader.GetOrdinal(pColumn))
+            End Function
+.
+            Public Shared Function SafeReadByte(ByRef pReader As SqlClient.SqlDataReader, pColumn As String) As Byte
+                Return pReader.GetByte(pReader.GetOrdinal(pColumn))
+            End Function
+.
+            Public Shared Function SafeReadGuid(ByRef pReader As SqlClient.SqlDataReader, pColumn As String) As Guid
+                Return pReader.GetGuid(pReader.GetOrdinal(pColumn))
+            End Function
 		End Class
 .
         Public MustInherit Class Query
@@ -765,6 +778,18 @@ Namespace razor
                 Else
                     Return ColumnName & " NOT IN (" & Join(pValue, ",") & ")"
                 End If
+            End Function
+        End Class
+.
+        Public Class GuidDataColumn
+            Inherits DataColumn
+.
+            Public Overloads Function Equals(pValue As Guid) As String
+                Return ColumnName & " = " & pValue.ToString
+            End Function
+.
+            Public Overloads Function NotEqual(pValue As Guid) As String
+                Return ColumnName & " <> " & pValue.ToString
             End Function
         End Class
 .
