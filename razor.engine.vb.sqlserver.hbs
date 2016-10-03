@@ -1,5 +1,5 @@
 '/===============================================================\
-'| razor engine (experimental) - rev 4.2.618                     |
+'| razor engine (experimental) - rev 4.2.619                     |
 '|---------------------------------------------------------------|
 '|  Template: razor.engine.vb.sqlserver (experimental version)   |
 '|   Website: http://www.pigford.net/razor                       |
@@ -61,6 +61,7 @@
 {{! Update: 09/29/2016 - Added support for TimeSpan data type  }}
 {{! Update: 10/03/2016 - Added SafeReader class to wrap reader }}
 {{! Update: 10/03/2016 - Fixed bug for Int16 datatype          }}
+{{! Update: 10/03/2016 - Added SafeReader support for Real     }}
 {{!============================================================}}
 {{! This engine template only works with a SQL Server database }}
 {{!============================================================}}
@@ -461,7 +462,11 @@ Namespace razor
             Public Shared Function SafeReadTimeSpan(ByRef pReader As SqlClient.SqlDataReader, pColumn As String) As TimeSpan
                 Return pReader.GetTimeSpan(pReader.GetOrdinal(pColumn))
             End Function
-        End Class
+.
+            Public Shared Function SafeReadSingle(ByRef pReader As SqlClient.SqlDataReader, pColumn As String) As Single
+                Return pReader.GetSqlSingle(pReader.GetOrdinal(pColumn))
+            End Function
+		End Class
 .
         Public MustInherit Class Query
             Public [Where] As New WhereStatement
