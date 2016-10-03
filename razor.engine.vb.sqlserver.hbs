@@ -1,5 +1,5 @@
 '/===============================================================\
-'| razor engine (experimental) - rev 4.2.617                     |
+'| razor engine (experimental) - rev 4.2.618                     |
 '|---------------------------------------------------------------|
 '|  Template: razor.engine.vb.sqlserver (experimental version)   |
 '|   Website: http://www.pigford.net/razor                       |
@@ -60,6 +60,7 @@
 {{! Update: 09/29/2016 - Added IN/NOT IN support for numbers   }}
 {{! Update: 09/29/2016 - Added support for TimeSpan data type  }}
 {{! Update: 10/03/2016 - Added SafeReader class to wrap reader }}
+{{! Update: 10/03/2016 - Fixed bug for Int16 datatype          }}
 {{!============================================================}}
 {{! This engine template only works with a SQL Server database }}
 {{!============================================================}}
@@ -426,7 +427,7 @@ Namespace razor
 .
         Public Class SafeReader
             Public Shared Function SafeReadInt16(ByRef pReader As SqlClient.SqlDataReader, pColumn As String) As Int16
-                Return pReader.GetInt32(pReader.GetOrdinal(pColumn))
+                Return pReader.GetInt16(pReader.GetOrdinal(pColumn))
             End Function
 .
             Public Shared Function SafeReadInt32(ByRef pReader As SqlClient.SqlDataReader, pColumn As String) As Int32
