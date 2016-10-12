@@ -1,5 +1,5 @@
 '/===============================================================\
-'| razor engine (experimental) - rev 4.2.621                     |
+'| razor engine (experimental) - rev 4.2.622                     |
 '|---------------------------------------------------------------|
 '|  Template: razor.engine.vb.sqlserver (experimental version)   |
 '|   Website: http://www.pigford.net/razor                       |
@@ -64,6 +64,7 @@
 {{! Update: 10/03/2016 - Added SafeReader support for Real     }}
 {{! Update: 10/03/2016 - Added four new type support           }}
 {{! Update: 10/03/2016 - Added date date type to query class   }}
+{{! Update: 10/12/2016 - Added gt, lt, lte, gte to string class}}
 {{!============================================================}}
 {{! This engine template only works with a SQL Server database }}
 {{!============================================================}}
@@ -780,6 +781,23 @@ Namespace razor
                     Return ColumnName & " NOT IN (" & Join(pValue, ",") & ")"
                 End If
             End Function
+.
+            Public Overloads Function GreaterThan(pValue As String) As String
+                Return ColumnName & " > " & SQuote(pValue)
+            End Function
+.
+            Public Overloads Function GreaterThanEqual(pValue As String) As String
+                Return ColumnName & " >= " & SQuote(pValue)
+            End Function
+.
+            Public Overloads Function LessThan(pValue As String) As String
+                Return ColumnName & " < " & SQuote(pValue)
+            End Function
+.
+            Public Overloads Function LessThanEqual(pValue As String) As String
+                Return ColumnName & " <= " & SQuote(pValue)
+            End Function
+.
         End Class
 .
         Public Class GuidDataColumn
