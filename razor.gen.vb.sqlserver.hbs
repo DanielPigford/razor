@@ -725,6 +725,7 @@ End Namespace
 {{! Update: 06/07/2016 - Added namespace of razor                 }}
 {{! Update: 08/24/2016 - Added schema to table name function      }}
 {{! Update: 09/28/2016 - Fixed indentation level                  }}
+{{! Update: 10/13/2016 - Added Column2Member cross lookup function}}
 {{!===============================================================}}
 {{! This template currently only works with a SQLServer database  }}
 {{!                                                               }}
@@ -735,7 +736,7 @@ End Namespace
 {{!===============================================================}}
 {{#each Items}}
 '/===============================================================\
-'| razor query (experimental) - rev 4.2.270                      |
+'| razor query (experimental) - rev 4.2.271                      |
 '|---------------------------------------------------------------|
 '|  Template: gen.vb.sqlserver (experimental version)            |
 '|   Website: http://www.pigford.net/razor                       |
@@ -791,6 +792,19 @@ Namespace razor
             {{/each}}
                 Case Else
                     Throw New System.Exception("pObjectName=[" & pObjectName & "] does not exist in column list.")
+            End Select
+        End Function
+.
+        Public Function Column2Member(pColumnName As String) As String
+            Select Case pColumnName
+            {{#each Columns}}
+            {{#xIfNotAny IsComputed IsConcurrency "===" true}}
+                Case "[{{Name}}]", "{{Name}}"  
+                    Return "{{xSettings.ColumnAliasPrefix}}{{Alias}}"
+            {{/xIfNotAny}}
+            {{/each}}
+                Case Else
+                    Throw New System.Exception("pColumnName=[" & pColumnName & "] does not exist in column list.")
             End Select
         End Function
 .
