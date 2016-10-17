@@ -1,5 +1,5 @@
 '/===============================================================\
-'| razor engine (experimental) - rev 4.2.623                     |
+'| razor engine (experimental) - rev 4.2.624                     |
 '|---------------------------------------------------------------|
 '|  Template: razor.engine.vb.sqlserver (experimental version)   |
 '|   Website: http://www.pigford.net/razor                       |
@@ -66,6 +66,7 @@
 {{! Update: 10/03/2016 - Added date date type to query class   }}
 {{! Update: 10/12/2016 - Added gt, lt, lte, gte to string class}}
 {{! Update: 10/17/2016 - Added String() methods for numeric IN }}
+{{! Update: 10/17/2016 - Removed extra End Class               }}
 {{!============================================================}}
 {{! This engine template only works with a SQL Server database }}
 {{!============================================================}}
@@ -880,8 +881,6 @@ Namespace razor
                 Return ColumnName & " NOT IN (" & Join(zStringValue, ",") & ")"
             End Function
         End Class
-.
-		End Class
 .
         Public Class LongDataColumn
             Inherits DataColumn
