@@ -1,5 +1,5 @@
 '/===============================================================\
-'| razor engine (experimental) - rev 4.2.622                     |
+'| razor engine (experimental) - rev 4.2.623                     |
 '|---------------------------------------------------------------|
 '|  Template: razor.engine.vb.sqlserver (experimental version)   |
 '|   Website: http://www.pigford.net/razor                       |
@@ -65,6 +65,7 @@
 {{! Update: 10/03/2016 - Added four new type support           }}
 {{! Update: 10/03/2016 - Added date date type to query class   }}
 {{! Update: 10/12/2016 - Added gt, lt, lte, gte to string class}}
+{{! Update: 10/17/2016 - Added String() methods for numeric IN }}
 {{!============================================================}}
 {{! This engine template only works with a SQL Server database }}
 {{!============================================================}}
@@ -858,7 +859,29 @@ Namespace razor
                 Next
                 Return ColumnName & " NOT IN (" & Join(zStringValue, ",") & ")"
             End Function
+.
+			Public Overloads Function [In](pValue() As String) As String
+                Dim zNdx As Integer = 0
+                Dim zStringValue() As String
+                ReDim zStringValue(UBound(pValue))
+                For zNdx = 0 To UBound(pValue)
+                    zStringValue(zNdx) = pValue(zNdx).ToString
+                Next
+                Return ColumnName & " IN (" & Join(zStringValue, ",") & ")"
+            End Function
+.
+            Public Overloads Function [NotIn](pValue() As String) As String
+                Dim zNdx As Integer = 0
+                Dim zStringValue() As String
+                ReDim zStringValue(UBound(pValue))
+                For zNdx = 0 To UBound(pValue)
+                    zStringValue(zNdx) = pValue(zNdx).ToString
+                Next
+                Return ColumnName & " NOT IN (" & Join(zStringValue, ",") & ")"
+            End Function
         End Class
+.
+		End Class
 .
         Public Class LongDataColumn
             Inherits DataColumn
@@ -898,6 +921,26 @@ Namespace razor
             End Function
 .
             Public Overloads Function [NotIn](pValue() As Long) As String
+                Dim zNdx As Integer = 0
+                Dim zStringValue() As String
+                ReDim zStringValue(UBound(pValue))
+                For zNdx = 0 To UBound(pValue)
+                    zStringValue(zNdx) = pValue(zNdx).ToString
+                Next
+                Return ColumnName & " NOT IN (" & Join(zStringValue, ",") & ")"
+            End Function
+.
+			Public Overloads Function [In](pValue() As String) As String
+                Dim zNdx As Integer = 0
+                Dim zStringValue() As String
+                ReDim zStringValue(UBound(pValue))
+                For zNdx = 0 To UBound(pValue)
+                    zStringValue(zNdx) = pValue(zNdx).ToString
+                Next
+                Return ColumnName & " IN (" & Join(zStringValue, ",") & ")"
+            End Function
+.
+            Public Overloads Function [NotIn](pValue() As String) As String
                 Dim zNdx As Integer = 0
                 Dim zStringValue() As String
                 ReDim zStringValue(UBound(pValue))
@@ -954,6 +997,26 @@ Namespace razor
                 Next
                 Return ColumnName & " NOT IN (" & Join(zStringValue, ",") & ")"
             End Function
+.
+			Public Overloads Function [In](pValue() As String) As String
+                Dim zNdx As Integer = 0
+                Dim zStringValue() As String
+                ReDim zStringValue(UBound(pValue))
+                For zNdx = 0 To UBound(pValue)
+                    zStringValue(zNdx) = pValue(zNdx).ToString
+                Next
+                Return ColumnName & " IN (" & Join(zStringValue, ",") & ")"
+            End Function
+.
+            Public Overloads Function [NotIn](pValue() As String) As String
+                Dim zNdx As Integer = 0
+                Dim zStringValue() As String
+                ReDim zStringValue(UBound(pValue))
+                For zNdx = 0 To UBound(pValue)
+                    zStringValue(zNdx) = pValue(zNdx).ToString
+                Next
+                Return ColumnName & " NOT IN (" & Join(zStringValue, ",") & ")"
+            End Function
         End Class
 .
         Public Class SingleDataColumn
@@ -994,6 +1057,26 @@ Namespace razor
             End Function
 .
             Public Overloads Function [NotIn](pValue() As Single) As String
+                Dim zNdx As Integer = 0
+                Dim zStringValue() As String
+                ReDim zStringValue(UBound(pValue))
+                For zNdx = 0 To UBound(pValue)
+                    zStringValue(zNdx) = pValue(zNdx).ToString
+                Next
+                Return ColumnName & " NOT IN (" & Join(zStringValue, ",") & ")"
+            End Function
+.
+			Public Overloads Function [In](pValue() As String) As String
+                Dim zNdx As Integer = 0
+                Dim zStringValue() As String
+                ReDim zStringValue(UBound(pValue))
+                For zNdx = 0 To UBound(pValue)
+                    zStringValue(zNdx) = pValue(zNdx).ToString
+                Next
+                Return ColumnName & " IN (" & Join(zStringValue, ",") & ")"
+            End Function
+.
+            Public Overloads Function [NotIn](pValue() As String) As String
                 Dim zNdx As Integer = 0
                 Dim zStringValue() As String
                 ReDim zStringValue(UBound(pValue))
@@ -1078,6 +1161,26 @@ Namespace razor
                 Next
                 Return ColumnName & " NOT IN (" & Join(zStringValue, ",") & ")"
             End Function
+.
+			Public Overloads Function [In](pValue() As String) As String
+                Dim zNdx As Integer = 0
+                Dim zStringValue() As String
+                ReDim zStringValue(UBound(pValue))
+                For zNdx = 0 To UBound(pValue)
+                    zStringValue(zNdx) = pValue(zNdx).ToString
+                Next
+                Return ColumnName & " IN (" & Join(zStringValue, ",") & ")"
+            End Function
+.
+            Public Overloads Function [NotIn](pValue() As String) As String
+                Dim zNdx As Integer = 0
+                Dim zStringValue() As String
+                ReDim zStringValue(UBound(pValue))
+                For zNdx = 0 To UBound(pValue)
+                    zStringValue(zNdx) = pValue(zNdx).ToString
+                Next
+                Return ColumnName & " NOT IN (" & Join(zStringValue, ",") & ")"
+            End Function
         End Class
 .
         Public Class DoubleDataColumn
@@ -1118,6 +1221,26 @@ Namespace razor
             End Function
 .
             Public Overloads Function [NotIn](pValue() As Double) As String
+                Dim zNdx As Integer = 0
+                Dim zStringValue() As String
+                ReDim zStringValue(UBound(pValue))
+                For zNdx = 0 To UBound(pValue)
+                    zStringValue(zNdx) = pValue(zNdx).ToString
+                Next
+                Return ColumnName & " NOT IN (" & Join(zStringValue, ",") & ")"
+            End Function
+.
+			Public Overloads Function [In](pValue() As String) As String
+                Dim zNdx As Integer = 0
+                Dim zStringValue() As String
+                ReDim zStringValue(UBound(pValue))
+                For zNdx = 0 To UBound(pValue)
+                    zStringValue(zNdx) = pValue(zNdx).ToString
+                Next
+                Return ColumnName & " IN (" & Join(zStringValue, ",") & ")"
+            End Function
+.
+            Public Overloads Function [NotIn](pValue() As String) As String
                 Dim zNdx As Integer = 0
                 Dim zStringValue() As String
                 ReDim zStringValue(UBound(pValue))
