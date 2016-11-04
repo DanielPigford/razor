@@ -1,5 +1,5 @@
 '/===============================================================\
-'| razor engine (experimental) - rev 4.2.625                     |
+'| razor engine (experimental) - rev 4.2.626                     |
 '|---------------------------------------------------------------|
 '|  Template: razor.engine.vb.sqlserver (experimental version)   |
 '|   Website: http://www.pigford.net/razor                       |
@@ -68,6 +68,8 @@
 {{! Update: 10/17/2016 - Added String() methods for numeric IN }}
 {{! Update: 10/17/2016 - Removed extra End Class               }}
 {{! Update: 11/04/2016 - Added IN/NOT IN support to datetime   }}
+{{! Update: 11/04/2016 - Added support for Audit column and    }}
+{{!                      delegate support for user identity    }}
 {{!============================================================}}
 {{! This engine template only works with a SQL Server database }}
 {{!============================================================}}
@@ -197,8 +199,8 @@ Namespace razor
                 Using pCommand.Connection
                     Using pCommand
                         Try
-                            pCommand.ExecuteNonQuery()
-                            pCommand.CommandText = "SELECT @@IDENTITY"
+                          '  pCommand.ExecuteNonQuery()
+                          '  pCommand.CommandText = "SELECT @@IDENTITY"
                             zReturn = pCommand.ExecuteScalar()
                         Finally
                             pCommand.Connection.Close()
@@ -208,8 +210,8 @@ Namespace razor
             Else
                 pCommand.Connection = pCommand.Transaction.Connection   
                 Using pCommand
-                    pCommand.ExecuteNonQuery()
-                    pCommand.CommandText = "SELECT @@IDENTITY"
+                   ' pCommand.ExecuteNonQuery()
+                   ' pCommand.CommandText = "SELECT @@IDENTITY"
                     zReturn = pCommand.ExecuteScalar()
                 End Using           
             End If      
@@ -1301,8 +1303,8 @@ Namespace razor
             Public Overloads Function Between(pValueBegin As DateTime, pValueEnd As DateTime) As String
                 Return ColumnName & " BETWEEN " & SQuote(pValueBegin) & " AND " & SQuote(pValueEnd)
             End Function
-.
-			Public Overloads Function [In](pValue() As DateTime) As String
+.            
+            Public Overloads Function [In](pValue() As DateTime) As String
                 Dim zNdx As Integer = 0
                 Dim zValue() As String
                 ReDim zValue(UBound(pValue))
@@ -1412,7 +1414,7 @@ Namespace razor
                     zValue(zNdx) = SQuote(pValue(zNdx).ToString)
                 Next
                 Return ColumnName & " NOT IN (" & Join(zValue, ",") & ")"
-            End Function			
+            End Function	
         End Class
 .
         Public Class TimeSpanDataColumn
@@ -1453,6 +1455,20 @@ Namespace razor
             Return Chr(39) & pIn & Chr(39)
         End Function
     End Module
+.
+	Partial Public Class UtilConfiguration
+        Public Class Auditing
+            Public Shared CurrentUserDelegate As CurrentUserDelegate
+.
+            Public Shared Function AuditIsEnabled()
+                Return Not IsNothing(CurrentUserDelegate)
+            End Function
+.
+        End Class
+    End Class
+.
+    Public Delegate Function CurrentUserDelegate() As String
+.
 End Namespace
 .
 {{xFile "UtilSQLServer" path=xSettings.OutputPath prefix="" suffix="" ext="vb"}}

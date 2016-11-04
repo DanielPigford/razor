@@ -1,6 +1,6 @@
 {{#each Items}}
 '/===============================================================\
-'| razor data (experimental) - rev 4.2.873   EXPERIMENTAL        |
+'| razor data (experimental) - rev 4.2.874   EXPERIMENTAL        |
 '|---------------------------------------------------------------|
 '|  Template: gen.vb.sqlserver (experimental version)            |
 '|   Website: http://www.pigford.net/razor                       |
@@ -58,6 +58,9 @@
 {{! Update: 09/29/2016 - Fixed issue with reflection based PK     }}
 {{! Update: 09/29/2016 - Added support for TimeSpan datatype      }}
 {{! Update: 10/03/2016 - Added support for SafeRead in RowReader  }}
+{{! Update: 11/04/2016 - Added support for Audit column value     }}
+{{!                      stamping, created by, modifed by,        }}
+{{!                      created on, modifed on                   }}
 {{!===============================================================}}
 {{! This template currently only works with a SQLServer database  }}
 {{!                                                               }}
@@ -74,11 +77,9 @@ Namespace razor
     Partial Public Class {{xSettings.TableAliasPrefix}}{{Alias}}
     {{#if IsTable}}
     {{#if PrimaryKeys}}
-.
     {{else}}
         'No PrimaryKeys
     {{/if}}
-.
     {{#if PrimaryKeys}}
 .
         Public Shared Sub Delete(ByRef pRowData As I{{xSettings.DataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}})
@@ -96,6 +97,16 @@ Namespace razor
         Public Shared Sub Delete(ByRef pRowData As I{{xSettings.DataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}}, ByRef pTransaction As SqlClient.SqlTransaction, pDeleteEventUserState As Object)
             Dim zSQL As String = ""
             Dim zMode As String = ""
+.
+			{{#each Columns}}
+				{{#xIf Alias "===" xSettings.AuditUserModifiedColumnName}}
+				If UtilConfiguration.Auditing.AuditIsEnabled Then				
+					pRowData.{{xSettings.ColumnAliasPrefix}}{{xSettings.AuditUserModifiedColumnName}}=UtilConfiguration.Auditing.CurrentUserDelegate.Invoke()
+					pRowData.{{xSettings.ColumnAliasPrefix}}{{xSettings.AuditDateModifiedColumnName}}=Now()
+					Save(pRowData,pTransaction,Nothing) 'Save the person who is deleting this record to the AuditUserModifiedColumnName column.
+				End If
+				{{/xIf}}
+			{{/each}}
 .
             If {{#each PrimaryKeys}}razor.UtilSQLServer.IsKeySet(pRowData.{{xSettings.ColumnAliasPrefix}}{{Alias}}){{#xNotLast}} And {{/xNotLast}}{{/each}} Then
                 'Delete
@@ -144,6 +155,8 @@ Namespace razor
         End Sub
 .
         Public Shared Sub Save(ByRef pRowData As {{xSettings.DataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}}, ByRef pTransaction As SqlClient.SqlTransaction, pSavedEventUserState As Object)
+.
+		If pRowData.IsDirty() Then
             Dim zSQL As String = ""
             Dim zMode As String = ""
             DIm zExistInDB As Long = -1
@@ -166,12 +179,36 @@ Namespace razor
 .
             If {{#each PrimaryKeys}}razor.UtilSQLServer.IsKeySet(pRowData.{{xSettings.ColumnAliasPrefix}}{{Alias}}){{#xNotLast}} And {{/xNotLast}}{{/each}} And zExistInDB > 0 Then
                 zMode = "UPDATE"
+				{{#each Columns}}
+				{{#xIf Alias "===" xSettings.AuditUserModifiedColumnName}}
+				If UtilConfiguration.Auditing.AuditIsEnabled Then				
+					pRowData.{{xSettings.ColumnAliasPrefix}}{{xSettings.AuditUserModifiedColumnName}}=UtilConfiguration.Auditing.CurrentUserDelegate.Invoke()
+					pRowData.{{xSettings.ColumnAliasPrefix}}{{xSettings.AuditDateModifiedColumnName}}=Now()
+					End If			
+				{{/xIf}}
+				{{/each}}
             End If
             If {{#each PrimaryKeys}}razor.UtilSQLServer.IsKeySet(pRowData.{{xSettings.ColumnAliasPrefix}}{{Alias}}){{#xNotLast}} And {{/xNotLast}}{{/each}} And zExistInDB = 0 Then
                 zMode = "INSERTwithKey"
+				{{#each Columns}}
+				{{#xIf Alias "===" xSettings.AuditUserCreatedColumnName}}
+				If UtilConfiguration.Auditing.AuditIsEnabled Then
+					pRowData.{{xSettings.ColumnAliasPrefix}}{{xSettings.AuditUserCreatedColumnName}}=UtilConfiguration.Auditing.CurrentUserDelegate.Invoke()
+					pRowData.{{xSettings.ColumnAliasPrefix}}{{xSettings.AuditDateCreatedColumnName}}=Now()
+				End If
+				{{/xIf}}
+				{{/each}}
             End If
             If {{#each PrimaryKeys}}Not razor.UtilSQLServer.IsKeySet(pRowData.{{xSettings.ColumnAliasPrefix}}{{Alias}}){{#xNotLast}} Or {{/xNotLast}}{{/each}} Then
                 zMode = "INSERTnoKey"
+				{{#each Columns}}
+				{{#xIf Alias "===" xSettings.AuditUserCreatedColumnName}}
+				If UtilConfiguration.Auditing.AuditIsEnabled Then
+					pRowData.{{xSettings.ColumnAliasPrefix}}{{xSettings.AuditUserCreatedColumnName}}=UtilConfiguration.Auditing.CurrentUserDelegate.Invoke()
+					pRowData.{{xSettings.ColumnAliasPrefix}}{{xSettings.AuditDateCreatedColumnName}}=Now()
+				End If
+				{{/xIf}}
+				{{/each}}
             End If
 .
             Select Case zMode
@@ -194,10 +231,10 @@ Namespace razor
                     End If
                 Case "INSERTwithKey"
                     zSQL = "INSERT INTO [{{Schema}}].[{{Name}}] ({{#each Columns}}{{#xIfNotAny IsAutoKey IsComputed IsConcurrency "===" true}}{{xHashtable "Comma"}}[{{Name}}]{{xHashtable "Comma" ", "}}{{/xIfNotAny}}{{/each}}){{xHashtable}}" & _
-                            " VALUES ({{#each Columns}}{{#xIfNotAny IsComputed IsConcurrency IsAutoKey "===" true}}{{xHashtable "Comma"}}@{{xSettings.ColumnAliasPrefix}}{{Alias}}{{xHashtable "Comma" ", "}}{{/xIfNotAny}}{{/each}}){{xHashtable}}"
+                            " VALUES ({{#each Columns}}{{#xIfNotAny IsComputed IsConcurrency IsAutoKey "===" true}}{{xHashtable "Comma"}}@{{xSettings.ColumnAliasPrefix}}{{Alias}}{{xHashtable "Comma" ", "}}{{/xIfNotAny}}{{/each}}){{xHashtable}}; SELECT SCOPE_IDENTITY()"
                 Case "INSERTnoKey"
                     zSQL = "INSERT INTO [{{Schema}}].[{{Name}}] ({{#each Columns}}{{#xIfNotAny IsComputed IsConcurrency IsAutoKey IsInPrimaryKey "===" true}}{{xHashtable "Comma"}}[{{Name}}]{{xHashtable "Comma" ", "}}{{/xIfNotAny}}{{/each}}){{xHashtable}}" & _
-                            " VALUES ({{#each Columns}}{{#xIfNotAny IsComputed IsConcurrency IsAutoKey IsInPrimaryKey "===" true}}{{xHashtable "Comma"}}@{{xSettings.ColumnAliasPrefix}}{{Alias}}{{xHashtable "Comma" ", "}}{{/xIfNotAny}}{{/each}}){{xHashtable}}"
+                            " VALUES ({{#each Columns}}{{#xIfNotAny IsComputed IsConcurrency IsAutoKey IsInPrimaryKey "===" true}}{{xHashtable "Comma"}}@{{xSettings.ColumnAliasPrefix}}{{Alias}}{{xHashtable "Comma" ", "}}{{/xIfNotAny}}{{/each}}){{xHashtable}}; SELECT SCOPE_IDENTITY()"
                 Case Else
             End Select
 .
@@ -238,6 +275,8 @@ Namespace razor
 .
             pRowData.SetIsDirty(False)
             pRowData.RaiseSavedEvent(pSavedEventUserState)
+.
+		End If
 .
         End Sub
 .
