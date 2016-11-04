@@ -1,5 +1,5 @@
 '/===============================================================\
-'| razor engine (experimental) - rev 4.2.624                     |
+'| razor engine (experimental) - rev 4.2.625                     |
 '|---------------------------------------------------------------|
 '|  Template: razor.engine.vb.sqlserver (experimental version)   |
 '|   Website: http://www.pigford.net/razor                       |
@@ -67,6 +67,7 @@
 {{! Update: 10/12/2016 - Added gt, lt, lte, gte to string class}}
 {{! Update: 10/17/2016 - Added String() methods for numeric IN }}
 {{! Update: 10/17/2016 - Removed extra End Class               }}
+{{! Update: 11/04/2016 - Added IN/NOT IN support to datetime   }}
 {{!============================================================}}
 {{! This engine template only works with a SQL Server database }}
 {{!============================================================}}
@@ -1300,6 +1301,46 @@ Namespace razor
             Public Overloads Function Between(pValueBegin As DateTime, pValueEnd As DateTime) As String
                 Return ColumnName & " BETWEEN " & SQuote(pValueBegin) & " AND " & SQuote(pValueEnd)
             End Function
+.
+			Public Overloads Function [In](pValue() As DateTime) As String
+                Dim zNdx As Integer = 0
+                Dim zValue() As String
+                ReDim zValue(UBound(pValue))
+                For zNdx = 0 To UBound(pValue)
+                    zValue(zNdx) = SQuote(pValue(zNdx).ToString)
+                Next
+                Return ColumnName & " IN (" & Join(zValue, ",") & ")"
+            End Function
+.
+            Public Overloads Function [NotIn](pValue() As DateTime) As String
+                Dim zNdx As Integer = 0
+                Dim zValue() As String
+                ReDim zValue(UBound(pValue))
+                For zNdx = 0 To UBound(pValue)
+                    zValue(zNdx) = SQuote(pValue(zNdx).ToString)
+                Next
+                Return ColumnName & " NOT IN (" & Join(zValue, ",") & ")"
+            End Function
+.
+            Public Overloads Function [In](pValue() As String) As String
+                Dim zNdx As Integer = 0
+                Dim zValue() As String
+                ReDim zValue(UBound(pValue))
+                For zNdx = 0 To UBound(pValue)
+                    zValue(zNdx) = SQuote(pValue(zNdx).ToString)
+                Next
+                Return ColumnName & " IN (" & Join(zValue, ",") & ")"
+            End Function
+.
+            Public Overloads Function [NotIn](pValue() As String) As String
+                Dim zNdx As Integer = 0
+                Dim zValue() As String
+                ReDim zValue(UBound(pValue))
+                For zNdx = 0 To UBound(pValue)
+                    zValue(zNdx) = SQuote(pValue(zNdx).ToString)
+                Next
+                Return ColumnName & " NOT IN (" & Join(zValue, ",") & ")"
+            End Function
         End Class
 .
         Public Class DateDataColumn
@@ -1332,6 +1373,46 @@ Namespace razor
             Public Overloads Function Between(pValueBegin As Date, pValueEnd As Date) As String
                 Return ColumnName & " BETWEEN " & SQuote(pValueBegin) & " AND " & SQuote(pValueEnd)
             End Function
+.
+ 			Public Overloads Function [In](pValue() As Date) As String
+                Dim zNdx As Integer = 0
+                Dim zValue() As String
+                ReDim zValue(UBound(pValue))
+                For zNdx = 0 To UBound(pValue)
+                    zValue(zNdx) = SQuote(pValue(zNdx).ToString)
+                Next
+                Return ColumnName & " IN (" & Join(zValue, ",") & ")"
+            End Function
+.
+            Public Overloads Function [NotIn](pValue() As Date) As String
+                Dim zNdx As Integer = 0
+                Dim zValue() As String
+                ReDim zValue(UBound(pValue))
+                For zNdx = 0 To UBound(pValue)
+                    zValue(zNdx) = SQuote(pValue(zNdx).ToString)
+                Next
+                Return ColumnName & " NOT IN (" & Join(zValue, ",") & ")"
+            End Function
+.
+            Public Overloads Function [In](pValue() As String) As String
+                Dim zNdx As Integer = 0
+                Dim zValue() As String
+                ReDim zValue(UBound(pValue))
+                For zNdx = 0 To UBound(pValue)
+                    zValue(zNdx) = SQuote(pValue(zNdx).ToString)
+                Next
+                Return ColumnName & " IN (" & Join(zValue, ",") & ")"
+            End Function
+.
+            Public Overloads Function [NotIn](pValue() As String) As String
+                Dim zNdx As Integer = 0
+                Dim zValue() As String
+                ReDim zValue(UBound(pValue))
+                For zNdx = 0 To UBound(pValue)
+                    zValue(zNdx) = SQuote(pValue(zNdx).ToString)
+                Next
+                Return ColumnName & " NOT IN (" & Join(zValue, ",") & ")"
+            End Function			
         End Class
 .
         Public Class TimeSpanDataColumn
