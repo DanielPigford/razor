@@ -1,5 +1,5 @@
 '/===============================================================\
-'| razor engine (experimental) - rev 4.2.626                     |
+'| razor engine (experimental) - rev 4.2.628                     |
 '|---------------------------------------------------------------|
 '|  Template: razor.engine.vb.sqlserver (experimental version)   |
 '|   Website: http://www.pigford.net/razor                       |
@@ -70,6 +70,9 @@
 {{! Update: 11/04/2016 - Added IN/NOT IN support to datetime   }}
 {{! Update: 11/04/2016 - Added support for Audit column and    }}
 {{!                      delegate support for user identity    }}
+{{! Update: 11/09/2016 - Fixed bug related to GetSQLDateTime   }}
+{{! Update: 11/09/2016 - Added try catch blocks to saferead    }}
+{{! Update: 11/09/2016 - Added UtilFilterSort parsing support  }}
 {{!============================================================}}
 {{! This engine template only works with a SQL Server database }}
 {{!============================================================}}
@@ -436,55 +439,122 @@ Namespace razor
 .
         Public Class SafeReader
             Public Shared Function SafeReadInt16(ByRef pReader As SqlClient.SqlDataReader, pColumn As String) As Int16
-                Return pReader.GetInt16(pReader.GetOrdinal(pColumn))
+				Try
+                	Return pReader.GetInt16(pReader.GetOrdinal(pColumn))
+				Catch ex as Exception
+					ex.Data.Add("Column",pColumn)
+					Throw
+				End Try
             End Function
 .
             Public Shared Function SafeReadInt32(ByRef pReader As SqlClient.SqlDataReader, pColumn As String) As Int32
-                Return pReader.GetInt32(pReader.GetOrdinal(pColumn))
+				Try
+    	            Return pReader.GetInt32(pReader.GetOrdinal(pColumn))
+				Catch ex as Exception
+					ex.Data.Add("Column",pColumn)
+					Throw
+			End Try
+.
             End Function
 .
             Public Shared Function SafeReadInt64(ByRef pReader As SqlClient.SqlDataReader, pColumn As String) As Int64
-                Return pReader.GetInt64(pReader.GetOrdinal(pColumn))
+				Try
+	                Return pReader.GetInt64(pReader.GetOrdinal(pColumn))
+				Catch ex as Exception
+					ex.Data.Add("Column",pColumn)
+					Throw
+				End Try
             End Function
 .
             Public Shared Function SafeReadString(ByRef pReader As SqlClient.SqlDataReader, pColumn As String) As String
-                Return pReader.GetString(pReader.GetOrdinal(pColumn))
+				Try
+				 	Return pReader.GetString(pReader.GetOrdinal(pColumn))
+				Catch ex as Exception
+					ex.Data.Add("Column",pColumn)
+					Throw
+				End Try
             End Function
 .
-            Public Shared Function SafeReadDateTime(ByRef pReader As SqlClient.SqlDataReader, pColumn As String) As DateTime
-                Return pReader.GetSqlDateTime(pReader.GetOrdinal(pColumn))
+            Public Shared Function SafeReadDateTime(ByRef pReader As SqlClient.SqlDataReader, pColumn As String) As DateTime         
+				Try
+					Return pReader.GetDateTime(pReader.GetOrdinal(pColumn))		
+				Catch ex as Exception
+					ex.Data.Add("Column",pColumn)
+					Throw
+				End Try		
             End Function
 .
             Public Shared Function SafeReadDecimal(ByRef pReader As SqlClient.SqlDataReader, pColumn As String) As Decimal
-                Return pReader.GetDecimal(pReader.GetOrdinal(pColumn))
-            End Function
+				Try
+	                Return pReader.GetDecimal(pReader.GetOrdinal(pColumn))	
+				Catch ex as Exception
+					ex.Data.Add("Column",pColumn)
+					Throw
+				End Try
+			End Function
 .
             Public Shared Function SafeReadBoolean(ByRef pReader As SqlClient.SqlDataReader, pColumn As String) As Boolean
-                Return pReader.GetBoolean(pReader.GetOrdinal(pColumn))
+				Try
+	                Return pReader.GetBoolean(pReader.GetOrdinal(pColumn))
+				Catch ex as Exception
+					ex.Data.Add("Column",pColumn)
+					Throw
+				End Try
             End Function
 .
             Public Shared Function SafeReadDate(ByRef pReader As SqlClient.SqlDataReader, pColumn As String) As Date
-                Return pReader.GetDateTime(pReader.GetOrdinal(pColumn))
+				Try
+	                Return pReader.GetDateTime(pReader.GetOrdinal(pColumn))
+				Catch ex as Exception
+					ex.Data.Add("Column",pColumn)
+					Throw
+				End Try
             End Function
 .
             Public Shared Function SafeReadTimeSpan(ByRef pReader As SqlClient.SqlDataReader, pColumn As String) As TimeSpan
-                Return pReader.GetTimeSpan(pReader.GetOrdinal(pColumn))
+				Try
+		            Return pReader.GetTimeSpan(pReader.GetOrdinal(pColumn))
+				Catch ex as Exception
+					ex.Data.Add("Column",pColumn)
+					Throw
+				End Try
             End Function
 .
             Public Shared Function SafeReadSingle(ByRef pReader As SqlClient.SqlDataReader, pColumn As String) As Single
-                Return pReader.GetSqlSingle(pReader.GetOrdinal(pColumn))
+				Try
+		            Return pReader.GetSqlSingle(pReader.GetOrdinal(pColumn))
+				Catch ex as Exception
+					ex.Data.Add("Column",pColumn)
+					Throw
+				End Try
+.
             End Function
 .
             Public Shared Function SafeReadDouble(ByRef pReader As SqlClient.SqlDataReader, pColumn As String) As Double
-                Return pReader.GetDouble(pReader.GetOrdinal(pColumn))
+				Try
+	                Return pReader.GetDouble(pReader.GetOrdinal(pColumn))
+				Catch ex as Exception
+					ex.Data.Add("Column",pColumn)
+					Throw
+				End Try
             End Function
 .
             Public Shared Function SafeReadByte(ByRef pReader As SqlClient.SqlDataReader, pColumn As String) As Byte
-                Return pReader.GetByte(pReader.GetOrdinal(pColumn))
+				Try
+		            Return pReader.GetByte(pReader.GetOrdinal(pColumn))
+    			Catch ex as Exception
+					ex.Data.Add("Column",pColumn)
+					Throw
+				End Try
             End Function
 .
             Public Shared Function SafeReadGuid(ByRef pReader As SqlClient.SqlDataReader, pColumn As String) As Guid
-                Return pReader.GetGuid(pReader.GetOrdinal(pColumn))
+				Try
+	                Return pReader.GetGuid(pReader.GetOrdinal(pColumn))
+				Catch ex as Exception
+					ex.Data.Add("Column",pColumn)
+					Throw
+				End Try
             End Function
 		End Class
 .
@@ -1303,7 +1373,7 @@ Namespace razor
             Public Overloads Function Between(pValueBegin As DateTime, pValueEnd As DateTime) As String
                 Return ColumnName & " BETWEEN " & SQuote(pValueBegin) & " AND " & SQuote(pValueEnd)
             End Function
-.            
+.
             Public Overloads Function [In](pValue() As DateTime) As String
                 Dim zNdx As Integer = 0
                 Dim zValue() As String
@@ -1469,6 +1539,443 @@ Namespace razor
 .
     Public Delegate Function CurrentUserDelegate() As String
 .
+    Public Class UtilFilterSort
+.
+#Region "Private Members"
+        Private mFilterCount As Integer = 0
+.
+        Private Structure strFilterData
+            Public SeqNum As Integer
+            Public GroupNum As Integer
+            Public ObjectLevel As Integer
+            Public ArrayLevel As Integer
+            Public Logic As String
+            Public FilterField As String
+            Public FilterOperator As String
+            Public FilterValue As String
+        End Structure
+.
+        '"[{"field":"City","dir":"asc"}]"
+        Private Structure strSortData
+            Public SeqNum As Integer
+            Public SortField As String
+            Public SortDirection As String
+        End Structure
+.
+        Private mFilterData() As strFilterData
+        Private mSortData() As strSortData
+#End Region
+.
+#Region "Public Members"
+        Public SortText As String = ""
+        Public FilterText As String = ""
+#End Region
+.
+#Region "Debug"
+        Private Sub DebugFilterData()
+            Dim zNdx As Integer = 0
+.
+            For zNdx = 0 To UBound(mFilterData)
+                Dim zDebugFilterData As String = ""
+                zDebugFilterData = zDebugFilterData & mFilterData(zNdx).SeqNum.ToString
+                zDebugFilterData = zDebugFilterData & " " & mFilterData(zNdx).GroupNum.ToString
+                zDebugFilterData = zDebugFilterData & " " & mFilterData(zNdx).ObjectLevel.ToString
+                zDebugFilterData = zDebugFilterData & " " & mFilterData(zNdx).ArrayLevel.ToString
+                zDebugFilterData = zDebugFilterData & " " & mFilterData(zNdx).Logic
+                zDebugFilterData = zDebugFilterData & " " & mFilterData(zNdx).FilterField
+                zDebugFilterData = zDebugFilterData & " " & mFilterData(zNdx).FilterOperator
+                zDebugFilterData = zDebugFilterData & " " & mFilterData(zNdx).FilterValue
+                Debug.Print(zDebugFilterData)
+            Next zNdx
+        End Sub
+#End Region
+.
+#Region "Sort Processing"
+        Public Sub SetSort(pJSON As String, ByRef pQuery As Object)
+            If pJSON Is Nothing Then Exit Sub
+.
+            SortText = ""
+.
+            Dim zNdx As Integer = 0
+            Dim zJSON As String = pJSON
+            Dim zConditionText As String = ""
+.
+            Diagnostics.Debug.Print(zJSON)
+.
+            ReDim mSortData(0)
+            Call ReadSortData(pJSON)
+.
+            For zNdx = 0 To UBound(mSortData)
+                If Not mSortData(zNdx).SortField Is Nothing Then
+                    If SortText.Length > 0 Then SortText = SortText & ", "
+                    SortText = SortText & pQuery.Member(pQuery.Column2Member(mSortData(zNdx).SortField)).ColumnName
+                    If mSortData(zNdx).SortDirection.ToLower = "asc" Then
+                        pQuery.OrderBy(pQuery.Member(pQuery.Column2Member(mSortData(zNdx).SortField)).Ascending)
+                        SortText = SortText & " Ascending"
+                    Else
+                        pQuery.OrderBy(pQuery.Member(pQuery.Column2Member(mSortData(zNdx).SortField)).Descending)
+                        SortText = SortText & " Descending"
+                    End If
+                End If
+            Next
+        End Sub
+.
+        Private Sub ReadSortData(pJSON As String)
+            Dim zReader As Newtonsoft.Json.JsonTextReader
+.
+            Dim zPropertyName As String = ""
+.
+            Dim zNdx As Integer = -1
+            zReader = New Newtonsoft.Json.JsonTextReader(New System.IO.StringReader(pJSON))
+            While zReader.Read()
+                Select Case zReader.TokenType
+                    Case Newtonsoft.Json.JsonToken.StartObject
+                        zNdx = zNdx + 1
+                        ReDim Preserve mSortData(zNdx)
+                        mSortData(zNdx).SeqNum = zNdx
+.
+                    Case Newtonsoft.Json.JsonToken.PropertyName
+                        zPropertyName = zReader.Value
+.
+                    Case Newtonsoft.Json.JsonToken.String
+                        '"[{"field":"City","dir":"asc"}]"
+                        Select Case zPropertyName
+                            Case "field"
+                                mSortData(zNdx).SortField = zReader.Value
+                            Case "dir"
+                                mSortData(zNdx).SortDirection = zReader.Value
+                        End Select
+                End Select
+.
+            End While
+.
+        End Sub
+#End Region
+.
+#Region "Filter Processing"
+        Public Function IsCustom(pGroupNum As Integer) As Boolean
+            Dim zReturn As Boolean = False
+            Dim zNdx As Integer = 0
+            Dim zRefGroupNum As Integer = pGroupNum
+            Dim zCountGroup As Integer = 0
+            Dim zCountEq As Integer = 0
+            Dim zCountNeq As Integer = 0
+.
+            For zNdx = 0 To UBound(mFilterData)
+                If mFilterData(zNdx).GroupNum = zRefGroupNum And Not mFilterData(zNdx).FilterField Is Nothing Then
+                    zCountGroup = zCountGroup + 1
+                    Select Case mFilterData(zNdx).FilterOperator
+                        Case "eq"
+                            zCountEq = zCountEq + 1
+                        Case "neq"
+                            zCountNeq = zCountNeq + 1
+                    End Select
+                End If
+            Next zNdx
+.
+            If zCountGroup <> zCountEq And zCountGroup <> zCountNeq Then zReturn = True
+.
+            Return zReturn
+.
+        End Function
+.
+        Private Function GetFilterField(pNdx As Integer) As String
+            Dim zReturn As String = ""
+.
+            Try
+                zReturn = mFilterData(pNdx).FilterField
+            Catch ex As Exception
+                'Index must not exist - eat it.
+            End Try
+.
+            Return zReturn
+        End Function
+.
+        Public Function SetFilter(pJSON As String, ByRef pQuery As Object) As Integer
+            If pJSON Is Nothing Then
+                Return 0
+                Exit Function
+            End If
+.
+            Dim zNdx As Integer = 0
+            Dim zJSON As String = pJSON
+            Dim zConditionText As String = ""
+.
+            'Diagnostics.Debug.Print(zJSON)
+.
+            'zJSON = Replace(zJSON, SafeWrap("filters"), SafeWrap("lstFilters"), 1, -1, CompareMethod.Text)
+            'zJSON = Replace(zJSON, SafeWrap("logic"), SafeWrap("strLogic"), 1, -1, CompareMethod.Text)
+            'zJSON = Replace(zJSON, SafeWrap("field"), SafeWrap("strField"), 1, -1, CompareMethod.Text)
+            'zJSON = Replace(zJSON, SafeWrap("operator"), SafeWrap("strOperator"), 1, -1, CompareMethod.Text)
+            'zJSON = Replace(zJSON, SafeWrap("value"), SafeWrap("strValue"), 1, -1, CompareMethod.Text)
+.
+            Diagnostics.Debug.Print(zJSON)
+.
+            ReDim mFilterData(0)
+            Call ReadData(pJSON)
+            Call DebugFilterData()
+.
+            Dim zSQLLogicOperator As String = GetTopLogic()
+.
+            mFilterCount = 0
+            FilterText = "On "
+            For zNdx = 0 To UBound(mFilterData)
+                If Not mFilterData(zNdx).FilterField Is Nothing Then
+                    If IsCustom(mFilterData(zNdx).GroupNum) Then
+                        'Custom Filter
+                        pQuery.Where.OpenParen()
+                        zNdx = BuildCustomGroupFilter(zNdx, mFilterData(zNdx).GroupNum, pQuery)
+                        pQuery.where.CloseParen()
+                    Else
+                        'Picklist filter
+                        Dim zColumnName As String = mFilterData(zNdx).FilterField
+                        Dim zInList As New List(Of String)
+                        Dim zFilterOperator As String = ""
+.
+                        zInList.Clear()
+                        zNdx = GetPickedValues(mFilterData(zNdx).ObjectLevel, mFilterData(zNdx).ArrayLevel, zColumnName, zInList, zFilterOperator)
+.
+                        If zFilterOperator = "neq" Then
+                            pQuery.Where.Add(pQuery.Member(pQuery.Column2Member(mFilterData(zNdx).FilterField)).NotIn(zInList.ToArray))
+                            zConditionText = " to be not equal to "
+                        Else
+                            pQuery.Where.Add(pQuery.Member(pQuery.Column2Member(mFilterData(zNdx).FilterField)).In(zInList.ToArray))
+                            zConditionText = " to be equal to "
+                        End If
+.
+                        mFilterCount = mFilterCount + 1
+                        FilterText = FilterText & pQuery.Member(pQuery.Column2Member(zColumnName)).ColumnName & zConditionText & "[" & Join(zInList.ToArray, "], [") & "];"
+                    End If
+.
+                    If mFilterData(zNdx).GroupNum <> MaxGroups() Then
+                        If zSQLLogicOperator = "and" Then
+                            pQuery.Where.SetConjuction(razor.UtilSQLServer.ConjuctionOperatorEnum.And)
+                            FilterText = FilterText & " and on "
+                        Else
+                            pQuery.Where.SetConjuction(razor.UtilSQLServer.ConjuctionOperatorEnum.Or)
+                            FilterText = FilterText & " or on "
+                        End If
+                    End If
+                End If
+            Next
+.
+            If FilterText.Trim.ToLower = "on" Then
+                FilterText = ""
+            End If
+.
+            Return mFilterCount
+        End Function
+.
+        Private Function MaxGroups() As Integer
+            Dim zReturn As Integer = 0
+            zReturn = mFilterData(UBound(mFilterData)).GroupNum
+            Return zReturn
+        End Function
+.
+        Private Function CountGroupItems(pGroupNum As Integer) As Integer
+            Dim zNdx As Integer = 0
+            Dim zReturn As Integer = 0
+.
+            For zNdx = 0 To UBound(mFilterData)
+                If mFilterData(zNdx).GroupNum = pGroupNum And Not mFilterData(zNdx).FilterField Is Nothing Then
+                    zReturn = zReturn + 1
+                End If
+            Next
+            Return zReturn
+        End Function
+.
+        Private Function BuildCustomGroupFilter(pNdx As Integer, pGroupNum As Integer, ByRef pQuery As Object) As Integer
+            Dim zReturn As Integer = pNdx
+            Dim zConditionCount As Integer = 0
+            Dim zConditionText As String = ""
+.
+            For zNdx = pNdx To UBound(mFilterData)
+                If mFilterData(zNdx).GroupNum = pGroupNum And Not mFilterData(zNdx).FilterField Is Nothing Then
+                    Dim zColumnName As String = mFilterData(zNdx).FilterField
+                    Dim zCompareOperator As String = mFilterData(zNdx).FilterOperator
+                    Dim zValue As String = mFilterData(zNdx).FilterValue
+                    Dim zSQLLogicOperator As String = GetLogic(mFilterData(zNdx).GroupNum, mFilterData(zNdx).ObjectLevel)
+.
+                    Select Case zCompareOperator
+                        Case "neq"
+                            pQuery.Where.Add(pQuery.Member(pQuery.Column2Member(mFilterData(zNdx).FilterField)).NotEqual(zValue))
+                            zConditionText = " to not be equal to "
+                        Case "lt"
+                            pQuery.Where.Add(pQuery.Member(pQuery.Column2Member(mFilterData(zNdx).FilterField)).LessThan(zValue))
+                            zConditionText = " to be less than "
+                        Case "lte"
+                            pQuery.Where.Add(pQuery.Member(pQuery.Column2Member(mFilterData(zNdx).FilterField)).LessThanEqual(zValue))
+                            zConditionText = " to be less than or equal to "
+                        Case "gt"
+                            pQuery.Where.Add(pQuery.Member(pQuery.Column2Member(mFilterData(zNdx).FilterField)).GreaterThan(zValue))
+                            zConditionText = " to be greater than "
+                        Case "gte"
+                            pQuery.Where.Add(pQuery.Member(pQuery.Column2Member(mFilterData(zNdx).FilterField)).GreaterThanEqual(zValue))
+                            zConditionText = " to be greater than or equal to "
+                        Case "startswith"
+                            zValue = zValue & "%"
+                            pQuery.Where.Add(pQuery.Member(pQuery.Column2Member(mFilterData(zNdx).FilterField)).BeginsWith(zValue))
+                            zConditionText = " to start with "
+                        Case "endswith"
+                            zValue = "%" & zValue
+                            pQuery.Where.Add(pQuery.Member(pQuery.Column2Member(mFilterData(zNdx).FilterField)).EndsWith(zValue))
+                            zConditionText = " to end with "
+                        Case "contains"
+                            zValue = "%" & zValue & "%"
+                            pQuery.Where.Add(pQuery.Member(pQuery.Column2Member(mFilterData(zNdx).FilterField)).Contains(zValue))
+                            zConditionText = " to contain "
+                        Case "doesnotcontain"
+                            zValue = "%" & zValue & "%"
+                            pQuery.Where.Add(pQuery.Member(pQuery.Column2Member(mFilterData(zNdx).FilterField)).NotContains(zValue))
+                            zConditionText = " to not contain "
+                        Case "isnotnull"
+                            zValue = ""
+                            pQuery.Where.Add(pQuery.Member(pQuery.Column2Member(mFilterData(zNdx).FilterField)).IsNotNull)
+                            zConditionText = " to not be set "
+                        Case "isnull"
+                            zValue = ""
+                            pQuery.Where.Add(pQuery.Member(pQuery.Column2Member(mFilterData(zNdx).FilterField)).IsNull)
+                            zConditionText = " to be set "
+                        Case Else
+                            pQuery.Where.Add(pQuery.Member(pQuery.Column2Member(mFilterData(zNdx).FilterField)).Equal(zValue))
+                            zConditionText = " to be equal to "
+                    End Select
+.
+                    mFilterCount = mFilterCount + 1
+                    zConditionCount = zConditionCount + 1
+                    FilterText = FilterText & zColumnName & zConditionText & "[" & zValue.Replace("%", "") & "];"
+.
+                    If zConditionCount <> CountGroupItems(mFilterData(zNdx).GroupNum) Then
+                        If zSQLLogicOperator = "and" Then
+                            FilterText = FilterText & " and on "
+                        Else
+                            FilterText = FilterText & " or on "
+                        End If
+                    End If
+                    zReturn = zNdx
+                End If
+            Next
+            Return zReturn
+        End Function
+.
+        Private Function GetPickedValues(pObjectLevel As Integer, pArrayLevel As Integer, pFilterField As String, ByRef pInList As List(Of String), ByRef pCompareOperator As String) As Integer
+            'Build the pickvalues list and forward the array index to the next filter
+            Dim zNdx As Integer = 0
+            Dim zReturn As String = ""
+.
+            pInList.Clear()
+            For zNdx = 0 To UBound(mFilterData)
+                If mFilterData(zNdx).ObjectLevel = pObjectLevel And mFilterData(zNdx).ArrayLevel = pArrayLevel And mFilterData(zNdx).FilterField = pFilterField Then
+                    pInList.Add(mFilterData(zNdx).FilterValue)
+                    pCompareOperator = mFilterData(zNdx).FilterOperator
+                    zReturn = zNdx
+                End If
+            Next
+            Return zReturn
+        End Function
+.
+        Private Function GetTopLogic() As String
+            Dim zNdx As Integer = 0
+            Dim zReturn As String = ""
+.
+            For zNdx = 0 To UBound(mFilterData)
+                If mFilterData(zNdx).ObjectLevel = 1 Then
+                    zReturn = mFilterData(zNdx).Logic
+.
+                    If IsNothing(zReturn) Then  'BY DEFAULT MAKE TOP LOGIC ="AND"
+                        zReturn = "and"
+                    End If
+.
+                    Exit For
+                End If
+            Next
+            Return zReturn
+        End Function
+.
+        Private Function GetLogic(pGroupNum As Integer, pObjectLevel As Integer) As String
+            Dim zNdx As Integer = 0
+            Dim zReturn As String = ""
+.
+            For zNdx = 0 To UBound(mFilterData)
+                If mFilterData(zNdx).GroupNum = pGroupNum And mFilterData(zNdx).ObjectLevel = pObjectLevel - 1 Then
+                    zReturn = mFilterData(zNdx).Logic
+                    Exit For
+                End If
+            Next
+            Return zReturn
+        End Function
+.
+        Private Sub ReadData(pJSON As String)
+            Dim zReader As Newtonsoft.Json.JsonTextReader
+.
+            Dim zGroupNum As Integer = 0
+            Dim zObjectLevel As Integer = 0
+            Dim zArrayLevel As Integer = 0
+            Dim zPropertyName As String = ""
+            Dim zStringValue As String = ""
+.
+            Dim zNdx As Integer = -1
+            zReader = New Newtonsoft.Json.JsonTextReader(New System.IO.StringReader(pJSON))
+            While zReader.Read()
+                Select Case zReader.TokenType
+                    Case Newtonsoft.Json.JsonToken.StartObject
+                        zObjectLevel = zObjectLevel + 1
+                        zNdx = zNdx + 1
+                        ReDim Preserve mFilterData(zNdx)
+                        mFilterData(zNdx).SeqNum = zNdx
+                        mFilterData(zNdx).ObjectLevel = zObjectLevel
+                        mFilterData(zNdx).ArrayLevel = zArrayLevel
+                        mFilterData(zNdx).GroupNum = zGroupNum
+.
+                    Case Newtonsoft.Json.JsonToken.PropertyName
+                        zPropertyName = zReader.Value
+.
+                    Case Newtonsoft.Json.JsonToken.String, Newtonsoft.Json.JsonToken.Date, Newtonsoft.Json.JsonToken.Integer, Newtonsoft.Json.JsonToken.Float
+                        Select Case zPropertyName
+                            Case "logic"
+                                mFilterData(zNdx).Logic = zReader.Value
+                            Case "field"
+                                mFilterData(zNdx).FilterField = zReader.Value
+                            Case "operator"
+                                mFilterData(zNdx).FilterOperator = zReader.Value
+                            Case "value"
+                                mFilterData(zNdx).FilterValue = zReader.Value
+.
+                                If mFilterData(zNdx).FilterValue = "%" Then
+                                    zNdx = zNdx - 1 ' Kill the array entry, as filters of % can be optimised out of the query.
+                                    ReDim Preserve mFilterData(zNdx)
+                                End If
+                        End Select
+.
+                    Case Newtonsoft.Json.JsonToken.StartArray
+                        zGroupNum = zGroupNum + 1
+                        zArrayLevel = zArrayLevel + 1
+                        mFilterData(zNdx).ArrayLevel = zArrayLevel
+                        mFilterData(zNdx).GroupNum = zGroupNum
+.
+                    Case Newtonsoft.Json.JsonToken.EndArray
+                        zArrayLevel = zArrayLevel - 1
+.
+                    Case Newtonsoft.Json.JsonToken.EndObject
+                        zObjectLevel = zObjectLevel - 1
+                        zGroupNum = zGroupNum + 1
+.
+                End Select
+.
+            End While
+.
+        End Sub
+.
+        Private Function SafeWrap(pIn As String) As String
+            Dim zReturn As String = ""
+            Dim zDQ As String = Chr(34)
+            zReturn = zDQ + pIn + zDQ + ":"
+            Return zReturn
+        End Function
+.
+#End Region
+.
+    End Class
 End Namespace
 .
 {{xFile "UtilSQLServer" path=xSettings.OutputPath prefix="" suffix="" ext="vb"}}
