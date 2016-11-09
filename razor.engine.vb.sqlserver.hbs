@@ -1,5 +1,5 @@
 '/===============================================================\
-'| razor engine (experimental) - rev 4.2.628                     |
+'| razor engine (experimental) - rev 4.2.629                     |
 '|---------------------------------------------------------------|
 '|  Template: razor.engine.vb.sqlserver (experimental version)   |
 '|   Website: http://www.pigford.net/razor                       |
@@ -73,6 +73,9 @@
 {{! Update: 11/09/2016 - Fixed bug related to GetSQLDateTime   }}
 {{! Update: 11/09/2016 - Added try catch blocks to saferead    }}
 {{! Update: 11/09/2016 - Added UtilFilterSort parsing support  }}
+{{! Update: 11/09/2016 - Moved module variable to private and  }}
+{{!                      created public properties to support  }}
+{{!                      auditing connection management        }}
 {{!============================================================}}
 {{! This engine template only works with a SQL Server database }}
 {{!============================================================}}
@@ -85,12 +88,13 @@ Namespace razor
 .
     Partial Public Class UtilSQLServer
 .
-        Public Shared ServerName As String = ""
-        Public Shared DatabaseName As String = ""
-        Public Shared UserName As String = ""
-        Public Shared Password As String = ""
-        Public Shared Trusted As Boolean = False
-        Public Shared PersistSecurityInfo As Boolean = False
+        Private Shared _ServerName As String = ""
+        Private Shared _DatabaseName As String = ""
+        Private Shared _UserName As String = ""
+        Private Shared _Password As String = ""
+        Private Shared _Trusted As Boolean = False
+        Private Shared _ApplicationName As String = ""
+        Private Shared _PersistSecurityInfo As Boolean = False
         Private Shared _ConnectionString As String = ""
 .
         Public Shared Function LastChar(pIn As String, pLastChar As String) As String
@@ -114,35 +118,89 @@ Namespace razor
             End Get
         End Property
 .
-        Public Shared Sub SetConnection(Optional pConnectionString As String = "")
-            Dim zConnectionString As String = ""
-            Dim zSQLUserConnectionString As String = "PersistSecurityInfo=##PersistSec##;Server=##ServerName##;Database=##DatabaseName##;User Id=##UserName##;Password=##Password##;"
-            Dim zTrustedConnectionString As String = "Server=##ServerName##;Database=##DatabaseName##;Trusted_Connection=True;"
+        Public Shared ReadOnly Property Database As String
+            Get
+                Return _DatabaseName
+            End Get
+        End Property
+.
+        Public Shared ReadOnly Property UserName As String
+            Get
+                Return _UserName
+            End Get
+        End Property
+.
+        Public Shared ReadOnly Property Trusted As Boolean
+            Get
+                Return _Trusted
+            End Get
+        End Property
+.
+        Public Shared Property PersistSecurityInfo As Boolean
+            Get
+                Return _PersistSecurityInfo
+            End Get
+            Set(value As Boolean)
+                _PersistSecurityInfo = value
+            End Set
+        End Property
+.
+        Public Shared ReadOnly Property ApplicationName As String
+            Get
+                Return _ApplicationName
+            End Get
+        End Property
+.
+        Public Shared Sub SetConnection(pServerName As String, pDatabaseName As String, pApplicationName As String)
+.
+            _ServerName = pServerName
+            _DatabaseName = pDatabaseName
+            _ApplicationName = pApplicationName
+            _Trusted = True
+.
+            Dim zConnectionString As String = "Server=" & _ServerName & "; Database=" & _DatabaseName & "; Trusted_Connection=" & _Trusted & "; Application Name=" & _ApplicationName
+.
+            SetConnection(zConnectionString)
+.
+        End Sub
+.
+        Public Shared Sub SetConnection(pServerName As String, pDatabaseName As String, pUserName As String, pPassword As String, pApplicationName As String)
+.
+            _ServerName = pServerName
+            _DatabaseName = pDatabaseName
+            _UserName = pUserName
+            _Password = pPassword
+            _ApplicationName = pApplicationName
+            _Trusted = False
+.
+            Dim zConnectionString As String = "Server=" & _ServerName & "; Database=" & _DatabaseName & "; Trusted_Connection=" & _Trusted & "; User Id=" & _UserName & "; Password=" & _Password & "; Application Name=" & _ApplicationName
+.
+            SetConnection(zConnectionString)
+.
+        End Sub
+.
+        Public Shared Sub SetConnection(pConnectionString As String)
 .
             If pConnectionString.Length > 0 Then
-                zConnectionString = pConnectionString
-            Else
-                If Trusted Then
-                    zConnectionString = zTrustedConnectionString
+                _ConnectionString = pConnectionString
+.
+                If String.IsNullOrEmpty(_ApplicationName) Then _ApplicationName = GetApplicationName()
+                If Not String.IsNullOrEmpty(_ApplicationName) Then
+                    Dim zCon As SqlClient.SqlConnection = GetConnectionObject()
+                    If String.IsNullOrEmpty(_DatabaseName) Then _DatabaseName = zCon.Database
+                    If String.IsNullOrEmpty(_ServerName) Then _ServerName = zCon.DataSource
+                    If String.IsNullOrEmpty(_UserName) Then _UserName = GetUserID()
+                    If String.IsNullOrEmpty(_Password) Then _Password = GetPassword()
+                    If String.IsNullOrEmpty(_PersistSecurityInfo) Then _PersistSecurityInfo = GetPersistSecurityInfo()
+                    zCon.Dispose()
+                    zCon = Nothing
                 Else
-                    zConnectionString = zSQLUserConnectionString
-                    zConnectionString = zConnectionString.Replace("##UserName##", UserName)
-                    zConnectionString = zConnectionString.Replace("##Password##", Password)
+                    Throw New ApplicationException("Application name not specified in connection string.")
                 End If
-                zConnectionString = zConnectionString.Replace("##PersistSec##", PersistSecurityInfo.ToString)
-                zConnectionString = zConnectionString.Replace("##ServerName##", ServerName)
-                zConnectionString = zConnectionString.Replace("##DatabaseName##", DatabaseName)
+.
+            Else
+                Throw New ApplicationException("No connection string specified.")
             End If
-.
-            _ConnectionString = zConnectionString
-.
-            Dim zCon As SqlClient.SqlConnection = GetConnectionObject()
-            DatabaseName = zCon.Database
-            ServerName = zCon.DataSource
-            UserName = GetUserID()
-            Password = GetPassword()
-            zCon.Dispose()
-            zCon = Nothing
 .
         End Sub
 .
@@ -179,11 +237,11 @@ Namespace razor
                     End Using
                 End Using
             Else
-                pCommand.Connection = pCommand.Transaction.Connection   
+                pCommand.Connection = pCommand.Transaction.Connection
                 Using pCommand
                     zReturn = pCommand.ExecuteNonQuery()
-                End Using           
-            End If     
+                End Using
+            End If
 .
             Return zReturn
         End Function
@@ -202,8 +260,8 @@ Namespace razor
                 Using pCommand.Connection
                     Using pCommand
                         Try
-                          '  pCommand.ExecuteNonQuery()
-                          '  pCommand.CommandText = "SELECT @@IDENTITY"
+                            '  pCommand.ExecuteNonQuery()
+                            '  pCommand.CommandText = "SELECT @@IDENTITY"
                             zReturn = pCommand.ExecuteScalar()
                         Finally
                             pCommand.Connection.Close()
@@ -211,13 +269,13 @@ Namespace razor
                     End Using
                 End Using
             Else
-                pCommand.Connection = pCommand.Transaction.Connection   
+                pCommand.Connection = pCommand.Transaction.Connection
                 Using pCommand
-                   ' pCommand.ExecuteNonQuery()
-                   ' pCommand.CommandText = "SELECT @@IDENTITY"
+                    ' pCommand.ExecuteNonQuery()
+                    ' pCommand.CommandText = "SELECT @@IDENTITY"
                     zReturn = pCommand.ExecuteScalar()
-                End Using           
-            End If      
+                End Using
+            End If
 .
             Return zReturn
         End Function
@@ -229,14 +287,14 @@ Namespace razor
             If pCommand.Connection Is Nothing Then
                 If IsNothing(pCommand.Transaction) Then
                     pCommand.Connection = razor.UtilSQLServer.GetConnectionObject
-                    zReader = pCommand.ExecuteReader(System.Data.CommandBehavior.CloseConnection)           
+                    zReader = pCommand.ExecuteReader(System.Data.CommandBehavior.CloseConnection)
                 Else
-                    pCommand.Connection = pCommand.Transaction.Connection   
+                    pCommand.Connection = pCommand.Transaction.Connection
                     zReader = pCommand.ExecuteReader()
                 End If
             Else
                 pCommand.Connection = razor.UtilSQLServer.GetConnectionObject
-                zReader = pCommand.ExecuteReader(System.Data.CommandBehavior.CloseConnection)           
+                zReader = pCommand.ExecuteReader(System.Data.CommandBehavior.CloseConnection)
             End If
 .
             Return zReader
@@ -307,7 +365,7 @@ Namespace razor
                             pCommand.Connection.Close()
                         End Try
                     End Using
-                End Using       
+                End Using
             Else
                 pCommand.Connection = pCommand.Transaction.Connection
                 Using pCommand
@@ -342,6 +400,36 @@ Namespace razor
             End If
 .
         End Function
+.
+        Private Shared Function GetApplicationName() As String
+            If _ConnectionString.ToLower.Contains("Application Name".ToLower) Then
+                Dim zAttributes As List(Of String) = Split(_ConnectionString, ";").ToList
+                Dim zAttribute As String = zAttributes.Find(Function(x) x.ToLower.Contains("Application Name".ToLower))
+                Dim zAppName() As String = Split(zAttribute, "=")
+                Dim zAppNameValue As String = Trim(zAppName(1))
+                Return zAppNameValue
+            Else
+                Return ""
+            End If
+.
+        End Function
+.
+        Private Shared Function GetPersistSecurityInfo() As Boolean
+            Try
+                Dim zUserRegex As String = "((Persist Security Info).*?(=.+?))(?:;)"
+                If Regex.IsMatch(razor.UtilSQLServer.ConnectionString, zUserRegex) Then
+                    Dim zMatch As Match = Regex.Match(razor.UtilSQLServer.ConnectionString, zUserRegex)
+                    Dim zPersistSecurityInfo() As String = Split(zMatch.Value, "=")
+                    Dim zPersistSecurityInfoValue As String = zPersistSecurityInfo(1)
+                    Return CBool(Left(zPersistSecurityInfoValue, Len(zPersistSecurityInfoValue) - 1))
+                Else
+                    Return False
+                End If
+            Catch ex As Exception
+                Return False
+            End Try
+        End Function
+.
 .
         Public Enum ConjuctionOperatorEnum
             [And]
@@ -439,124 +527,124 @@ Namespace razor
 .
         Public Class SafeReader
             Public Shared Function SafeReadInt16(ByRef pReader As SqlClient.SqlDataReader, pColumn As String) As Int16
-				Try
-                	Return pReader.GetInt16(pReader.GetOrdinal(pColumn))
-				Catch ex as Exception
-					ex.Data.Add("Column",pColumn)
-					Throw
-				End Try
+                Try
+                    Return pReader.GetInt16(pReader.GetOrdinal(pColumn))
+                Catch ex As Exception
+                    ex.Data.Add("Column", pColumn)
+                    Throw
+                End Try
             End Function
 .
             Public Shared Function SafeReadInt32(ByRef pReader As SqlClient.SqlDataReader, pColumn As String) As Int32
-				Try
-    	            Return pReader.GetInt32(pReader.GetOrdinal(pColumn))
-				Catch ex as Exception
-					ex.Data.Add("Column",pColumn)
-					Throw
-			End Try
+                Try
+                    Return pReader.GetInt32(pReader.GetOrdinal(pColumn))
+                Catch ex As Exception
+                    ex.Data.Add("Column", pColumn)
+                    Throw
+                End Try
 .
             End Function
 .
             Public Shared Function SafeReadInt64(ByRef pReader As SqlClient.SqlDataReader, pColumn As String) As Int64
-				Try
-	                Return pReader.GetInt64(pReader.GetOrdinal(pColumn))
-				Catch ex as Exception
-					ex.Data.Add("Column",pColumn)
-					Throw
-				End Try
+                Try
+                    Return pReader.GetInt64(pReader.GetOrdinal(pColumn))
+                Catch ex As Exception
+                    ex.Data.Add("Column", pColumn)
+                    Throw
+                End Try
             End Function
 .
             Public Shared Function SafeReadString(ByRef pReader As SqlClient.SqlDataReader, pColumn As String) As String
-				Try
-				 	Return pReader.GetString(pReader.GetOrdinal(pColumn))
-				Catch ex as Exception
-					ex.Data.Add("Column",pColumn)
-					Throw
-				End Try
+                Try
+                    Return pReader.GetString(pReader.GetOrdinal(pColumn))
+                Catch ex As Exception
+                    ex.Data.Add("Column", pColumn)
+                    Throw
+                End Try
             End Function
 .
-            Public Shared Function SafeReadDateTime(ByRef pReader As SqlClient.SqlDataReader, pColumn As String) As DateTime         
-				Try
-					Return pReader.GetDateTime(pReader.GetOrdinal(pColumn))		
-				Catch ex as Exception
-					ex.Data.Add("Column",pColumn)
-					Throw
-				End Try		
+            Public Shared Function SafeReadDateTime(ByRef pReader As SqlClient.SqlDataReader, pColumn As String) As DateTime
+                Try
+                    Return pReader.GetDateTime(pReader.GetOrdinal(pColumn))
+                Catch ex As Exception
+                    ex.Data.Add("Column", pColumn)
+                    Throw
+                End Try
             End Function
 .
             Public Shared Function SafeReadDecimal(ByRef pReader As SqlClient.SqlDataReader, pColumn As String) As Decimal
-				Try
-	                Return pReader.GetDecimal(pReader.GetOrdinal(pColumn))	
-				Catch ex as Exception
-					ex.Data.Add("Column",pColumn)
-					Throw
-				End Try
-			End Function
+                Try
+                    Return pReader.GetDecimal(pReader.GetOrdinal(pColumn))
+                Catch ex As Exception
+                    ex.Data.Add("Column", pColumn)
+                    Throw
+                End Try
+            End Function
 .
             Public Shared Function SafeReadBoolean(ByRef pReader As SqlClient.SqlDataReader, pColumn As String) As Boolean
-				Try
-	                Return pReader.GetBoolean(pReader.GetOrdinal(pColumn))
-				Catch ex as Exception
-					ex.Data.Add("Column",pColumn)
-					Throw
-				End Try
+                Try
+                    Return pReader.GetBoolean(pReader.GetOrdinal(pColumn))
+                Catch ex As Exception
+                    ex.Data.Add("Column", pColumn)
+                    Throw
+                End Try
             End Function
 .
             Public Shared Function SafeReadDate(ByRef pReader As SqlClient.SqlDataReader, pColumn As String) As Date
-				Try
-	                Return pReader.GetDateTime(pReader.GetOrdinal(pColumn))
-				Catch ex as Exception
-					ex.Data.Add("Column",pColumn)
-					Throw
-				End Try
+                Try
+                    Return pReader.GetDateTime(pReader.GetOrdinal(pColumn))
+                Catch ex As Exception
+                    ex.Data.Add("Column", pColumn)
+                    Throw
+                End Try
             End Function
 .
             Public Shared Function SafeReadTimeSpan(ByRef pReader As SqlClient.SqlDataReader, pColumn As String) As TimeSpan
-				Try
-		            Return pReader.GetTimeSpan(pReader.GetOrdinal(pColumn))
-				Catch ex as Exception
-					ex.Data.Add("Column",pColumn)
-					Throw
-				End Try
+                Try
+                    Return pReader.GetTimeSpan(pReader.GetOrdinal(pColumn))
+                Catch ex As Exception
+                    ex.Data.Add("Column", pColumn)
+                    Throw
+                End Try
             End Function
 .
             Public Shared Function SafeReadSingle(ByRef pReader As SqlClient.SqlDataReader, pColumn As String) As Single
-				Try
-		            Return pReader.GetSqlSingle(pReader.GetOrdinal(pColumn))
-				Catch ex as Exception
-					ex.Data.Add("Column",pColumn)
-					Throw
-				End Try
+                Try
+                    Return pReader.GetSqlSingle(pReader.GetOrdinal(pColumn))
+                Catch ex As Exception
+                    ex.Data.Add("Column", pColumn)
+                    Throw
+                End Try
 .
             End Function
 .
             Public Shared Function SafeReadDouble(ByRef pReader As SqlClient.SqlDataReader, pColumn As String) As Double
-				Try
-	                Return pReader.GetDouble(pReader.GetOrdinal(pColumn))
-				Catch ex as Exception
-					ex.Data.Add("Column",pColumn)
-					Throw
-				End Try
+                Try
+                    Return pReader.GetDouble(pReader.GetOrdinal(pColumn))
+                Catch ex As Exception
+                    ex.Data.Add("Column", pColumn)
+                    Throw
+                End Try
             End Function
 .
             Public Shared Function SafeReadByte(ByRef pReader As SqlClient.SqlDataReader, pColumn As String) As Byte
-				Try
-		            Return pReader.GetByte(pReader.GetOrdinal(pColumn))
-    			Catch ex as Exception
-					ex.Data.Add("Column",pColumn)
-					Throw
-				End Try
+                Try
+                    Return pReader.GetByte(pReader.GetOrdinal(pColumn))
+                Catch ex As Exception
+                    ex.Data.Add("Column", pColumn)
+                    Throw
+                End Try
             End Function
 .
             Public Shared Function SafeReadGuid(ByRef pReader As SqlClient.SqlDataReader, pColumn As String) As Guid
-				Try
-	                Return pReader.GetGuid(pReader.GetOrdinal(pColumn))
-				Catch ex as Exception
-					ex.Data.Add("Column",pColumn)
-					Throw
-				End Try
+                Try
+                    Return pReader.GetGuid(pReader.GetOrdinal(pColumn))
+                Catch ex As Exception
+                    ex.Data.Add("Column", pColumn)
+                    Throw
+                End Try
             End Function
-		End Class
+        End Class
 .
         Public MustInherit Class Query
             Public [Where] As New WhereStatement
@@ -934,7 +1022,7 @@ Namespace razor
                 Return ColumnName & " NOT IN (" & Join(zStringValue, ",") & ")"
             End Function
 .
-			Public Overloads Function [In](pValue() As String) As String
+            Public Overloads Function [In](pValue() As String) As String
                 Dim zNdx As Integer = 0
                 Dim zStringValue() As String
                 ReDim zStringValue(UBound(pValue))
@@ -1002,7 +1090,7 @@ Namespace razor
                 Return ColumnName & " NOT IN (" & Join(zStringValue, ",") & ")"
             End Function
 .
-			Public Overloads Function [In](pValue() As String) As String
+            Public Overloads Function [In](pValue() As String) As String
                 Dim zNdx As Integer = 0
                 Dim zStringValue() As String
                 ReDim zStringValue(UBound(pValue))
@@ -1070,7 +1158,7 @@ Namespace razor
                 Return ColumnName & " NOT IN (" & Join(zStringValue, ",") & ")"
             End Function
 .
-			Public Overloads Function [In](pValue() As String) As String
+            Public Overloads Function [In](pValue() As String) As String
                 Dim zNdx As Integer = 0
                 Dim zStringValue() As String
                 ReDim zStringValue(UBound(pValue))
@@ -1138,7 +1226,7 @@ Namespace razor
                 Return ColumnName & " NOT IN (" & Join(zStringValue, ",") & ")"
             End Function
 .
-			Public Overloads Function [In](pValue() As String) As String
+            Public Overloads Function [In](pValue() As String) As String
                 Dim zNdx As Integer = 0
                 Dim zStringValue() As String
                 ReDim zStringValue(UBound(pValue))
@@ -1234,7 +1322,7 @@ Namespace razor
                 Return ColumnName & " NOT IN (" & Join(zStringValue, ",") & ")"
             End Function
 .
-			Public Overloads Function [In](pValue() As String) As String
+            Public Overloads Function [In](pValue() As String) As String
                 Dim zNdx As Integer = 0
                 Dim zStringValue() As String
                 ReDim zStringValue(UBound(pValue))
@@ -1302,7 +1390,7 @@ Namespace razor
                 Return ColumnName & " NOT IN (" & Join(zStringValue, ",") & ")"
             End Function
 .
-			Public Overloads Function [In](pValue() As String) As String
+            Public Overloads Function [In](pValue() As String) As String
                 Dim zNdx As Integer = 0
                 Dim zStringValue() As String
                 ReDim zStringValue(UBound(pValue))
@@ -1446,7 +1534,7 @@ Namespace razor
                 Return ColumnName & " BETWEEN " & SQuote(pValueBegin) & " AND " & SQuote(pValueEnd)
             End Function
 .
- 			Public Overloads Function [In](pValue() As Date) As String
+            Public Overloads Function [In](pValue() As Date) As String
                 Dim zNdx As Integer = 0
                 Dim zValue() As String
                 ReDim zValue(UBound(pValue))
@@ -1484,11 +1572,11 @@ Namespace razor
                     zValue(zNdx) = SQuote(pValue(zNdx).ToString)
                 Next
                 Return ColumnName & " NOT IN (" & Join(zValue, ",") & ")"
-            End Function	
+            End Function
         End Class
 .
         Public Class TimeSpanDataColumn
-        	Inherits DataColumn
+            Inherits DataColumn
 .
             Public Overloads Function Equals(pValue As TimeSpan) As String
                 Return ColumnName & " = " & SQuote(pValue.ToString)
@@ -1518,7 +1606,7 @@ Namespace razor
                 Return ColumnName & " BETWEEN " & SQuote(pValueBegin.ToString) & " AND " & SQuote(pValueEnd.ToString)
             End Function
         End Class
-	End Class
+    End Class
 .
     Module modStringLib
         Public Function SQuote(pIn As String) As String
@@ -1526,7 +1614,7 @@ Namespace razor
         End Function
     End Module
 .
-	Partial Public Class UtilConfiguration
+    Partial Public Class UtilConfiguration
         Public Class Auditing
             Public Shared CurrentUserDelegate As CurrentUserDelegate
 .
@@ -1539,7 +1627,7 @@ Namespace razor
 .
     Public Delegate Function CurrentUserDelegate() As String
 .
-    Public Class UtilFilterSort
+  Public Class UtilFilterSort
 .
 #Region "Private Members"
         Private mFilterCount As Integer = 0
@@ -1978,5 +2066,5 @@ Namespace razor
     End Class
 End Namespace
 .
-{{xFile "UtilSQLServer" path=xSettings.OutputPath prefix="" suffix="" ext="vb"}}
 .
+{{xFile "UtilSQLServer" path=xSettings.OutputPath prefix="" suffix="" ext="vb"}}

@@ -1,6 +1,6 @@
 {{#each Items}}
 '/===============================================================\
-'| razor data (experimental) - rev 4.2.874   EXPERIMENTAL        |
+'| razor data (experimental) - rev 4.2.875   EXPERIMENTAL        |
 '|---------------------------------------------------------------|
 '|  Template: gen.vb.sqlserver (experimental version)            |
 '|   Website: http://www.pigford.net/razor                       |
@@ -61,6 +61,8 @@
 {{! Update: 11/04/2016 - Added support for Audit column value     }}
 {{!                      stamping, created by, modifed by,        }}
 {{!                      created on, modifed on                   }}
+{{! Update: 11/09/2016 - Added try catch for read data to report  }}
+{{!                      additional debug information             }}
 {{!===============================================================}}
 {{! This template currently only works with a SQLServer database  }}
 {{!                                                               }}
@@ -397,53 +399,70 @@ Namespace razor
 .
         Public Shared Function ReadData(pCommand As SqlClient.SqlCommand, pLoadEventUserState As Object) As List(Of {{xSettings.DataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}})
 .
-            Dim zReturn As New List(Of {{xSettings.DataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}})		
-            Dim zReader As SqlClient.SqlDataReader = razor.UtilSQLServer.ExecuteReader(pCommand)
-            Dim zObj As New {{xSettings.DataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}}
+			Try
+	            Dim zReturn As New List(Of {{xSettings.DataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}})		
+	            Dim zReader As SqlClient.SqlDataReader = razor.UtilSQLServer.ExecuteReader(pCommand)
+	            Dim zObj As New {{xSettings.DataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}}
 .
-            Using pCommand
-                Using zReader
-                    If zReader.HasRows() Then
-                        While zReader.Read
-                            zObj = New {{xSettings.DataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}}		
-                            ReadDataRow(zReader,zObj)											
-                            zObj.RaiseLoadedEvent(pLoadEventUserState)
-                            zReturn.Add(zObj)
-                        End While
-                    End If
-                End Using
-            End Using
+	            Using pCommand
+	                Using zReader
+	                    If zReader.HasRows() Then
+	                        While zReader.Read
+	                            zObj = New {{xSettings.DataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}}		
+	                            ReadDataRow(zReader,zObj)											
+	                            zObj.RaiseLoadedEvent(pLoadEventUserState)
+	                            zReturn.Add(zObj)
+	                        End While
+	                    End If
+	                End Using
+	            End Using
 .
-            zReader.Close()
-            zReader = Nothing
+	            zReader.Close()
+	            zReader = Nothing
 .
-            Return zReturn
+	            Return zReturn
+.
+			Catch ex As Exception
+				ex.Data.Add("SQL", pCommand.CommandText)				
+	            For Each pParameter As SqlClient.SqlParameter In pCommand.Parameters
+					ex.Data.Add(pParameter.ParameterName, pParameter.Value)
+		        Next
+				Throw
+			End Try
 .
         End function
 .
         Public Shared Function ReadData(Of T)(pCommand As SqlClient.SqlCommand, pLoadEventUserState As Object) As List(Of T)
 .
-            Dim zReturn As New List(Of T)		
-            Dim zReader As SqlClient.SqlDataReader = razor.UtilSQLServer.ExecuteReader(pCommand)
-            Dim zObj As Object = Activator.CreateInstance(Of T)()
+			Try
+	            Dim zReturn As New List(Of T)		
+	            Dim zReader As SqlClient.SqlDataReader = razor.UtilSQLServer.ExecuteReader(pCommand)
+	            Dim zObj As Object = Activator.CreateInstance(Of T)()
 .
-            Using pCommand
-                Using zReader
-                    If zReader.HasRows() Then
-                        While zReader.Read
-                            zObj  = Activator.CreateInstance(Of T)()	
-                            ReadDataRow(zReader,zObj)					
-                            zObj.RaiseLoadedEvent(pLoadEventUserState)
-                            zReturn.Add(zObj)
-                        End While			
-                    End If
-                End Using
-            End Using
+	            Using pCommand
+	                Using zReader
+	                    If zReader.HasRows() Then
+	                        While zReader.Read
+	                            zObj  = Activator.CreateInstance(Of T)()	
+	                            ReadDataRow(zReader,zObj)					
+	                            zObj.RaiseLoadedEvent(pLoadEventUserState)
+	                            zReturn.Add(zObj)
+	                        End While			
+	                    End If
+	                End Using
+	            End Using
 .
-            zReader.Close()
-            zReader = Nothing
+	            zReader.Close()
+	            zReader = Nothing
 .
-            Return zReturn
+	            Return zReturn
+			Catch ex As Exception
+				ex.Data.Add("SQL", pCommand.CommandText)				
+	            For Each pParameter As SqlClient.SqlParameter In pCommand.Parameters
+					ex.Data.Add(pParameter.ParameterName, pParameter.Value)
+		        Next				
+				Throw
+			End Try
 .
         End function
 .
