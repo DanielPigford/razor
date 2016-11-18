@@ -1,6 +1,6 @@
 {{#each Items}}
 '/===============================================================\
-'| razor data (experimental) - rev 4.2.875   EXPERIMENTAL        |
+'| razor data (experimental) - rev 4.2.876   EXPERIMENTAL        |
 '|---------------------------------------------------------------|
 '|  Template: gen.vb.sqlserver (experimental version)            |
 '|   Website: http://www.pigford.net/razor                       |
@@ -63,6 +63,7 @@
 {{!                      created on, modifed on                   }}
 {{! Update: 11/09/2016 - Added try catch for read data to report  }}
 {{!                      additional debug information             }}
+{{! Update: 11/18/2016 - Fixed issue with delete when auditing    }}
 {{!===============================================================}}
 {{! This template currently only works with a SQLServer database  }}
 {{!                                                               }}
@@ -100,7 +101,9 @@ Namespace razor
             Dim zSQL As String = ""
             Dim zMode As String = ""
 .
-			{{#each Columns}}
+            If {{#each PrimaryKeys}}razor.UtilSQLServer.IsKeySet(pRowData.{{xSettings.ColumnAliasPrefix}}{{Alias}}){{#xNotLast}} And {{/xNotLast}}{{/each}} Then
+.
+				{{#each Columns}}
 				{{#xIf Alias "===" xSettings.AuditUserModifiedColumnName}}
 				If UtilConfiguration.Auditing.AuditIsEnabled Then				
 					pRowData.{{xSettings.ColumnAliasPrefix}}{{xSettings.AuditUserModifiedColumnName}}=UtilConfiguration.Auditing.CurrentUserDelegate.Invoke()
@@ -108,9 +111,8 @@ Namespace razor
 					Save(pRowData,pTransaction,Nothing) 'Save the person who is deleting this record to the AuditUserModifiedColumnName column.
 				End If
 				{{/xIf}}
-			{{/each}}
+				{{/each}}
 .
-            If {{#each PrimaryKeys}}razor.UtilSQLServer.IsKeySet(pRowData.{{xSettings.ColumnAliasPrefix}}{{Alias}}){{#xNotLast}} And {{/xNotLast}}{{/each}} Then
                 'Delete
                 zMode = "DELETE"
                 zSQL = "DELETE FROM [{{Schema}}].[{{Name}}] " & _
