@@ -1,0 +1,108 @@
+'/=========================================================================\
+'| razor wcf datasource service (experimental) - rev 4.2.1                 |
+'|-------------------------------------------------------------------------|
+'|  Template: razor.wcf.datasource.service (experimental version)          |
+'|   Website: http://www.pigford.net/razor                                 |
+'\=========================================================================/
+{{!===============================================================}}
+{{! Release: razor wcf datasource service (experimental)          }}
+{{!===============================================================}}
+{{! Update: 09/27/2016 - Initial version                          }}
+{{!===============================================================}}
+{{!                                                               }}
+{{!===============================================================}}
+Namespace razor
+	Public Class {{xSettings.WCFServiceClassName}}
+	    Implements I{{xSettings.WCFServiceClassName}}
+.
+{{#each Items}}
+	    Public Function {{Alias}}_GetData(page As Nullable(Of Integer), pageSize As Nullable(Of Integer), skip As Nullable(Of Integer), take As Nullable(Of Integer)) As IO.Stream Implements I{{xSettings.WCFServiceClassName}}.{{Alias}}_GetData
+	        Dim zReturn As System.IO.Stream
+	        Dim zJSON As New Dictionary(Of String, Object)
+	        Dim zUFD As New {{xSettings.razorFillDataClassNamespace}}.UtilFillData
+.
+	        Try
+	            zJSON.Add("data", zUFD.{{Alias}}_RetrieveData(page, pageSize))
+	            zJSON.Add("rowCount", zUFD.{{Alias}}_RetrieveData().Count)
+	            zJSON.Add("isSuccess", True)
+	            zJSON.Add("message", "")
+	            zReturn = JsonWrap(Newtonsoft.Json.JsonConvert.SerializeObject(zJSON))
+.
+	        Catch ex As Exception
+	            zJSON.Add("isSuccess", False)
+	            zJSON.Add("message", ex.Message)
+	            zJSON.Add("data", Nothing)
+	            zReturn = JsonWrap(Newtonsoft.Json.JsonConvert.SerializeObject(zJSON))
+.
+	        End Try
+	        Return zReturn
+	    End Function
+.
+{{/each}}
+.
+	    ' HELPER FUNCTION FOR RETURNING JSON
+	    Private Function JsonpWrap(pCallback As String, pIn As String) As System.IO.Stream
+	        Dim zReturn As String = ""
+	        zReturn = pCallback & "(" & pIn & ");"
+	        ServiceModel.Web.WebOperationContext.Current.OutgoingResponse.ContentType = "application/javascript"
+	        Return New System.IO.MemoryStream(Encoding.UTF8.GetBytes(zReturn))
+	    End Function
+.
+	    Private Function JsonWrap(pIn As String) As System.IO.Stream
+	        Dim zReturn As String = ""
+	        zReturn = pIn
+	        ServiceModel.Web.WebOperationContext.Current.OutgoingResponse.ContentType = "application/javascript"
+	        Return New System.IO.MemoryStream(Encoding.UTF8.GetBytes(zReturn))
+	    End Function
+.
+	End Class
+End Namespace
+{{xFile xSettings.WCFServiceClassName path=xSettings.OutputPath ext="svc.vb"}}
+.
+'/=========================================================================\
+'| razor wcf datasource interface (experimental) - rev 4.2.1               |
+'|-------------------------------------------------------------------------|
+'|  Template: razor.wcf.datasource.interface (experimental version)        |
+'|   Website: http://www.pigford.net/razor                                 |
+'\=========================================================================/
+{{!===============================================================}}
+{{! Release: razor wcf datasource interface (experimental)        }}
+{{!===============================================================}}
+{{! Update: 09/27/2016 - Initial version                          }}
+{{!===============================================================}}
+{{!                                                               }}
+{{!===============================================================}}
+Imports System.ServiceModel
+Imports System.ServiceModel.Web
+.
+Namespace razor
+	<ServiceContract()>
+	Public Interface I{{xSettings.WCFServiceClassName}}
+.
+	{{#each Items}}
+	    <WebInvoke(ResponseFormat:=WebMessageFormat.Json, RequestFormat:=WebMessageFormat.Json, BodyStyle:=WebMessageBodyStyle.WrappedRequest)> _
+	    Function {{Alias}}_GetData(page As Nullable(Of Integer), pageSize As Nullable(Of Integer), skip As Nullable(Of Integer), take As Nullable(Of Integer)) As System.IO.Stream
+.
+	{{/each}}
+	End Interface
+End Namespace
+{{xFile xSettings.WCFServiceClassName prefix="I" path=xSettings.OutputPath ext="vb"}}
+.
+<!--
+/=========================================================================\
+| razor grid (experimental) - rev 4.2.1                                   |
+|-------------------------------------------------------------------------|
+|  Template: razor.grid.svc.vb.sqlserver (experimental version)           |
+|   Website: http://www.pigford.net/razor                                 |
+\=========================================================================/
+-->
+{{!===============================================================}}
+{{! Release: razor grid svc vb sql server (experimental)          }}
+{{!===============================================================}}
+{{! Update: 09/21/2016 - Initial version                          }}
+{{!===============================================================}}
+{{!                                                               }}
+{{!===============================================================}}
+<%@ ServiceHost Language="VB" Debug="true" Service="{{xSettings.WCFServiceClassNamespace}}.{{xSettings.WCFServiceClassName}}" CodeBehind="{{xSettings.WCFServiceClassName}}.svc.vb"  Factory="System.ServiceModel.Activation.WebServiceHostFactory" %>
+{{xFile xSettings.WCFServiceClassName path=xSettings.OutputPath ext="svc"}}
+.

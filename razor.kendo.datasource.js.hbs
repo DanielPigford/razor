@@ -1,0 +1,135 @@
+/*
+/===============================================================\
+| razor kendo datasource js (experimental) - rev 4.2.1          |
+|---------------------------------------------------------------|
+|  Template: razor.kendo.datasource.js (experimental version)   |
+|   Website: http://www.pigford.net/razor                       |
+\===============================================================/
+*/
+{{!===============================================================}}
+{{! Release: razor kendo datasource js (experimental)             }}
+{{!===============================================================}}
+{{! Update: 09/21/2016 - Initial version                          }}
+{{!===============================================================}}
+{{!                                                               }}
+{{!===============================================================}}
+//DataSource Config
+{{#each Items}}
+var z{{Alias}}_PageSize = 15;
+{{/each}}
+//-----------------
+.
+{{#each Items}}
+var {{Alias}}_DataSource = new kendo.data.DataSource({
+    transport: {
+        read: {
+            url: "../REST/{{xSettings.WCFServiceClassName}}.svc/{{Alias}}_GetData",
+            dataType: "json",
+            type: "POST",
+            cache: false,
+            contentType: "application/json; charset=utf-8",
+            complete: function (pEvent, pStatus) {
+                if (JSON.parse(pEvent.responseText).isSuccess == true) {
+                    //Code runs after the data pull and if it was successful
+                }
+                else {
+                    alert("Error: " + JSON.parse(pEvent.responseText).message)
+                }
+            }
+        },
+        create: {
+            cache: false
+        },
+        parameterMap: function (data, type) {
+            return kendo.stringify(data);
+        }
+    }
+    , serverPaging: true
+    , page: 1
+    , pageSize: z{{Alias}}_PageSize
+    , schema: {
+        data: function (response) {
+            if (response.isSuccess == true) {
+                return response.data; // twitter's response is { "statuses": [ /* results */ ] }
+            }
+        },
+        total: function (response) {
+            if (response.isSuccess == true) {
+                return response.rowCount; // total is returned in the "rowCount" field of the response
+            }
+        },
+        errors: function (response) {
+            if (response.isSuccess != true) {
+                return response.message; // response is { "error": errorMessage }
+            }
+        }
+    }
+    , error: function (e) {
+        if (e.message != undefined) {
+            alert("Error: " + e.message);
+        }
+        else {
+            alert("Error: " + e.errorThrown);
+        }
+    }
+});
+{{/each}}
+{{xFile "datasource" path=xSettings.OutputPath ext="js"}}
+.
+{{#each Items}}
+/*
+/===============================================================\
+| razor kendo datasource js custom (experimental) - rev 4.2.1   |
+|---------------------------------------------------------------|
+|  Template: razor.kendo.datasource.js (experimental version)   |
+|   Website: http://www.pigford.net/razor                       |
+\===============================================================/
+*/
+{{!===============================================================}}
+{{! Release: razor kendo datasource js custom (experimental)      }}
+{{!===============================================================}}
+{{! Update: 09/21/2016 - Initial version                          }}
+{{!===============================================================}}
+{{!                                                               }}
+{{!===============================================================}}
+{{Alias}}_DataSource.read().then(function () {
+    /*Kendo Objects to be filled by the DataSource go here*/
+});
+{{xFile Alias path=xSettings.OutputPath prefix="datasource_" suffix="_custom" ext="js"}}
+{{/each}}
+<!--
+/===============================================================\
+| razor kendo datasource html (experimental) - rev 4.2.1        |
+|---------------------------------------------------------------|
+|  Template: razor.kendo.datasource.html (experimental version) |
+|   Website: http://www.pigford.net/razor                       |
+\===============================================================/
+-->
+{{!===============================================================}}
+{{! Release: razor kendo datasource html (experimental)           }}
+{{!===============================================================}}
+{{! Update: 09/27/2016 - Initial version                          }}
+{{!===============================================================}}
+{{!                                                               }}
+{{!===============================================================}}
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>Datasource</title>
+.
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <script src="http://kendo.cdn.telerik.com/2015.1.429/js/kendo.web.min.js"></script>
+    <script src="http://kendo.cdn.telerik.com/2015.1.429/js/kendo.common.min.js"></script>
+    <script src="Datasource.js"></script>
+.
+</head>
+    <body>
+        <script>
+		{{#each Items}}
+            {{Alias}}_DataSource.transport.read();
+            console.log("{{Alias}}_DataSource Loaded.");
+		{{/each}}
+        </script>
+    </body>
+</html>
+{{xFile "testdatasource" path=xSettings.OutputPath ext="html"}}
