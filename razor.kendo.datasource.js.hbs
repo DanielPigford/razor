@@ -101,7 +101,7 @@ var {{Alias}}_DataSource = new kendo.data.DataSource({
 {{/each}}
 <!--
 /===============================================================\
-| razor kendo datasource html (experimental) - rev 4.2.1        |
+| razor kendo datasource html (experimental) - rev 4.2.2        |
 |---------------------------------------------------------------|
 |  Template: razor.kendo.datasource.html (experimental version) |
 |   Website: http://www.pigford.net/razor                       |
@@ -111,6 +111,7 @@ var {{Alias}}_DataSource = new kendo.data.DataSource({
 {{! Release: razor kendo datasource html (experimental)           }}
 {{!===============================================================}}
 {{! Update: 09/27/2016 - Initial version                          }}
+{{! Update: 11/23/2016 - Removed incorrect reference to .transport}}
 {{!===============================================================}}
 {{!                                                               }}
 {{!===============================================================}}
@@ -128,7 +129,7 @@ var {{Alias}}_DataSource = new kendo.data.DataSource({
     <body>
         <script>
 		{{#each Items}}
-            {{Alias}}_DataSource.transport.read();
+            {{Alias}}_DataSource.read();
             console.log("{{Alias}}_DataSource Loaded.");
 		{{/each}}
         </script>
