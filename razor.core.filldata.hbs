@@ -1,0 +1,32 @@
+'/=========================================================================\
+'| razor core filldata (experimental) - rev 4.2.1                          |
+'|-------------------------------------------------------------------------|
+'|  Template: razor.core.filldata (experimental version)                   |
+'|   Website: http://www.pigford.net/razor                                 |
+'\=========================================================================/
+{{!===============================================================}}
+{{! Release: razor core filldata (experimental)                   }}
+{{!===============================================================}}
+{{! Update: 09/27/2016 - Initial version                          }}
+{{!===============================================================}}
+{{!                                                               }}
+{{!===============================================================}}
+Namespace razor
+	Public Class UtilFillData
+.
+{{#each Items}}
+		Public Function {{Alias}}_RetrieveData(Optional pageNumber As Integer = 0, Optional pageSize As Integer = 0) As List(Of {{xSettings.DataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}})  
+	        Dim zQ As New {{xSettings.razorRowDataClassNamespace}}.{{xSettings.QueryAliasPrefix}}{{Alias}}        
+	        zQ.SelectAll()
+	        If Not pageNumber = 0 And Not pageSize = 0 Then
+	            zQ.PageSize = pageSize
+	            zQ.PageNumber = pageNumber
+	        End If
+	        Dim zList As List(Of {{xSettings.razorRowDataClassNamespace}}.{{xSettings.DataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}}) = {{xSettings.razorRowDataClassNamespace}}.{{xSettings.TableAliasPrefix}}{{Alias}}.LoadData(zQ.QueryText)     
+	        Return zList
+	    End Function
+.
+{{/each}}
+	End Class
+End Namespace
+{{xFile "UtilFillData" path=xSettings.OutputPath ext="vb"}}
