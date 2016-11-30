@@ -1,0 +1,140 @@
+{{#each Items}}
+/*
+/===============================================================\
+| razor grid (experimental) - rev 4.2.4                         |
+|---------------------------------------------------------------|
+|  Template: razor.grid (experimental version)                  |
+|   Website: http://www.pigford.net/razor                       |
+\===============================================================/
+*/
+{{!===============================================================}}
+{{! Release: razor grid js (experimental)                         }}
+{{!===============================================================}}
+{{! Update: 09/21/2016 - Initial version                          }}
+{{! Update: 11/30/2016 - Added paging, filtering, sorting support }}
+{{!===============================================================}}
+{{!                                                               }}
+{{!===============================================================}}
+//pageSize
+var {{Alias}}_PageSize = 6;
+.
+.
+$(document).ready(function () {
+    $("#{{Alias}}_grid").kendoGrid({
+        filterable: { mode: "menu" },
+        sortable: { allowUnsort: true, mode: "multiple" },
+        pageable: true,
+        dataSource: {
+                transport: {
+                    read: {
+                        url: "../REST/{{xSettings.WCFServiceClassName}}.svc/{{Alias}}_GetData",
+                        dataType: "json",
+                        type: "POST",
+                        cache: false,
+                        contentType: "application/json; charset=utf-8",
+                        complete: function (pEvent, pStatus) {
+                            if (JSON.parse(pEvent.responseText).isSuccess == true) {
+                                //Code runs after the data pull and if it was successful
+                            }
+                            else {
+                                alert("Error: " + JSON.parse(pEvent.responseText).message)
+                            }
+                        }
+                    },
+                    create: {
+                        cache: false
+                    },
+                    parameterMap: function (pData, pType) {
+                        if (pType === "read") {
+                            // STRINGIFY THE FILTER OBJECT
+                            if (pData["filter"]) {
+                                pData["filter"] = JSON.stringify(pData["filter"]);
+                            }
+                            // STRINGIFY THE SORT OBJECT
+                            if (pData["sort"]) {
+                                pData["sort"] = JSON.stringify(pData["sort"]);
+                            }
+                        }
+                        return kendo.stringify(pData);
+                    }
+                }
+                , serverPaging: true
+                , serverFiltering: true
+                , serverSorting: true
+                , page: 1
+                , pageSize: {{Alias}}_PageSize
+                , schema: {
+                    data: function (response) {
+                        if (response.isSuccess == true) {
+                            return response.data; 
+                        }
+                    },
+                    total: function (response) {
+                        if (response.isSuccess == true) {
+                            return response.rowCount; // total is returned in the "rowCount" field of the response
+                        }
+                    },
+                    errors: function (response) {
+                        if (response.isSuccess != true) {
+                            return response.message; // response is { "error": errorMessage }
+                        }
+                    }
+                }
+                , error: function (e) {
+                    if (e.message != undefined) {
+                        alert("Error: " + e.message);
+                    }
+                    else {
+                        alert("Error: " + e.errorThrown);
+                    }
+                }
+        }
+    });
+});
+.
+.
+.
+{{xFile Alias path=xSettings.OutputPath suffix="_grid" ext="js"}}
+{{/each}}
+.
+.
+{{#each Items}}
+<!--
+/===============================================================\
+| razor grid (experimental) - rev 4.2.4                         |
+|---------------------------------------------------------------|
+|  Template: razor.grid.html (experimental version)             |
+|   Website: http://www.pigford.net/razor                       |
+\===============================================================/
+-->
+{{!===============================================================}}
+{{! Release: razor grid html (experimental)                       }}
+{{!===============================================================}}
+{{! Update: 09/21/2016 - Initial version                          }}
+{{! Update: 11/30/2016 - Added paging, filtering, sorting support }}
+{{!===============================================================}}
+{{!                                                               }}
+{{!===============================================================}}
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>{{Alias}}_grid</title>
+.
+    <meta charset="utf-8"/>
+.
+    <link rel="stylesheet" href="http://kendo.cdn.telerik.com/2016.3.1028/styles/kendo.common.min.css"/>
+    <link rel="stylesheet" href="http://kendo.cdn.telerik.com/2016.3.1028/styles/kendo.rtl.min.css"/>
+    <link rel="stylesheet" href="http://kendo.cdn.telerik.com/2016.3.1028/styles/kendo.silver.min.css"/>
+    <link rel="stylesheet" href="http://kendo.cdn.telerik.com/2016.3.1028/styles/kendo.mobile.all.min.css"/>
+.
+    <script src="http://code.jquery.com/jquery-1.12.4.min.js"></script>
+    <script src="http://kendo.cdn.telerik.com/2016.3.1028/js/kendo.all.min.js"></script>
+.
+    <script src="{{Alias}}_grid.js"></script>
+</head>
+    <body>
+        <div id="{{Alias}}_grid"></div>
+    </body>
+</html>
+{{xFile Alias path=xSettings.OutputPath suffix="_grid" ext="html"}}
+{{/each}}

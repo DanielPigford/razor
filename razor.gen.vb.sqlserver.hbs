@@ -1,6 +1,6 @@
 {{#each Items}}
 '/===============================================================\
-'| razor data (experimental) - rev 4.2.876   EXPERIMENTAL        |
+'| razor data (experimental) - rev 4.2.877   EXPERIMENTAL        |
 '|---------------------------------------------------------------|
 '|  Template: gen.vb.sqlserver (experimental version)            |
 '|   Website: http://www.pigford.net/razor                       |
@@ -786,6 +786,8 @@ End Namespace
 {{! Update: 08/24/2016 - Added schema to table name function      }}
 {{! Update: 09/28/2016 - Fixed indentation level                  }}
 {{! Update: 10/13/2016 - Added Column2Member cross lookup function}}
+{{! Update: 11/30/2016 - Added alias value to Column2Member cross-}}
+{{!                      ref to support client side grid filtering}}
 {{!===============================================================}}
 {{! This template currently only works with a SQLServer database  }}
 {{!                                                               }}
@@ -796,7 +798,7 @@ End Namespace
 {{!===============================================================}}
 {{#each Items}}
 '/===============================================================\
-'| razor query (experimental) - rev 4.2.271                      |
+'| razor query (experimental) - rev 4.2.272                      |
 '|---------------------------------------------------------------|
 '|  Template: gen.vb.sqlserver (experimental version)            |
 '|   Website: http://www.pigford.net/razor                       |
@@ -859,7 +861,7 @@ Namespace razor
             Select Case pColumnName
             {{#each Columns}}
             {{#xIfNotAny IsComputed IsConcurrency "===" true}}
-                Case "[{{Name}}]", "{{Name}}"  
+                Case "[{{Name}}]", "{{Name}}", "{{Alias}}"  
                     Return "{{xSettings.ColumnAliasPrefix}}{{Alias}}"
             {{/xIfNotAny}}
             {{/each}}

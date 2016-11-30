@@ -1,5 +1,5 @@
 '/=========================================================================\
-'| razor wcf datasource service (experimental) - rev 4.2.1                 |
+'| razor wcf datasource service (experimental) - rev 4.2.2                 |
 '|-------------------------------------------------------------------------|
 '|  Template: razor.wcf.datasource.service (experimental version)          |
 '|   Website: http://www.pigford.net/razor                                 |
@@ -8,6 +8,7 @@
 {{! Release: razor wcf datasource service (experimental)          }}
 {{!===============================================================}}
 {{! Update: 09/27/2016 - Initial version                          }}
+{{! Update: 11/30/2016 - Added grid page, sort, filter support    }}
 {{!===============================================================}}
 {{!                                                               }}
 {{!===============================================================}}
@@ -16,14 +17,14 @@ Namespace razor
 	    Implements I{{xSettings.WCFServiceClassName}}
 .
 {{#each Items}}
-	    Public Function {{Alias}}_GetData(page As Nullable(Of Integer), pageSize As Nullable(Of Integer), skip As Nullable(Of Integer), take As Nullable(Of Integer)) As IO.Stream Implements I{{xSettings.WCFServiceClassName}}.{{Alias}}_GetData
+	    Public Function {{Alias}}_GetData(page As Nullable(Of Integer), pageSize As Nullable(Of Integer), skip As Nullable(Of Integer), take As Nullable(Of Integer), sort As String, filter As String) As IO.Stream Implements I{{xSettings.WCFServiceClassName}}.{{Alias}}_GetData
 	        Dim zReturn As System.IO.Stream
 	        Dim zJSON As New Dictionary(Of String, Object)
 	        Dim zUFD As New {{xSettings.razorFillDataClassNamespace}}.UtilFillData
 .
 	        Try
-	            zJSON.Add("data", zUFD.{{Alias}}_RetrieveData(page, pageSize))
-	            zJSON.Add("rowCount", zUFD.{{Alias}}_RetrieveData().Count)
+	            zJSON.Add("rowCount", zUFD.{{Alias}}_RetrieveData(filter, sort).Count)
+	            zJSON.Add("data", zUFD.{{Alias}}_RetrieveData(page, pageSize, filter, sort))
 	            zJSON.Add("isSuccess", True)
 	            zJSON.Add("message", "")
 	            zReturn = JsonWrap(Newtonsoft.Json.JsonConvert.SerializeObject(zJSON))
@@ -60,7 +61,7 @@ End Namespace
 {{xFile xSettings.WCFServiceClassName path=xSettings.OutputPath ext="svc.vb"}}
 .
 '/=========================================================================\
-'| razor wcf datasource interface (experimental) - rev 4.2.1               |
+'| razor wcf datasource interface (experimental) - rev 4.2.2               |
 '|-------------------------------------------------------------------------|
 '|  Template: razor.wcf.datasource.interface (experimental version)        |
 '|   Website: http://www.pigford.net/razor                                 |
@@ -69,6 +70,7 @@ End Namespace
 {{! Release: razor wcf datasource interface (experimental)        }}
 {{!===============================================================}}
 {{! Update: 09/27/2016 - Initial version                          }}
+{{! Update: 11/30/2016 - Added support for page, sort, filter     }}
 {{!===============================================================}}
 {{!                                                               }}
 {{!===============================================================}}
@@ -81,7 +83,7 @@ Namespace razor
 .
 	{{#each Items}}
 	    <WebInvoke(ResponseFormat:=WebMessageFormat.Json, RequestFormat:=WebMessageFormat.Json, BodyStyle:=WebMessageBodyStyle.WrappedRequest)> _
-	    Function {{Alias}}_GetData(page As Nullable(Of Integer), pageSize As Nullable(Of Integer), skip As Nullable(Of Integer), take As Nullable(Of Integer)) As System.IO.Stream
+	    Function {{Alias}}_GetData(page As Nullable(Of Integer), pageSize As Nullable(Of Integer), skip As Nullable(Of Integer), take As Nullable(Of Integer), sort As String, filter As String) As System.IO.Stream
 .
 	{{/each}}
 	End Interface

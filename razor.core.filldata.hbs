@@ -1,5 +1,5 @@
 '/=========================================================================\
-'| razor core filldata (experimental) - rev 4.2.1                          |
+'| razor core filldata (experimental) - rev 4.2.2                          |
 '|-------------------------------------------------------------------------|
 '|  Template: razor.core.filldata (experimental version)                   |
 '|   Website: http://www.pigford.net/razor                                 |
@@ -8,6 +8,7 @@
 {{! Release: razor core filldata (experimental)                   }}
 {{!===============================================================}}
 {{! Update: 09/27/2016 - Initial version                          }}
+{{! Update: 11/30/2016 - Added support for grid filter sort paging}}
 {{!===============================================================}}
 {{!                                                               }}
 {{!===============================================================}}
@@ -26,7 +27,30 @@ Namespace razor
 	        Return zList
 	    End Function
 .
+	    Public Function {{Alias}}_RetrieveData(pageNumber As Integer, pageSize As Integer, pFilter As String, pSort As String) As List(Of {{xSettings.DataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}})
+	        Dim zQ As New {{xSettings.razorRowDataClassNamespace}}.{{xSettings.QueryAliasPrefix}}{{Alias}}
+	        zQ.SelectAll()
+	        If Not pageNumber = 0 And Not pageSize = 0 Then
+	            zQ.PageSize = pageSize
+	            zQ.PageNumber = pageNumber
+	        End If
+	        Dim zFS As New {{xSettings.razorRowDataClassNamespace}}.UtilFilterSort
+	        If Not pFilter = "" Then
+	            zFS.SetFilter(pFilter, zQ)
+	        End If
+	        If Not pSort = "" Then
+	            zFS.SetSort(pSort, zQ)
+	        End If
+	        Dim zList As List(Of {{xSettings.razorRowDataClassNamespace}}.{{xSettings.DataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}}) = {{xSettings.razorRowDataClassNamespace}}.{{xSettings.TableAliasPrefix}}{{Alias}}.LoadData(zQ.QueryText)       
+	        Return zList
+	    End Function
+.
+	    Public Function {{Alias}}_RetrieveData(pFilter As String, pSort As String) As List(Of {{xSettings.DataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}})
+	        Return {{Alias}}_RetrieveData(0, 0, pFilter, pSort)
+	    End Function
+.
 {{/each}}
+.
 	End Class
 End Namespace
 {{xFile "UtilFillData" path=xSettings.OutputPath ext="vb"}}
