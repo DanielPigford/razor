@@ -1,7 +1,7 @@
 {{#each Items}}
 /*
 /===============================================================\
-| razor grid (experimental) - rev 4.2.4                         |
+| razor grid (experimental) - rev 4.2.1                         |
 |---------------------------------------------------------------|
 |  Template: razor.grid (experimental version)                  |
 |   Website: http://www.pigford.net/razor                       |
@@ -10,60 +10,48 @@
 {{!===============================================================}}
 {{! Release: razor grid js (experimental)                         }}
 {{!===============================================================}}
-{{! Update: 09/21/2016 - Initial version                          }}
-{{! Update: 11/30/2016 - Added paging, filtering, sorting support }}
-{{! Update: 12/05/2016 - Changed WCF name to _GridServer_GetData  }}
+{{! Update: 11/30/2016 - Initial version                          }}
 {{!===============================================================}}
 {{!                                                               }}
 {{!===============================================================}}
-//pageSize
-var {{Alias}}_PageSize = 6;
-.
-.
 $(document).ready(function () {
-    $("#{{Alias}}_grid").kendoGrid({
-        filterable: { mode: "menu" },
-        sortable: { allowUnsort: true, mode: "multiple" },
-        pageable: true,
+    $("#{{Alias}}_combobox").kendoComboBox({     
+        dataTextField: "DISPLAYCOLUMNNAMEGOESHERE",  
+        dataValueField: "IDCOLUMNNAMEGOESHEREMUSTBENUMERIC",       
+        filter: "contains",
+        autoBind: false,
+        minLength: 1,
         dataSource: {
-                transport: {
-                    read: {
-                        url: "../REST/{{xSettings.WCFServiceClassName}}.svc/{{Alias}}_GridServer_GetData",
-                        dataType: "json",
-                        type: "POST",
-                        cache: false,
-                        contentType: "application/json; charset=utf-8",
-                        complete: function (pEvent, pStatus) {
-                            if (JSON.parse(pEvent.responseText).isSuccess == true) {
-                                //Code runs after the data pull and if it was successful
-                            }
-                            else {
-                                alert("Error: " + JSON.parse(pEvent.responseText).message)
-                            }
+            transport: {
+                read: {
+                    url: "../REST/{{xSettings.WCFServiceClassName}}.svc/{{Alias}}_ComboBoxServer_GetData",      
+                    dataType: "json",
+                    type: "POST",
+                    cache: false,
+                    contentType: "application/json; charset=utf-8",
+                    complete: function (pEvent, pStatus) {
+                        if (JSON.parse(pEvent.responseText).isSuccess == true) {
+                            //Code runs after the data pull and if it was successful
                         }
-                    },
-                    create: {
-                        cache: false
-                    },
-                    parameterMap: function (pData, pType) {
-                        if (pType === "read") {
-                            // STRINGIFY THE FILTER OBJECT
-                            if (pData["filter"]) {
-                                pData["filter"] = JSON.stringify(pData["filter"]);
-                            }
-                            // STRINGIFY THE SORT OBJECT
-                            if (pData["sort"]) {
-                                pData["sort"] = JSON.stringify(pData["sort"]);
-                            }
+                        else {
+                            alert("Error: " + JSON.parse(pEvent.responseText).message)
                         }
-                        return kendo.stringify(pData);
                     }
+                },
+                create: {
+                    cache: false
+                },
+                parameterMap: function (pData, pType) {
+                    if (pType === "read") {
+                        // STRINGIFY THE FILTER OBJECT
+                        if (pData["filter"]) {
+                            pData["filter"] = JSON.stringify(pData["filter"]);
+                        }
+                    }
+                    return kendo.stringify(pData);
                 }
-                , serverPaging: true
+            }
                 , serverFiltering: true
-                , serverSorting: true
-                , page: 1
-                , pageSize: {{Alias}}_PageSize
                 , schema: {
                     data: function (response) {
                         if (response.isSuccess == true) {
@@ -89,20 +77,20 @@ $(document).ready(function () {
                         alert("Error: " + e.errorThrown);
                     }
                 }
-        }
+            }
     });
 });
 .
 .
 .
-{{xFile Alias path=xSettings.OutputPath suffix="_grid" ext="js"}}
+{{xFile Alias path=xSettings.OutputPath suffix="_combobox" ext="js"}}
 {{/each}}
 .
 .
 {{#each Items}}
 <!--
 /===============================================================\
-| razor grid (experimental) - rev 4.2.4                         |
+| razor grid (experimental) - rev 4.2.1                         |
 |---------------------------------------------------------------|
 |  Template: razor.grid.html (experimental version)             |
 |   Website: http://www.pigford.net/razor                       |
@@ -111,17 +99,14 @@ $(document).ready(function () {
 {{!===============================================================}}
 {{! Release: razor grid html (experimental)                       }}
 {{!===============================================================}}
-{{! Update: 09/21/2016 - Initial version                          }}
-{{! Update: 11/30/2016 - Added paging, filtering, sorting support }}
+{{! Update: 11/30/2016 - Initial version                          }}
 {{!===============================================================}}
 {{!                                                               }}
 {{!===============================================================}}
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-    <title>{{Alias}}_grid</title>
-.
-    <meta charset="utf-8"/>
+    <title>{{Alias}}_combobox</title>
 .
     <link rel="stylesheet" href="http://kendo.cdn.telerik.com/2016.3.1028/styles/kendo.common.min.css"/>
     <link rel="stylesheet" href="http://kendo.cdn.telerik.com/2016.3.1028/styles/kendo.rtl.min.css"/>
@@ -130,12 +115,11 @@ $(document).ready(function () {
 .
     <script src="http://code.jquery.com/jquery-1.12.4.min.js"></script>
     <script src="http://kendo.cdn.telerik.com/2016.3.1028/js/kendo.all.min.js"></script>
-.
-    <script src="{{Alias}}_grid.js"></script>
+    <script src="{{Alias}}_combobox.js"></script>
 </head>
     <body>
-        <div id="{{Alias}}_grid"></div>
+        <div id="{{Alias}}_combobox" style="width: 500px;"></div>     
     </body>
 </html>
-{{xFile Alias path=xSettings.OutputPath suffix="_grid" ext="html"}}
+{{xFile Alias path=xSettings.OutputPath suffix="_combobox" ext="html"}}
 {{/each}}

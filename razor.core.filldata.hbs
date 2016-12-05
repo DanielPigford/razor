@@ -1,5 +1,5 @@
 '/=========================================================================\
-'| razor core filldata (experimental) - rev 4.2.2                          |
+'| razor core filldata (experimental) - rev 4.2.4                          |
 '|-------------------------------------------------------------------------|
 '|  Template: razor.core.filldata (experimental version)                   |
 '|   Website: http://www.pigford.net/razor                                 |
@@ -9,6 +9,8 @@
 {{!===============================================================}}
 {{! Update: 09/27/2016 - Initial version                          }}
 {{! Update: 11/30/2016 - Added support for grid filter sort paging}}
+{{! Update: 12/05/2016 - Added support for dynamic combo box      }}
+{{! Update: 12/05/2016 - Added _GridServer_RetrieveData wrapper   }}
 {{!===============================================================}}
 {{!                                                               }}
 {{!===============================================================}}
@@ -47,6 +49,26 @@ Namespace razor
 .
 	    Public Function {{Alias}}_RetrieveData(pFilter As String, pSort As String) As List(Of {{xSettings.DataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}})
 	        Return {{Alias}}_RetrieveData(0, 0, pFilter, pSort)
+	    End Function
+.
+	    Public Function {{Alias}}_GridServer_RetrieveData(pageNumber As Integer, pageSize As Integer, pFilter As String, pSort As String) As List(Of {{xSettings.DataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}})
+	        Return {{Alias}}_RetrieveData(pageNumber, pageSize, pFilter, pSort)
+	    End Function
+.
+	    Public Function {{Alias}}_GridServer_RetrieveData(pFilter As String, pSort As String) As List(Of {{xSettings.DataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}})
+	        Return {{Alias}}_RetrieveData(0, 0, pFilter, pSort)
+	    End Function
+
+		Public Function {{Alias}}_ComboBox_RetrieveData(pFilter As String) As List(Of {{xSettings.DataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}})        
+	        Dim zQ As New {{xSettings.razorRowDataClassNamespace}}.{{xSettings.QueryAliasPrefix}}{{Alias}}         
+	        zQ.SelectAll()
+	        zQ.Top = 100
+	        Dim zFS As New {{xSettings.razorRowDataClassNamespace}}.UtilFilterSort
+	        If Not pFilter = "" Then
+	            zFS.SetFilter(pFilter, zQ)
+	        End If
+	        Dim zList As List(Of {{xSettings.razorRowDataClassNamespace}}.{{xSettings.DataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}}) = {{xSettings.razorRowDataClassNamespace}}.{{xSettings.TableAliasPrefix}}{{Alias}}.LoadData(zQ.QueryText)        
+	        Return zList
 	    End Function
 .
 {{/each}}

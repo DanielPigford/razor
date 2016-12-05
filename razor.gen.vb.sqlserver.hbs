@@ -1,6 +1,6 @@
 {{#each Items}}
 '/===============================================================\
-'| razor data (experimental) - rev 4.2.877   EXPERIMENTAL        |
+'| razor data (experimental) - rev 4.2.878   EXPERIMENTAL        |
 '|---------------------------------------------------------------|
 '|  Template: gen.vb.sqlserver (experimental version)            |
 '|   Website: http://www.pigford.net/razor                       |
@@ -749,7 +749,7 @@ End Namespace
 {{!===============================================================}}
 {{#each Items}}
 /===============================================================\
-| razor doc (experimental) - rev 4.2.14                         |
+| razor doc (experimental) - rev 4.2.15                         |
 |---------------------------------------------------------------|
 |  Template: gen.vb.sqlserver (experimental version)            |
 |   Website: http://www.pigford.net/razor                       |
@@ -788,6 +788,9 @@ End Namespace
 {{! Update: 10/13/2016 - Added Column2Member cross lookup function}}
 {{! Update: 11/30/2016 - Added alias value to Column2Member cross-}}
 {{!                      ref to support client side grid filtering}}
+{{! Update: 12/05/2016 - Added prefix and alias value to          }}
+{{!                      Column2Member cross-ref to support client}}
+{{!                      side combobox filtering                  }}
 {{!===============================================================}}
 {{! This template currently only works with a SQLServer database  }}
 {{!                                                               }}
@@ -861,7 +864,7 @@ Namespace razor
             Select Case pColumnName
             {{#each Columns}}
             {{#xIfNotAny IsComputed IsConcurrency "===" true}}
-                Case "[{{Name}}]", "{{Name}}", "{{Alias}}"  
+                Case "[{{Name}}]", "{{Name}}", "{{Alias}}", "{{xSettings.ColumnAliasPrefix}}{{Alias}}"  
                     Return "{{xSettings.ColumnAliasPrefix}}{{Alias}}"
             {{/xIfNotAny}}
             {{/each}}
