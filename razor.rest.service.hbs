@@ -1,0 +1,166 @@
+'/=========================================================================\
+'| razor rest service (experimental) - rev 4.2.5                           |
+'|-------------------------------------------------------------------------|
+'|  Template: razor.rest.service (experimental version)                    |
+'|   Website: http://www.pigford.net/razor                                 |
+'\=========================================================================/
+{{!===============================================================}}
+{{! Release: razor rest service (experimental)                    }}
+{{!===============================================================}}
+{{! Update: 09/27/2016 - Initial version                          }}
+{{! Update: 11/30/2016 - Added grid page, sort, filter support    }}
+{{! Update: 12/05/2016 - Added support for dynamic combo box      }}
+{{! Update: 12/05/2016 - Create _GridServer_GetData method        }}
+{{! Update: 12/06/2016 - Renamed to razor.rest.service            }}
+{{!===============================================================}}
+{{!                                                               }}
+{{!===============================================================}}
+Namespace razor
+	Public Class {{xSettings.RestServiceClassName}}
+	    Implements I{{xSettings.RestServiceClassName}}
+.
+{{#each Items}}
+	    Public Function {{Alias}}_GetData(page As Nullable(Of Integer), pageSize As Nullable(Of Integer), skip As Nullable(Of Integer), take As Nullable(Of Integer), sort As String, filter As String) As IO.Stream Implements I{{xSettings.RestServiceClassName}}.{{Alias}}_GetData
+	        Dim zReturn As System.IO.Stream
+	        Dim zJSON As New Dictionary(Of String, Object)
+	        Dim zUFD As New {{xSettings.razorFillDataClassNamespace}}.UtilFillData
+.
+	        Try
+	            zJSON.Add("rowCount", zUFD.{{Alias}}_RetrieveData(filter, sort).Count)
+	            zJSON.Add("data", zUFD.{{Alias}}_RetrieveData(page, pageSize, filter, sort))
+	            zJSON.Add("isSuccess", True)
+	            zJSON.Add("message", "")
+	            zReturn = JsonWrap(Newtonsoft.Json.JsonConvert.SerializeObject(zJSON))
+.
+	        Catch ex As Exception
+	            zJSON.Add("isSuccess", False)
+	            zJSON.Add("message", ex.Message)
+	            zJSON.Add("data", Nothing)
+	            zReturn = JsonWrap(Newtonsoft.Json.JsonConvert.SerializeObject(zJSON))
+.
+	        End Try
+	        Return zReturn
+	    End Function
+.
+	    Public Function {{Alias}}_GirdServer_GetData(page As Nullable(Of Integer), pageSize As Nullable(Of Integer), skip As Nullable(Of Integer), take As Nullable(Of Integer), sort As String, filter As String) As IO.Stream Implements I{{xSettings.RestServiceClassName}}.{{Alias}}_GridServer_GetData
+	        Dim zReturn As System.IO.Stream
+	        Dim zJSON As New Dictionary(Of String, Object)
+	        Dim zUFD As New {{xSettings.razorFillDataClassNamespace}}.UtilFillData
+.
+	        Try
+	            zJSON.Add("rowCount", zUFD.{{Alias}}_GridServer_RetrieveData(filter, sort).Count)
+	            zJSON.Add("data", zUFD.{{Alias}}_GridServer_RetrieveData(page, pageSize, filter, sort))
+	            zJSON.Add("isSuccess", True)
+	            zJSON.Add("message", "")
+	            zReturn = JsonWrap(Newtonsoft.Json.JsonConvert.SerializeObject(zJSON))
+.
+	        Catch ex As Exception
+	            zJSON.Add("isSuccess", False)
+	            zJSON.Add("message", ex.Message)
+	            zJSON.Add("data", Nothing)
+	            zReturn = JsonWrap(Newtonsoft.Json.JsonConvert.SerializeObject(zJSON))
+.
+	        End Try
+	        Return zReturn
+	    End Function
+.
+	    Public Function {{Alias}}_ComboBoxServer_GetData(page As Nullable(Of Integer), pageSize As Nullable(Of Integer), skip As Nullable(Of Integer), take As Nullable(Of Integer), sort As String, filter As String) As IO.Stream Implements I{{xSettings.RestServiceClassName}}.{{Alias}}_ComboBoxServer_GetData
+	        Dim zReturn As System.IO.Stream
+	        Dim zJSON As New Dictionary(Of String, Object)
+	        Dim zUFD As New {{xSettings.razorFillDataClassNamespace}}.UtilFillData
+.
+	        Try
+	            zJSON.Add("data", zUFD.{{Alias}}_ComboBox_RetrieveData(filter))
+	            zJSON.Add("isSuccess", True)
+	            zJSON.Add("message", "")
+	            zReturn = JsonWrap(Newtonsoft.Json.JsonConvert.SerializeObject(zJSON))
+.
+	        Catch ex As Exception
+	            zJSON.Add("isSuccess", False)
+	            zJSON.Add("message", ex.Message)
+	            zJSON.Add("data", Nothing)
+	            zReturn = JsonWrap(Newtonsoft.Json.JsonConvert.SerializeObject(zJSON))
+.
+	        End Try
+	        Return zReturn
+		End Function
+.
+{{/each}}
+.
+	    ' HELPER FUNCTION FOR RETURNING JSON
+	    Private Function JsonpWrap(pCallback As String, pIn As String) As System.IO.Stream
+	        Dim zReturn As String = ""
+	        zReturn = pCallback & "(" & pIn & ");"
+	        ServiceModel.Web.WebOperationContext.Current.OutgoingResponse.ContentType = "application/javascript"
+	        Return New System.IO.MemoryStream(Encoding.UTF8.GetBytes(zReturn))
+	    End Function
+.
+	    Private Function JsonWrap(pIn As String) As System.IO.Stream
+	        Dim zReturn As String = ""
+	        zReturn = pIn
+	        ServiceModel.Web.WebOperationContext.Current.OutgoingResponse.ContentType = "application/javascript"
+	        Return New System.IO.MemoryStream(Encoding.UTF8.GetBytes(zReturn))
+	    End Function
+.
+	End Class
+End Namespace
+{{xFile xSettings.RestServiceClassName path=xSettings.OutputPath ext="svc.vb"}}
+.
+'/=========================================================================\
+'| razor rest interface (experimental) - rev 4.2.5                         |
+'|-------------------------------------------------------------------------|
+'|  Template: razor.rest.interface (experimental version)                  |
+'|   Website: http://www.pigford.net/razor                                 |
+'\=========================================================================/
+{{!===============================================================}}
+{{! Release: razor rest interface (experimental)                  }}
+{{!===============================================================}}
+{{! Update: 09/27/2016 - Initial version                          }}
+{{! Update: 11/30/2016 - Added support for page, sort, filter     }}
+{{! Update: 12/05/2016 - Added support for dynamic combo box      }}
+{{! Update: 12/05/2016 - Create _GridServer_GetData method        }}
+{{! Update: 12/06/2016 - Renamed to razor.rest.service            }}
+{{!===============================================================}}
+{{!                                                               }}
+{{!===============================================================}}
+Imports System.ServiceModel
+Imports System.ServiceModel.Web
+.
+Namespace razor
+	<ServiceContract()>
+	Public Interface I{{xSettings.RestServiceClassName}}
+.
+	{{#each Items}}
+	    <WebInvoke(ResponseFormat:=WebMessageFormat.Json, RequestFormat:=WebMessageFormat.Json, BodyStyle:=WebMessageBodyStyle.WrappedRequest)> _
+	    Function {{Alias}}_GetData(page As Nullable(Of Integer), pageSize As Nullable(Of Integer), skip As Nullable(Of Integer), take As Nullable(Of Integer), sort As String, filter As String) As System.IO.Stream
+.
+	    <WebInvoke(ResponseFormat:=WebMessageFormat.Json, RequestFormat:=WebMessageFormat.Json, BodyStyle:=WebMessageBodyStyle.WrappedRequest)> _
+	    Function {{Alias}}_GridServer_GetData(page As Nullable(Of Integer), pageSize As Nullable(Of Integer), skip As Nullable(Of Integer), take As Nullable(Of Integer), sort As String, filter As String) As System.IO.Stream
+.
+	    <WebInvoke(ResponseFormat:=WebMessageFormat.Json, RequestFormat:=WebMessageFormat.Json, BodyStyle:=WebMessageBodyStyle.WrappedRequest)> _
+	    Function {{Alias}}_ComboBoxServer_GetData(page As Nullable(Of Integer), pageSize As Nullable(Of Integer), skip As Nullable(Of Integer), take As Nullable(Of Integer), sort As String, filter As String) As System.IO.Stream
+.
+	{{/each}}
+	End Interface
+End Namespace
+{{xFile xSettings.RestServiceClassName prefix="I" path=xSettings.OutputPath ext="vb"}}
+.
+<!--
+/=========================================================================\
+| razor rest service (experimental) - rev 4.2.2                           |
+|-------------------------------------------------------------------------|
+|  Template: razor.rest.svc (experimental version)                        |
+|   Website: http://www.pigford.net/razor                                 |
+\=========================================================================/
+-->
+{{!===============================================================}}
+{{! Release: razor rest service (experimental)                    }}
+{{!===============================================================}}
+{{! Update: 09/21/2016 - Initial version                          }}
+{{! Update: 12/06/2016 - Renamed to razor.rest.service            }}
+{{!===============================================================}}
+{{!                                                               }}
+{{!===============================================================}}
+<%@ ServiceHost Language="VB" Debug="true" Service="{{xSettings.RestServiceClassNamespace}}.{{xSettings.RestServiceClassName}}" CodeBehind="{{xSettings.RestServiceClassName}}.svc.vb"  Factory="System.ServiceModel.Activation.WebServiceHostFactory" %>
+{{xFile xSettings.RestServiceClassName path=xSettings.OutputPath ext="svc"}}
+.
