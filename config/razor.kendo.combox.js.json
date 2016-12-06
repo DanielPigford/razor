@@ -1,0 +1,8 @@
+{
+    "OutputPath": "C:\\M2G\\razor\\",
+    "TableAliasPrefix": "",
+    "QueryAliasPrefix": "query",
+    "ColumnAliasPrefix": "col",
+		"DataObjectPrefix": "row",
+		"RestServiceClassName": "RestService"		
+}

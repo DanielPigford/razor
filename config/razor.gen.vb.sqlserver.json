@@ -1,0 +1,11 @@
+{ 
+"OutputPath": "C:\\M2G\\razor\\", 
+"TableAliasPrefix": "Tbl", 
+"QueryAliasPrefix": "queryTbl", 
+"ColumnAliasPrefix": "col", 
+"DataObjectPrefix": "row", 
+"AuditDateCreatedColumnName": "SysDateCreated", 
+"AuditUserCreatedColumnName": "SysUserCreated", 
+"AuditDateModifiedColumnName": "SysDateModified", 
+"AuditUserModifiedColumnName": "SysUserModified" 
+}
