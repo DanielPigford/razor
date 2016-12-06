@@ -1,7 +1,7 @@
 {{#each Items}}
 /*
 /===============================================================\
-| razor grid (experimental) - rev 4.2.4                         |
+| razor grid (experimental) - rev 4.2.5                         |
 |---------------------------------------------------------------|
 |  Template: razor.grid (experimental version)                  |
 |   Website: http://www.pigford.net/razor                       |
@@ -13,6 +13,7 @@
 {{! Update: 09/21/2016 - Initial version                          }}
 {{! Update: 11/30/2016 - Added paging, filtering, sorting support }}
 {{! Update: 12/05/2016 - Changed WCF name to _GridServer_GetData  }}
+{{! Update: 12/06/2016 - Renamed config setting from WCF to REST  }}
 {{!===============================================================}}
 {{!                                                               }}
 {{!===============================================================}}
@@ -28,7 +29,7 @@ $(document).ready(function () {
         dataSource: {
                 transport: {
                     read: {
-                        url: "../REST/{{xSettings.WCFServiceClassName}}.svc/{{Alias}}_GridServer_GetData",
+                        url: "../REST/{{xSettings.RestServiceClassName}}.svc/{{Alias}}_GridServer_GetData",
                         dataType: "json",
                         type: "POST",
                         cache: false,

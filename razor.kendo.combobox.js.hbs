@@ -1,7 +1,7 @@
 {{#each Items}}
 /*
 /===============================================================\
-| razor grid (experimental) - rev 4.2.1                         |
+| razor grid (experimental) - rev 4.2.2                         |
 |---------------------------------------------------------------|
 |  Template: razor.grid (experimental version)                  |
 |   Website: http://www.pigford.net/razor                       |
@@ -11,6 +11,7 @@
 {{! Release: razor grid js (experimental)                         }}
 {{!===============================================================}}
 {{! Update: 11/30/2016 - Initial version                          }}
+{{! Update: 12/06/2016 - Renamed config setting from WCF to REST  }}
 {{!===============================================================}}
 {{!                                                               }}
 {{!===============================================================}}
@@ -24,7 +25,7 @@ $(document).ready(function () {
         dataSource: {
             transport: {
                 read: {
-                    url: "../REST/{{xSettings.WCFServiceClassName}}.svc/{{Alias}}_ComboBoxServer_GetData",      
+                    url: "../REST/{{xSettings.RestServiceClassName}}.svc/{{Alias}}_ComboBoxServer_GetData",      
                     dataType: "json",
                     type: "POST",
                     cache: false,
