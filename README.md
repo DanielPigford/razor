@@ -39,7 +39,7 @@ Alternately you can download M2G Desktop (Windows only) and use the templates di
 7. Set configuration structure for desired schema tables; save to generate.  (template: razor.gen.vb.sqlserver)
 8. Compile and verify.
 
-### Core - razor.core.filldata (4.2.4)
+### Core - razor.core.filldata (4.2.5)
 
 1. Create a folder for the generated core classes.  (i.e. Core)
 2. Set "Show All Files" option in Visual Studio Solution Explorer
