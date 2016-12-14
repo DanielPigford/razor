@@ -1,5 +1,5 @@
 '/=========================================================================\
-'| razor core filldata (experimental) - rev 4.2.6                          |
+'| razor core filldata (experimental) - rev 4.2.7                          |
 '|-------------------------------------------------------------------------|
 '|  Template: razor.core.filldata (experimental version)                   |
 '|   Website: http://www.pigford.net/razor                                 |
@@ -54,11 +54,11 @@ Namespace razor
 	        Return {{Alias}}_RetrieveData(0, 0, pFilter, pSort)
 	    End Function
 .
-	    Public Function {{Alias}}_GridServer_RetrieveData(pageNumber As Integer, pageSize As Integer, pFilter As String, pSort As String) As List(Of {{xSettings.DataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}})
+	    Public Function {{Alias}}_GridServer_RetrieveData(pageNumber As Integer, pageSize As Integer, pFilter As String, pSort As String) As List(Of {{xSettings.razorRowDataClassNamespace}}.{{xSettings.DataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}})
 	        Return {{Alias}}_RetrieveData(pageNumber, pageSize, pFilter, pSort)
 	    End Function
 .
-	    Public Function {{Alias}}_GridServer_RetrieveData(pFilter As String, pSort As String) As List(Of {{xSettings.DataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}})
+	    Public Function {{Alias}}_GridServer_RetrieveData(pFilter As String, pSort As String) As List(Of {{xSettings.razorRowDataClassNamespace}}.{{xSettings.DataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}})
 	        Return {{Alias}}_RetrieveData(0, 0, pFilter, pSort)
 	    End Function
 
