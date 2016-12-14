@@ -34,7 +34,7 @@ Alternately you can download M2G Desktop (Windows only) and use the templates di
 1. Create an "ASP.NET Empty Web Application" using Visual Studio 2012.
 2. Select "Use Visual Studio Development Server" option in the "Web" tab of project settings.
 
-### Data - razor.engine.vb.sqlserver (4.2.629), razor.gen.vb.sqlserver (4.2.878)
+### Data - razor.engine.vb.sqlserver (4.2.629), razor.gen.vb.sqlserver (4.2.879)
 
 1. Add a reference to "Newtonsoft.Json.dll" assembly.
 2. Create a folder for the generated data classes.  (i.e. Data)
@@ -45,7 +45,7 @@ Alternately you can download M2G Desktop (Windows only) and use the templates di
 7. Set configuration structure for desired schema tables; save to generate.  (template: razor.gen.vb.sqlserver)
 8. Compile and verify.
 
-### Core - razor.core.filldata (4.2.5)
+### Core - razor.core.filldata (4.2.7)
 
 1. Create a folder for the generated core classes.  (i.e. Core)
 2. Set "Show All Files" option in Visual Studio Solution Explorer
@@ -53,7 +53,7 @@ Alternately you can download M2G Desktop (Windows only) and use the templates di
 4. Set configuration structure for desired schema tables; save to generate.  (template: razor.core.filldata)
 5. Compile and verify.
 
-### REST - razor.rest.service (4.2.5)
+### REST - razor.rest.service (4.2.6)
 
 1. Add a reference to "System.ServiceModel" assembly.
 2. Add a reference to "System.ServiceModel.Web" assembly.
@@ -83,6 +83,14 @@ The Kendo UI javascript interface components pull data using the razor.rest.serv
 4. Set configuration structure for desired schema tables; save to generate.  (template: razor.kendo.combobox.js)
 5. Set the values for DISPLAYCOLUMNNAMEGOESHERE and IDCOLUMNNAMEGOESHEREMUSTBENUMERIC in the javascript file.
 6. Compile and verify.
+
+#### Window - razor.kendo.window.form.js (4.2.1)
+
+1. Create a folder for the generated window files.  (i.e. Window Popup Form)
+2. Set "Show All Files" option in Visual Studio Solution Explorer
+3. Add a new Item "My2ndGeneration Template" to the "window" folder.  (i.e. Window.m2g) 
+4. Set configuration structure for desired schema tables; save to generate.  (template: razor.kendo.window.form.js)
+5. Compile and verify.
 
 ### Config - web.config, global.asax
 
