@@ -6,5 +6,6 @@
 		"DataObjectPrefix": "row",
 		"RestServiceClassNamespace": "RT2.Web.razor",
 		"RestServiceClassName": "RestService",
-		"razorFillDataClassNamespace": "RT2.Web.razor"
+		"razorFillDataClassNamespace": "RT2.Web.razor",
+		"razorRowDataClassNamespace": "RT2.Web.razor"
 }
