@@ -1,0 +1,272 @@
+{{#each Items}}
+/*
+/=========================================================================\
+| razor kendo window form (experimental) - rev 4.2.1                      |
+|-------------------------------------------------------------------------|
+|  Template: razor.kendo.window.form (experimental version)               |
+|   Website: http://www.pigford.net/razor                                 |
+\=========================================================================/
+*/
+{{!===============================================================}}
+{{! Release: razor kendo window form (experimental)               }}
+{{!===============================================================}}
+{{! Update: 12/14/2016 - Initial Version                          }}
+{{!===============================================================}}
+{{!                                                               }}
+{{!===============================================================}}
+.
+$('window').ready(function () {
+    //Window Height Scaling
+    var NumberOfColumns = {{Columns.length}};
+    var windowHeight = NumberOfColumns * 60 //Roughly 60px high per input
+    document.getElementById("window_{{Alias}}").style.height = windowHeight;
+    $("#window_{{Alias}}").kendoWindow({
+        resizable: false,
+        height: windowHeight,
+        width: 600,
+        title: "{{Alias}} Window Form"
+    });
+.
+    //Kendo Inputs
+	{{#each Columns}}
+		{{#xIf DataTypeName "===" "int"}}
+	    $("#{{Alias}}Input").kendoNumericTextBox({
+	        spinners: false
+	    });
+	    var z{{Alias}}Input = $("#{{Alias}}Input").data("kendoNumericTextBox");
+		{{/xIf}}
+		{{#xIf DataTypeName "===" "numeric"}}
+	    $("#{{Alias}}Input").kendoNumericTextBox({
+	        spinners: false
+	    });
+	    var z{{Alias}}Input = $("#{{Alias}}Input").data("kendoNumericTextBox");
+		{{/xIf}}
+		{{#xIf DataTypeName "===" "date"}}
+	    $("#{{Alias}}Input").kendoDatePicker({
+	        value: new Date()
+	    });
+	    var z{{Alias}}Input = $("#{{Alias}}Input").data("kendoDatePicker");
+		{{/xIf}}
+		{{#xIf DataTypeName "===" "bit"}}
+		$("#{{Alias}}Input").kendoDropDownList({
+	        dataSource: {
+	            data: ["True", "False"]
+	        }
+	    });
+	    var z{{Alias}}Input = $("#{{Alias}}Input").data("kendoDropDownList");
+		{{/xIf}}
+	{{/each}}
+.
+    $("#clear").kendoButton({
+        click: function (e) {
+            btnClear_Click();
+        }
+    });
+.
+    $("#save").kendoButton({
+        click: function (e) {
+            btnSave_Click();
+        }
+    });
+.
+    function btnSave_Click() {
+        var pWindowJSON = JSON.stringify({
+		{{#each Columns}}
+		{{#xIf DataTypeName "===" "int"}}
+			"{{Name}}": z{{Alias}}Input.value(){{#xNotLast}},{{/xNotLast}}
+		{{/xIf}}
+		{{#xIf DataTypeName "===" "numeric"}}
+			"{{Name}}": z{{Alias}}Input.value(){{#xNotLast}},{{/xNotLast}}
+		{{/xIf}}
+		{{#xIf DataTypeName "===" "date"}}
+			"{{Name}}": z{{Alias}}Input.value(){{#xNotLast}},{{/xNotLast}}
+		{{/xIf}}
+		{{#xIf DataTypeName "===" "bit"}}
+			"{{Name}}": z{{Alias}}Input.value(){{#xNotLast}},{{/xNotLast}}
+		{{/xIf}}
+		{{#xIf DotNet_Type "===" "String"}}
+			"{{Name}}": document.getElementById('{{Alias}}Input').value{{#xNotLast}},{{/xNotLast}}
+		{{/xIf}}
+		{{/each}}
+        })
+.
+        var zData = ko.toJSON({ "pJSON": pWindowJSON });
+        try {
+            $.ajax({
+                url: "../REST/{{xSettings.RestServiceClassName}}.svc/{{Alias}}_Window_SaveRowData",
+                data: zData,
+                type: "POST",
+                cache: false,
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+                success: function (pResults) { btnSave_ClickSuccess(pResults); },
+                error: function (pResults, pMessage, pErrorDetail) { btnSave_ClickError(pResults, pMessage, pErrorDetail); }
+            });
+        } catch (pErrorMessage) {
+            alert("Error: " + pErrorMessage);
+        }
+    }
+.
+    // FUNCTION THAT IS SUCCESSFUL FOR GET MESSAGE
+    function btnSave_ClickSuccess(pResults) {
+        alert("Record saved");
+    }
+.
+    // FUNCTION THAT IS ERROR FOR GET MESSAGE
+    function btnSave_ClickError(pResults, pMessage, pErrorDetail) {
+        alert("Save Error: " + pMessage + " - " + pErrorDetail);
+    }
+.
+.
+.
+    function btnClear_Click() {
+		{{#each Columns}}
+		{{#xIf DataTypeName "===" "int"}}
+			z{{Alias}}Input.value(""){{#xNotLast}},{{/xNotLast}}
+		{{/xIf}}
+		{{#xIf DataTypeName "===" "numeric"}}
+			z{{Alias}}Input.value(""){{#xNotLast}},{{/xNotLast}}
+		{{/xIf}}
+		{{#xIf DataTypeName "===" "date"}}
+			z{{Alias}}Input.value(new Date()){{#xNotLast}},{{/xNotLast}}
+		{{/xIf}}
+		{{#xIf DataTypeName "===" "bit"}}
+			z{{Alias}}.value("True"){{#xNotLast}},{{/xNotLast}}
+		{{/xIf}}
+		{{#xIf DotNet_Type "===" "String"}}
+			document.getElementById('{{Alias}}Input').value = ""{{#xNotLast}},{{/xNotLast}}
+		{{/xIf}}
+		{{/each}}	
+   }
+});
+.
+.
+.
+{{xFile Alias prefix="WindowForm_"  path=xSettings.OutputPath ext="js"}}
+{{/each}}
+.
+.
+.
+{{#each Items}}
+<!--
+/=========================================================================\
+| razor kendo window form (experimental) - rev 4.2.1                      |
+|-------------------------------------------------------------------------|
+|  Template: razor.kendo.window.form (experimental version)               |
+|   Website: http://www.pigford.net/razor                                 |
+\=========================================================================/
+-->
+{{!===============================================================}}
+{{! Release: razor kendo window form (experimental)               }}
+{{!===============================================================}}
+{{! Update: 12/14/2016 - Initial Version                          }}
+{{!===============================================================}}
+{{!                                                               }}
+{{!===============================================================}}
+.
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <title>{{Alias}}_Window</title>
+.
+    <link rel="stylesheet" href="http://kendo.cdn.telerik.com/2016.3.1028/styles/kendo.common.min.css"/>
+    <link rel="stylesheet" href="http://kendo.cdn.telerik.com/2016.3.1028/styles/kendo.rtl.min.css"/>
+    <link rel="stylesheet" href="http://kendo.cdn.telerik.com/2016.3.1028/styles/kendo.silver.min.css"/>
+    <link rel="stylesheet" href="http://kendo.cdn.telerik.com/2016.3.1028/styles/kendo.mobile.all.min.css"/>
+    <link href="WindowForm_{{Alias}}.css" rel="stylesheet" />
+.
+    <script src="http://code.jquery.com/jquery-1.12.4.min.js"></script>
+    <script src="http://kendo.cdn.telerik.com/2016.3.1028/js/kendo.all.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/knockout/3.4.1/knockout-debug.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/knockout/3.4.1/knockout-min.js"></script>
+    <script src="WindowForm_{{Alias}}.js"></script>
+</head>
+<body>
+    <div id="window_{{Alias}}" class="container">
+        <div class="windowLabel_Inputs">
+		{{#each Columns}}
+            <div class="windowRow">
+                <div class="windowSplitLeft">{{Alias}}</div>
+                <div class="windowSplitRight">
+                    <input id="{{Alias}}Input" class="inputs k-textbox"/>
+                </div>
+            </div>
+		{{/each}}
+        </div>
+        <div class="buttonBar">
+            <button class="buttonLeft" id="clear">Clear</button>
+            <button class="buttonRight" id="save">Save</button>
+        </div>
+    </div>
+</body>
+</html>
+{{xFile Alias prefix="WindowForm_"  path=xSettings.OutputPath ext="html"}}
+{{/each}}
+.
+.
+.
+{{#each Items}}
+/*
+/=========================================================================\
+| razor kendo window form (experimental) - rev 4.2.1                      |
+|-------------------------------------------------------------------------|
+|  Template: razor.kendo.window.form (experimental version)               |
+|   Website: http://www.pigford.net/razor                                 |
+\=========================================================================/
+*/
+{{!===============================================================}}
+{{! Release: razor kendo window form (experimental)               }}
+{{!===============================================================}}
+{{! Update: 12/14/2016 - Initial Version                          }}
+{{!===============================================================}}
+{{!                                                               }}
+{{!===============================================================}}
+.
+.container {
+    width: 600px;
+    height: 600px;
+}
+.
+.windowLabel_Inputs {
+    width: 100%;
+    height: 95%;
+}
+.
+.windowRow {
+    width: 100%;
+    height: {{xMath 100 "/" Columns.length}}%;
+}
+.
+.windowSplitRight {
+    float: right;
+    width: 60%;
+    height: 100%;
+}
+.
+.windowSplitLeft {
+    float: left;
+    width: 40%;
+    height: 100%;
+    text-align: right;
+}
+.
+.inputs {
+    float: right;
+    width: 90%;
+}
+.
+.buttonBar {
+    clear: both;
+    width: 100%;
+}
+.
+.buttonLeft {
+    float: left;
+}
+.
+.buttonRight {
+    float: right;
+}
+{{xFile Alias prefix="WindowForm_"  path=xSettings.OutputPath ext="css"}}
+{{/each}}
