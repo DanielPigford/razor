@@ -1,5 +1,5 @@
 '/=========================================================================\
-'| razor core filldata (experimental) - rev 4.2.5                          |
+'| razor core filldata (experimental) - rev 4.2.6                          |
 '|-------------------------------------------------------------------------|
 '|  Template: razor.core.filldata (experimental version)                   |
 '|   Website: http://www.pigford.net/razor                                 |
@@ -12,6 +12,8 @@
 {{! Update: 12/05/2016 - Added support for dynamic combo box      }}
 {{! Update: 12/05/2016 - Added _GridServer_RetrieveData wrapper   }}
 {{! Update: 12/07/2016 - Added reminder comment for combo sort    }}
+{{! Update: 12/14/2016 - Added missing reference to xSettings     }}
+{{!                      RowDataClassNamespace on List(Of )       }}
 {{!===============================================================}}
 {{!                                                               }}
 {{!===============================================================}}
@@ -19,7 +21,7 @@ Namespace razor
 	Public Class UtilFillData
 .
 {{#each Items}}
-		Public Function {{Alias}}_RetrieveData(Optional pageNumber As Integer = 0, Optional pageSize As Integer = 0) As List(Of {{xSettings.DataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}})  
+		Public Function {{Alias}}_RetrieveData(Optional pageNumber As Integer = 0, Optional pageSize As Integer = 0) As List(Of {{xSettings.razorRowDataClassNamespace}}.{{xSettings.DataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}})  
 	        Dim zQ As New {{xSettings.razorRowDataClassNamespace}}.{{xSettings.QueryAliasPrefix}}{{Alias}}        
 	        zQ.SelectAll()
 	        If Not pageNumber = 0 And Not pageSize = 0 Then
@@ -30,7 +32,7 @@ Namespace razor
 	        Return zList
 	    End Function
 .
-	    Public Function {{Alias}}_RetrieveData(pageNumber As Integer, pageSize As Integer, pFilter As String, pSort As String) As List(Of {{xSettings.DataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}})
+	    Public Function {{Alias}}_RetrieveData(pageNumber As Integer, pageSize As Integer, pFilter As String, pSort As String) As List(Of {{xSettings.razorRowDataClassNamespace}}.{{xSettings.DataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}})
 	        Dim zQ As New {{xSettings.razorRowDataClassNamespace}}.{{xSettings.QueryAliasPrefix}}{{Alias}}
 	        zQ.SelectAll()
 	        If Not pageNumber = 0 And Not pageSize = 0 Then
@@ -48,7 +50,7 @@ Namespace razor
 	        Return zList
 	    End Function
 .
-	    Public Function {{Alias}}_RetrieveData(pFilter As String, pSort As String) As List(Of {{xSettings.DataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}})
+	    Public Function {{Alias}}_RetrieveData(pFilter As String, pSort As String) As List(Of {{xSettings.razorRowDataClassNamespace}}.{{xSettings.DataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}})
 	        Return {{Alias}}_RetrieveData(0, 0, pFilter, pSort)
 	    End Function
 .
@@ -60,7 +62,7 @@ Namespace razor
 	        Return {{Alias}}_RetrieveData(0, 0, pFilter, pSort)
 	    End Function
 
-		Public Function {{Alias}}_ComboBox_RetrieveData(pFilter As String) As List(Of {{xSettings.DataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}})        
+		Public Function {{Alias}}_ComboBox_RetrieveData(pFilter As String) As List(Of {{xSettings.razorRowDataClassNamespace}}.{{xSettings.DataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}})        
 	        Dim zQ As New {{xSettings.razorRowDataClassNamespace}}.{{xSettings.QueryAliasPrefix}}{{Alias}}         
 	        zQ.SelectAll()
 	        zQ.Top = 100
