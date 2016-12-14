@@ -86,7 +86,7 @@ The Kendo UI javascript interface components pull data using the razor.rest.serv
 
 #### Window - razor.kendo.window.form.js (4.2.1)
 
-1. Create a folder for the generated window files.  (i.e. Window Popup Form)
+1. Create a folder for the generated window files.  (i.e. Window)
 2. Set "Show All Files" option in Visual Studio Solution Explorer
 3. Add a new Item "My2ndGeneration Template" to the "window" folder.  (i.e. Window.m2g) 
 4. Set configuration structure for desired schema tables; save to generate.  (template: razor.kendo.window.form.js)
