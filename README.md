@@ -53,7 +53,7 @@ Alternately you can download M2G Desktop (Windows only) and use the templates di
 4. Set configuration structure for desired schema tables; save to generate.  (template: razor.core.filldata)
 5. Compile and verify.
 
-### REST - razor.rest.service (4.2.6)
+### REST - razor.rest.service (4.2.7)
 
 1. Add a reference to "System.ServiceModel" assembly.
 2. Add a reference to "System.ServiceModel.Web" assembly.
@@ -84,7 +84,7 @@ The Kendo UI javascript interface components pull data using the razor.rest.serv
 5. Set the values for DISPLAYCOLUMNNAMEGOESHERE and IDCOLUMNNAMEGOESHEREMUSTBENUMERIC in the javascript file.
 6. Compile and verify.
 
-#### Window - razor.kendo.window.form.js (4.2.1)
+#### Window - razor.kendo.window.form.js (4.2.2)
 
 1. Create a folder for the generated window files.  (i.e. Window)
 2. Set "Show All Files" option in Visual Studio Solution Explorer
