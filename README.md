@@ -84,7 +84,7 @@ The Kendo UI javascript interface components pull data using the razor.rest.serv
 5. Set the values for DISPLAYCOLUMNNAMEGOESHERE and IDCOLUMNNAMEGOESHEREMUSTBENUMERIC in the javascript file.
 6. Compile and verify.
 
-#### Window - razor.kendo.window.form.js (4.2.2)
+#### Window - razor.kendo.window.form.js (4.2.3)
 
 1. Create a folder for the generated window files.  (i.e. Window)
 2. Set "Show All Files" option in Visual Studio Solution Explorer
