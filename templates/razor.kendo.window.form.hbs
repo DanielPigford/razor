@@ -1,7 +1,7 @@
 {{#each Items}}
 /*
 /=========================================================================\
-| razor kendo window form (experimental) - rev 4.2.1                      |
+| razor kendo window form (experimental) - rev 4.2.2                      |
 |-------------------------------------------------------------------------|
 |  Template: razor.kendo.window.form (experimental version)               |
 |   Website: http://www.pigford.net/razor                                 |
@@ -11,6 +11,7 @@
 {{! Release: razor kendo window form (experimental)               }}
 {{!===============================================================}}
 {{! Update: 12/14/2016 - Initial Version                          }}
+{{! Update: 12/27/2016 - Added support for load and edit detail   }}
 {{!===============================================================}}
 {{!                                                               }}
 {{!===============================================================}}
@@ -50,7 +51,7 @@ $('window').ready(function () {
 		{{#xIf DataTypeName "===" "bit"}}
 		$("#{{Alias}}Input").kendoDropDownList({
 	        dataSource: {
-	            data: ["True", "False"]
+	            data: ["true", "false"]
 	        }
 	    });
 	    var z{{Alias}}Input = $("#{{Alias}}Input").data("kendoDropDownList");
@@ -68,6 +69,90 @@ $('window').ready(function () {
             btnSave_Click();
         }
     });
+.
+    $("#load").kendoButton({
+        click: function (e) {
+            var keepPK = true;
+            ClearInputs(keepPK);
+            LoadRowData();
+        }
+    });
+.
+    function LoadRowData() {
+        var pWindowJSON = JSON.stringify({
+		{{#each PrimaryKeys}}
+		{{#xIf DataTypeName "===" "int"}}
+			"{{xSettings.ColumnAliasPrefix}}{{Alias}}": z{{Alias}}Input.value(){{#xNotLast}},{{/xNotLast}}
+		{{/xIf}}
+		{{#xIf DataTypeName "===" "numeric"}}
+			"{{xSettings.ColumnAliasPrefix}}{{Alias}}": z{{Alias}}Input.value(){{#xNotLast}},{{/xNotLast}}
+		{{/xIf}}
+		{{#xIf DataTypeName "===" "date"}}
+			"{{xSettings.ColumnAliasPrefix}}{{Alias}}": z{{Alias}}Input.value(){{#xNotLast}},{{/xNotLast}}
+		{{/xIf}}
+		{{#xIf DataTypeName "===" "bit"}}
+			"{{xSettings.ColumnAliasPrefix}}{{Alias}}": z{{Alias}}Input.value(){{#xNotLast}},{{/xNotLast}}
+		{{/xIf}}
+		{{#xIf DotNet_Type "===" "String"}}
+			"{{xSettings.ColumnAliasPrefix}}{{Alias}}": document.getElementById('{{Alias}}Input').value{{#xNotLast}},{{/xNotLast}}
+		{{/xIf}}
+		{{/each}}        })
+.
+        var zData = ko.toJSON({ "pJSON": pWindowJSON });
+        try {
+            $.ajax({
+                url: "../REST/{{xSettings.RestServiceClassName}}.svc/{{Alias}}_Window_LoadRowData",
+                data: zData,
+                type: "POST",
+                cache: false,
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+                success: function (pResults) { LoadRowData_Success(pResults); },
+                error: function (pResults, pMessage, pErrorDetail) { LoadRowData_Error(pResults, pMessage, pErrorDetail); }
+            });
+        } catch (pErrorMessage) {
+            alert("Error: " + pErrorMessage);
+        }
+    }
+.
+    // FUNCTION THAT IS SUCCESSFUL FOR GET MESSAGE
+    function LoadRowData_Success(pResults) {
+        if (pResults.isSuccess) {
+			if ({{#each PrimaryKeys}}pResults.data.{{xSettings.ColumnAliasPrefix}}{{Alias}} != null{{#xNotLast}} && {{/xNotLast}}{{/each}}) {
+                //set values 
+		{{#each Columns}}
+			{{#xIf DataTypeName "===" "int"}}
+				z{{Alias}}Input.value(pResults.data.{{xSettings.ColumnAliasPrefix}}{{Alias}}){{#xNotLast}};{{/xNotLast}}
+			{{/xIf}}
+			{{#xIf DataTypeName "===" "numeric"}}
+				z{{Alias}}Input.value(pResults.data.{{xSettings.ColumnAliasPrefix}}{{Alias}}){{#xNotLast}};{{/xNotLast}}
+			{{/xIf}}
+			{{#xIf DataTypeName "===" "date"}}
+				z{{Alias}}Input.value(new Date(pResults.data.{{xSettings.ColumnAliasPrefix}}{{Alias}})){{#xNotLast}};{{/xNotLast}}
+			{{/xIf}}
+			{{#xIf DataTypeName "===" "bit"}}
+				z{{Alias}}Input.value(pResults.data.{{xSettings.ColumnAliasPrefix}}{{Alias}}){{#xNotLast}};{{/xNotLast}}
+			{{/xIf}}
+			{{#xIf DotNet_Type "===" "String"}}
+				document.getElementById('{{Alias}}Input').value = pResults.data.{{xSettings.ColumnAliasPrefix}}{{Alias}}{{#xNotLast}};{{/xNotLast}}
+			{{/xIf}}
+		{{/each}}
+.
+                alert("Record loaded");
+            }
+            else {
+                alert("Record does not exist");
+            }
+        }
+        else {
+            alert("Primary key must be filled in");
+        }
+    }
+.
+    // FUNCTION THAT IS ERROR FOR GET MESSAGE
+    function LoadRowData_Error(pResults, pMessage, pErrorDetail) {
+        alert("Load Error: " + pMessage + " - " + pErrorDetail);
+    }
 .
     function btnSave_Click() {
         var pWindowJSON = JSON.stringify({
@@ -118,8 +203,29 @@ $('window').ready(function () {
     }
 .
 .
-.
-    function btnClear_Click() {
+    function ClearInputs(keepPK) {
+        if (keepPK == true) {
+		{{#each Columns}}
+		{{#xIf IsInPrimaryKey "===" false}}
+		{{#xIf DataTypeName "===" "int"}}
+			z{{Alias}}Input.value(""){{#xNotLast}},{{/xNotLast}}
+		{{/xIf}}
+		{{#xIf DataTypeName "===" "numeric"}}
+			z{{Alias}}Input.value(""){{#xNotLast}},{{/xNotLast}}
+		{{/xIf}}
+		{{#xIf DataTypeName "===" "date"}}
+			z{{Alias}}Input.value(new Date()){{#xNotLast}},{{/xNotLast}}
+		{{/xIf}}
+		{{#xIf DataTypeName "===" "bit"}}
+			z{{Alias}}Input.value("True"){{#xNotLast}},{{/xNotLast}}
+		{{/xIf}}
+		{{#xIf DotNet_Type "===" "String"}}
+			document.getElementById('{{Alias}}Input').value = ""{{#xNotLast}},{{/xNotLast}}
+		{{/xIf}}
+		{{/xIf}}
+		{{/each}}	
+        }
+        else {
 		{{#each Columns}}
 		{{#xIf DataTypeName "===" "int"}}
 			z{{Alias}}Input.value(""){{#xNotLast}},{{/xNotLast}}
@@ -131,12 +237,18 @@ $('window').ready(function () {
 			z{{Alias}}Input.value(new Date()){{#xNotLast}},{{/xNotLast}}
 		{{/xIf}}
 		{{#xIf DataTypeName "===" "bit"}}
-			z{{Alias}}.value("True"){{#xNotLast}},{{/xNotLast}}
+			z{{Alias}}Input.value("True"){{#xNotLast}},{{/xNotLast}}
 		{{/xIf}}
 		{{#xIf DotNet_Type "===" "String"}}
 			document.getElementById('{{Alias}}Input').value = ""{{#xNotLast}},{{/xNotLast}}
 		{{/xIf}}
 		{{/each}}	
+        }
+    }
+
+.
+    function btnClear_Click() {
+		ClearInputs();
    }
 });
 .
@@ -150,7 +262,7 @@ $('window').ready(function () {
 {{#each Items}}
 <!--
 /=========================================================================\
-| razor kendo window form (experimental) - rev 4.2.1                      |
+| razor kendo window form (experimental) - rev 4.2.2                      |
 |-------------------------------------------------------------------------|
 |  Template: razor.kendo.window.form (experimental version)               |
 |   Website: http://www.pigford.net/razor                                 |
@@ -160,6 +272,7 @@ $('window').ready(function () {
 {{! Release: razor kendo window form (experimental)               }}
 {{!===============================================================}}
 {{! Update: 12/14/2016 - Initial Version                          }}
+{{! Update: 12/27/2016 - Added support for load and edit detail   }}
 {{!===============================================================}}
 {{!                                                               }}
 {{!===============================================================}}
@@ -197,6 +310,7 @@ $('window').ready(function () {
         <div class="buttonBar">
             <button class="buttonLeft" id="clear">Clear</button>
             <button class="buttonRight" id="save">Save</button>
+            <button class="buttonRight" id="load">Load</button>
         </div>
     </div>
 </body>

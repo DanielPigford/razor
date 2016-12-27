@@ -1,5 +1,5 @@
 '/=========================================================================\
-'| razor rest service (experimental) - rev 4.2.6                           |
+'| razor rest service (experimental) - rev 4.2.7                           |
 '|-------------------------------------------------------------------------|
 '|  Template: razor.rest.service (experimental version)                    |
 '|   Website: http://www.pigford.net/razor                                 |
@@ -13,6 +13,7 @@
 {{! Update: 12/05/2016 - Create _GridServer_GetData method        }}
 {{! Update: 12/06/2016 - Renamed to razor.rest.service            }}
 {{! Update: 12/14/2016 - Initial support for detail window        }}
+{{! Update: 12/27/2016 - Load and edit detail window support      }}
 {{!===============================================================}}
 {{!                                                               }}
 {{!===============================================================}}
@@ -107,6 +108,27 @@ Namespace razor
 	        Return zReturn
 	    End Function
 .
+	    Public Function {{Alias}}_Window_LoadRowData(pJSON As String) As IO.Stream Implements I{{xSettings.RestServiceClassName}}.{{Alias}}_Window_LoadRowData
+	        Dim zReturn As System.IO.Stream
+		    Dim zRow As New {{xSettings.razorRowDataClassNamespace}}.{{xSettings.DataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}}
+	        zRow = Newtonsoft.Json.JsonConvert.DeserializeObject(Of {{xSettings.razorRowDataClassNamespace}}.{{xSettings.DataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}})(pJSON)
+	        Dim zJSON As New Dictionary(Of String, Object)
+.
+	        Try
+	            zJSON.Add("data", {{xSettings.razorRowDataClassNamespace}}.{{xSettings.TableAliasPrefix}}{{Alias}}.LoadByPrimaryKey({{#each PrimaryKeys}}zRow.{{xSettings.ColumnAliasPrefix}}{{Alias}}{{#xNotLast}}, {{/xNotLast}}{{/each}}))
+	            zJSON.Add("isSuccess", True)
+	            zJSON.Add("message", "")
+	            zReturn = JsonWrap(Newtonsoft.Json.JsonConvert.SerializeObject(zJSON))
+.
+	        Catch ex As Exception
+	            zJSON.Add("isSuccess", False)
+	            zJSON.Add("message", ex.Message)
+	            zReturn = JsonWrap(Newtonsoft.Json.JsonConvert.SerializeObject(zJSON))
+.
+	        End Try
+	        Return zReturn
+	    End Function
+.
 {{/each}}
 .
 	    ' HELPER FUNCTION FOR RETURNING JSON
@@ -129,7 +151,7 @@ End Namespace
 {{xFile xSettings.RestServiceClassName path=xSettings.OutputPath ext="svc.vb"}}
 .
 '/=========================================================================\
-'| razor rest interface (experimental) - rev 4.2.6                         |
+'| razor rest interface (experimental) - rev 4.2.7                         |
 '|-------------------------------------------------------------------------|
 '|  Template: razor.rest.interface (experimental version)                  |
 '|   Website: http://www.pigford.net/razor                                 |
@@ -143,6 +165,7 @@ End Namespace
 {{! Update: 12/05/2016 - Create _GridServer_GetData method        }}
 {{! Update: 12/06/2016 - Renamed to razor.rest.service            }}
 {{! Update: 12/14/2016 - Initial support for detail window        }}
+{{! Update: 12/27/2016 - Load and edit detail window support      }}
 {{!===============================================================}}
 {{!                                                               }}
 {{!===============================================================}}
@@ -165,6 +188,9 @@ Namespace razor
 .
 	    <WebInvoke(ResponseFormat:=WebMessageFormat.Json, RequestFormat:=WebMessageFormat.Json, BodyStyle:=WebMessageBodyStyle.WrappedRequest)> _
 	    Function {{Alias}}_Window_SaveRowData(pJSON As String) As System.IO.Stream
+.
+		<WebInvoke(ResponseFormat:=WebMessageFormat.Json, RequestFormat:=WebMessageFormat.Json, BodyStyle:=WebMessageBodyStyle.WrappedRequest)> _
+    	Function {{Alias}}_Window_LoadRowData(pJSON As String) As System.IO.Stream
 .
 	{{/each}}
 	End Interface
