@@ -32,7 +32,8 @@ $('window').ready(function () {
 	{{#each Columns}}
 		{{#xIf DataTypeName "===" "int"}}
 	    $("#{{Alias}}Input").kendoNumericTextBox({
-	        spinners: false
+	        spinners: false,
+			format: "n0"
 	    });
 	    var z{{Alias}}Input = $("#{{Alias}}Input").data("kendoNumericTextBox");
 		{{/xIf}}
@@ -158,19 +159,19 @@ $('window').ready(function () {
         var pWindowJSON = JSON.stringify({
 		{{#each Columns}}
 		{{#xIf DataTypeName "===" "int"}}
-			"{{Name}}": z{{Alias}}Input.value(){{#xNotLast}},{{/xNotLast}}
+			"{{xSettings.ColumnAliasPrefix}}{{Alias}}": z{{Alias}}Input.value(){{#xNotLast}},{{/xNotLast}}
 		{{/xIf}}
 		{{#xIf DataTypeName "===" "numeric"}}
-			"{{Name}}": z{{Alias}}Input.value(){{#xNotLast}},{{/xNotLast}}
+			"{{xSettings.ColumnAliasPrefix}}{{Alias}}": z{{Alias}}Input.value(){{#xNotLast}},{{/xNotLast}}
 		{{/xIf}}
 		{{#xIf DataTypeName "===" "date"}}
-			"{{Name}}": z{{Alias}}Input.value(){{#xNotLast}},{{/xNotLast}}
+			"{{xSettings.ColumnAliasPrefix}}{{Alias}}": z{{Alias}}Input.value(){{#xNotLast}},{{/xNotLast}}
 		{{/xIf}}
 		{{#xIf DataTypeName "===" "bit"}}
-			"{{Name}}": z{{Alias}}Input.value(){{#xNotLast}},{{/xNotLast}}
+			"{{xSettings.ColumnAliasPrefix}}{{Alias}}": z{{Alias}}Input.value(){{#xNotLast}},{{/xNotLast}}
 		{{/xIf}}
 		{{#xIf DotNet_Type "===" "String"}}
-			"{{Name}}": document.getElementById('{{Alias}}Input').value{{#xNotLast}},{{/xNotLast}}
+			"{{xSettings.ColumnAliasPrefix}}{{Alias}}": document.getElementById('{{Alias}}Input').value{{#xNotLast}},{{/xNotLast}}
 		{{/xIf}}
 		{{/each}}
         })
