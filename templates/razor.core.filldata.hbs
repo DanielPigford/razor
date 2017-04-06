@@ -1,5 +1,5 @@
 '/=========================================================================\
-'| razor core filldata (experimental) - rev 4.2.7                          |
+'| razor core filldata (experimental) - rev 4.2.8                          |
 '|-------------------------------------------------------------------------|
 '|  Template: razor.core.filldata (experimental version)                   |
 '|   Website: http://www.pigford.net/razor                                 |
@@ -14,6 +14,7 @@
 {{! Update: 12/07/2016 - Added reminder comment for combo sort    }}
 {{! Update: 12/14/2016 - Added missing reference to xSettings     }}
 {{!                      RowDataClassNamespace on List(Of )       }}
+{{! Update: 04/06/2017 - Addde support for autocomplete           }}
 {{!===============================================================}}
 {{!                                                               }}
 {{!===============================================================}}
@@ -61,8 +62,21 @@ Namespace razor
 	    Public Function {{Alias}}_GridServer_RetrieveData(pFilter As String, pSort As String) As List(Of {{xSettings.razorRowDataClassNamespace}}.{{xSettings.DataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}})
 	        Return {{Alias}}_RetrieveData(0, 0, pFilter, pSort)
 	    End Function
-
+.
 		Public Function {{Alias}}_ComboBox_RetrieveData(pFilter As String) As List(Of {{xSettings.razorRowDataClassNamespace}}.{{xSettings.DataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}})        
+	        Dim zQ As New {{xSettings.razorRowDataClassNamespace}}.{{xSettings.QueryAliasPrefix}}{{Alias}}         
+	        zQ.SelectAll()
+	        zQ.Top = 100
+			'zQ.OrderBy(zQ.COLUMNNAMEGOESHERE.Ascending)
+	        Dim zFS As New {{xSettings.razorRowDataClassNamespace}}.UtilFilterSort
+	        If Not pFilter = "" Then
+	            zFS.SetFilter(pFilter, zQ)
+	        End If
+	        Dim zList As List(Of {{xSettings.razorRowDataClassNamespace}}.{{xSettings.DataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}}) = {{xSettings.razorRowDataClassNamespace}}.{{xSettings.TableAliasPrefix}}{{Alias}}.LoadData(zQ.QueryText)        
+	        Return zList
+	    End Function
+.
+		Public Function {{Alias}}_AutoComplete_RetrieveData(pFilter As String) As List(Of {{xSettings.razorRowDataClassNamespace}}.{{xSettings.DataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}})        
 	        Dim zQ As New {{xSettings.razorRowDataClassNamespace}}.{{xSettings.QueryAliasPrefix}}{{Alias}}         
 	        zQ.SelectAll()
 	        zQ.Top = 100

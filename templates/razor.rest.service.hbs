@@ -1,5 +1,5 @@
 '/=========================================================================\
-'| razor rest service (experimental) - rev 4.2.7                           |
+'| razor rest service (experimental) - rev 4.2.8                           |
 '|-------------------------------------------------------------------------|
 '|  Template: razor.rest.service (experimental version)                    |
 '|   Website: http://www.pigford.net/razor                                 |
@@ -14,6 +14,7 @@
 {{! Update: 12/06/2016 - Renamed to razor.rest.service            }}
 {{! Update: 12/14/2016 - Initial support for detail window        }}
 {{! Update: 12/27/2016 - Load and edit detail window support      }}
+{{! Update: 04/06/2017 - Added support for autocomplete           }}
 {{!===============================================================}}
 {{!                                                               }}
 {{!===============================================================}}
@@ -73,6 +74,27 @@ Namespace razor
 .
 	        Try
 	            zJSON.Add("data", zUFD.{{Alias}}_ComboBox_RetrieveData(filter))
+	            zJSON.Add("isSuccess", True)
+	            zJSON.Add("message", "")
+	            zReturn = JsonWrap(Newtonsoft.Json.JsonConvert.SerializeObject(zJSON))
+.
+	        Catch ex As Exception
+	            zJSON.Add("isSuccess", False)
+	            zJSON.Add("message", ex.Message)
+	            zJSON.Add("data", Nothing)
+	            zReturn = JsonWrap(Newtonsoft.Json.JsonConvert.SerializeObject(zJSON))
+.
+	        End Try
+	        Return zReturn
+		End Function
+.
+	    Public Function {{Alias}}_AutoCompleteServer_GetData(page As Nullable(Of Integer), pageSize As Nullable(Of Integer), skip As Nullable(Of Integer), take As Nullable(Of Integer), sort As String, filter As String) As IO.Stream Implements I{{xSettings.RestServiceClassName}}.{{Alias}}_AutoCompleteServer_GetData
+	        Dim zReturn As System.IO.Stream
+	        Dim zJSON As New Dictionary(Of String, Object)
+	        Dim zUFD As New {{xSettings.razorFillDataClassNamespace}}.UtilFillData
+.
+	        Try
+	            zJSON.Add("data", zUFD.{{Alias}}_AutoComplete_RetrieveData(filter))
 	            zJSON.Add("isSuccess", True)
 	            zJSON.Add("message", "")
 	            zReturn = JsonWrap(Newtonsoft.Json.JsonConvert.SerializeObject(zJSON))
@@ -151,7 +173,7 @@ End Namespace
 {{xFile xSettings.RestServiceClassName path=xSettings.OutputPath ext="svc.vb"}}
 .
 '/=========================================================================\
-'| razor rest interface (experimental) - rev 4.2.7                         |
+'| razor rest interface (experimental) - rev 4.2.8                         |
 '|-------------------------------------------------------------------------|
 '|  Template: razor.rest.interface (experimental version)                  |
 '|   Website: http://www.pigford.net/razor                                 |
@@ -166,6 +188,7 @@ End Namespace
 {{! Update: 12/06/2016 - Renamed to razor.rest.service            }}
 {{! Update: 12/14/2016 - Initial support for detail window        }}
 {{! Update: 12/27/2016 - Load and edit detail window support      }}
+{{! Update: 04/06/2017 - Added support for autocomplete           }}
 {{!===============================================================}}
 {{!                                                               }}
 {{!===============================================================}}
@@ -185,6 +208,9 @@ Namespace razor
 .
 	    <WebInvoke(ResponseFormat:=WebMessageFormat.Json, RequestFormat:=WebMessageFormat.Json, BodyStyle:=WebMessageBodyStyle.WrappedRequest)> _
 	    Function {{Alias}}_ComboBoxServer_GetData(page As Nullable(Of Integer), pageSize As Nullable(Of Integer), skip As Nullable(Of Integer), take As Nullable(Of Integer), sort As String, filter As String) As System.IO.Stream
+.
+	    <WebInvoke(ResponseFormat:=WebMessageFormat.Json, RequestFormat:=WebMessageFormat.Json, BodyStyle:=WebMessageBodyStyle.WrappedRequest)> _
+	    Function {{Alias}}_AutoCompleteServer_GetData(page As Nullable(Of Integer), pageSize As Nullable(Of Integer), skip As Nullable(Of Integer), take As Nullable(Of Integer), sort As String, filter As String) As System.IO.Stream
 .
 	    <WebInvoke(ResponseFormat:=WebMessageFormat.Json, RequestFormat:=WebMessageFormat.Json, BodyStyle:=WebMessageBodyStyle.WrappedRequest)> _
 	    Function {{Alias}}_Window_SaveRowData(pJSON As String) As System.IO.Stream

@@ -1,32 +1,27 @@
 {{#each Items}}
 /*
 /===============================================================\
-| razor combobox (experimental) - rev 4.2.3                     |
+| razor autocomplete (experimental) - rev 4.2.3                 |
 |---------------------------------------------------------------|
-|  Template: razor.combobox (experimental version)              |
+|  Template: razor.autocomplete (experimental version)          |
 |   Website: http://www.pigford.net/razor                       |
 \===============================================================/
 */
 {{!===============================================================}}
-{{! Release: razor combobox js (experimental)                     }}
+{{! Release: razor autocomplete js (experimental)                 }}
 {{!===============================================================}}
-{{! Update: 11/30/2016 - Initial version                          }}
-{{! Update: 12/06/2016 - Renamed config setting from WCF to REST  }}
-{{! Update: 04/05/2017 - Fixed comment reference to combobox      }}
+{{! Update: 04/06/2017 - Initial version                          }}
 {{!===============================================================}}
 {{!                                                               }}
 {{!===============================================================}}
 $(document).ready(function () {
-    $("#{{Alias}}_combobox").kendoComboBox({     
+    $("#{{Alias}}_autocomplete").kendoAutoComplete({     
         dataTextField: "DISPLAYCOLUMNNAMEGOESHERE",  
-        dataValueField: "IDCOLUMNNAMEGOESHEREMUSTBENUMERIC",       
         filter: "contains",
-        autoBind: false,
-        minLength: 1,
         dataSource: {
             transport: {
                 read: {
-                    url: "../REST/{{xSettings.RestServiceClassName}}.svc/{{Alias}}_ComboBoxServer_GetData",      
+                    url: "../REST/{{xSettings.RestServiceClassName}}.svc/{{Alias}}_AutoCompleteServer_GetData",      
                     dataType: "json",
                     type: "POST",
                     cache: false,
@@ -85,30 +80,30 @@ $(document).ready(function () {
 .
 .
 .
-{{xFile Alias path=xSettings.OutputPath suffix="_combobox" ext="js"}}
+{{xFile Alias path=xSettings.OutputPath suffix="_autocomplete" ext="js"}}
 {{/each}}
 .
 .
 {{#each Items}}
 <!--
 /===============================================================\
-| razor grid (experimental) - rev 4.2.1                         |
+| razor autocomplete (experimental) - rev 4.2.3                 |
 |---------------------------------------------------------------|
-|  Template: razor.grid.html (experimental version)             |
+|  Template: razor.autocomplete.html (experimental version)     |
 |   Website: http://www.pigford.net/razor                       |
 \===============================================================/
 -->
 {{!===============================================================}}
-{{! Release: razor grid html (experimental)                       }}
+{{! Release: razor autocomplete html (experimental)               }}
 {{!===============================================================}}
-{{! Update: 11/30/2016 - Initial version                          }}
+{{! Update: 04/06/2017 - Initial version                          }}
 {{!===============================================================}}
 {{!                                                               }}
 {{!===============================================================}}
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-    <title>{{Alias}}_combobox</title>
+    <title>{{Alias}}_autocomplete</title>
 .
     <link rel="stylesheet" href="http://kendo.cdn.telerik.com/2016.3.1028/styles/kendo.common.min.css"/>
     <link rel="stylesheet" href="http://kendo.cdn.telerik.com/2016.3.1028/styles/kendo.rtl.min.css"/>
@@ -117,11 +112,11 @@ $(document).ready(function () {
 .
     <script src="http://code.jquery.com/jquery-1.12.4.min.js"></script>
     <script src="http://kendo.cdn.telerik.com/2016.3.1028/js/kendo.all.min.js"></script>
-    <script src="{{Alias}}_combobox.js"></script>
+    <script src="{{Alias}}_autocomplete.js"></script>
 </head>
     <body>
-        <div id="{{Alias}}_combobox" style="width: 500px;"></div>     
+        <input id="{{Alias}}_autocomplete" style="width: 500px;" />     
     </body>
 </html>
-{{xFile Alias path=xSettings.OutputPath suffix="_combobox" ext="html"}}
+{{xFile Alias path=xSettings.OutputPath suffix="_autocomplete" ext="html"}}
 {{/each}}

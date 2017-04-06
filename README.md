@@ -84,6 +84,15 @@ The Kendo UI javascript interface components pull data using the razor.rest.serv
 5. Set the values for DISPLAYCOLUMNNAMEGOESHERE and IDCOLUMNNAMEGOESHEREMUSTBENUMERIC in the javascript file.
 6. Compile and verify.
 
+#### ComboBox - razor.kendo.autocomplete.js (4.2.3)
+
+1. Create a folder for the generated autocomplete files.  (i.e. AutoComplete)
+2. Set "Show All Files" option in Visual Studio Solution Explorer
+3. Add a new Item "My2ndGeneration Template" to the "autocomplete" folder.  (i.e. AutoComplete.m2g) 
+4. Set configuration structure for desired schema tables; save to generate.  (template: razor.kendo.autocomplete.js)
+5. Set the values for DISPLAYCOLUMNNAMEGOESHERE and IDCOLUMNNAMEGOESHEREMUSTBENUMERIC in the javascript file.
+6. Compile and verify.
+
 #### Window - razor.kendo.window.form.js (4.2.3)
 
 1. Create a folder for the generated window files.  (i.e. Window)
