@@ -21,7 +21,7 @@ Alternately you can download M2G Desktop (Windows only) and use the templates di
 
 # razor README
 
-> A local installation of M2G Desktop is requried to complete the procedure below.
+> A local installation of M2G Desktop is required to complete the procedure below.
 
 ## Steps to setup a project using razor in a single web project.
 
