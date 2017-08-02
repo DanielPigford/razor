@@ -84,10 +84,11 @@ return [
 
 function setMetaDataColumnIndices_{{xSettings.TableAliasPrefix}}{{Alias}}() {
 return {
-{{#each Columns}}
-idx{{xSettings.ColumnAliasPrefix}}{{Alias}}: {{@index}}{{#xNotLast}}, {{/xNotLast}}
-{{/each}}
-}}
+	{{#each Columns}}
+	idx{{xSettings.ColumnAliasPrefix}}{{Alias}}: {{@index}}{{#xNotLast}}, {{/xNotLast}}
+	{{/each}}
+	}
+}
 
 {{xFile Alias path=xSettings.OutputPath suffix="_grid_local" ext="js"}}
 {{/each}}
