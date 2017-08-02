@@ -1,0 +1,463 @@
+'/===============================================================\
+'| razor grid (experimental) - rev 4.2.880   EXPERIMENTAL        |
+'|---------------------------------------------------------------|
+'|  Template: gen.vb.sqlserver (experimental version)            |
+'|   Website: http://www.pigford.net/razor                       |
+'|                                                               |
+'| Known Issues:                                                 |
+'|  Data Types not supported due to type mapping issues: money,  |
+'| date, varchar(1), nvarchar(1)                                 |
+'\===============================================================/
+{{!===============================================================}}
+{{! Release: razor grid local js (experimental)                   }}
+{{!===============================================================}}
+{{! Update:  8/02/2017 - Added this header and comment, Initial   }}
+{{!                      version created from C# ES2012 template  }}
+{{!===============================================================}}
+{{! This template currently only works with a SQLServer database  }}
+{{!                                                               }}
+{{! Known Issues:                                                 }}
+{{!  Data Types not supported due to type mapping issues: money,  }}
+{{! date, varchar(1), nvarchar(1)                                 }}
+{{!                                                               }}
+{{!                                                               }}
+{{!                                                               }}
+{{!===============================================================}}
+
+// ACTIVE VARIABLES
+var MetaDataSchema_TblIndexManager = setMetaDataSchema_TblIndexManager();
+var MetaDataColumns_TblIndexManager = setMetaDataColumns_TblIndexManager();
+var MetaDataColumnIndices_TblIndexManager = setMetaDataColumnIndices_TblIndexManager();
+var MetaDataSources_TblIndexManager = null;
+if (typeof setMetaDataSources_TblIndexManager == 'function') {
+	MetaDataSources_TblIndexManager = setMetaDataSources_TblIndexManager();
+}
+
+// DEFAULT / STATIC VARIABLES
+var MetaDataSchema_Default_TblIndexManager = setMetaDataSchema_TblIndexManager();
+var MetaDataColumns_Default_TblIndexManager = setMetaDataColumns_TblIndexManager();
+var MetaDataColumnIndices_Default_TblIndexManager = setMetaDataColumnIndices_TblIndexManager();
+var MetaDataSources_Default_TblIndexManager = null
+if (typeof setMetaDataSources_TblIndexManager == 'function') {
+	MetaDataSources_Default_TblIndexManager = setMetaDataSources_TblIndexManager();
+}
+
+// FUNCTIONS
+function setMetaDataSchema_TblIndexManager() {
+return {
+    "model": {
+        "id": "key-column-name-goes-here",
+        "fields": { 
+			"FldIndexId": {
+			"type": "string",
+			"editable": false,
+			"nullable": false
+			}, 
+			"FldIndexName": {
+			"type": "string",
+			"editable": false,
+			"nullable": false
+			}, 
+			"FldStatus": {
+			"type": "string",
+			"editable": false,
+			"nullable": false
+			}, 
+			"FldEnabled": {
+			"type": "string",
+			"editable": false,
+			"nullable": false
+			}, 
+			"FldLastIndexDate": {
+			"type": "string",
+			"editable": false,
+			"nullable": false
+			}, 
+			"FldLastContentUpdateDate": {
+			"type": "string",
+			"editable": false,
+			"nullable": false
+			}, 
+			"FldStartDirectory": {
+			"type": "string",
+			"editable": false,
+			"nullable": false
+			}, 
+			"FldSpiderURL": {
+			"type": "string",
+			"editable": false,
+			"nullable": false
+			}, 
+			"FldBaseURL": {
+			"type": "string",
+			"editable": false,
+			"nullable": false
+			}, 
+			"FldOutputDirectory": {
+			"type": "string",
+			"editable": false,
+			"nullable": false
+			}, 
+			"FldTemplateFilename": {
+			"type": "string",
+			"editable": false,
+			"nullable": false
+			}, 
+			"FldFilePrefix": {
+			"type": "string",
+			"editable": false,
+			"nullable": false
+			}, 
+			"FldStartJobTime": {
+			"type": "string",
+			"editable": false,
+			"nullable": false
+			}, 
+			"FldEndJobTime": {
+			"type": "string",
+			"editable": false,
+			"nullable": false
+			}, 
+			"FldLastPollTime": {
+			"type": "string",
+			"editable": false,
+			"nullable": false
+			}, 
+			"FldHasContent": {
+			"type": "string",
+			"editable": false,
+			"nullable": false
+			}, 
+			"FldTnEInactiveFlag": {
+			"type": "string",
+			"editable": false,
+			"nullable": false
+			}, 
+			"FldIndexMode": {
+			"type": "string",
+			"editable": false,
+			"nullable": false
+			}, 
+			"FldLastIndexLapseMin": {
+			"type": "string",
+			"editable": false,
+			"nullable": false
+			} 
+		}
+    }
+}
+}
+
+function setMetaDataColumns_TblIndexManager() {
+return [ 
+	{
+		"encoded": true,
+		"field": "FldIndexId",
+		"filterable": true,
+		"format": null,
+		"groupable": false,
+		"hidden": false,
+		"locked": false,
+		"lockable": true,
+		"menu": true,
+		"sortable": true,
+		"template": null,
+		"title": "FldIndexId",
+		"width": 125
+	},	
+	{
+		"encoded": true,
+		"field": "FldIndexName",
+		"filterable": true,
+		"format": null,
+		"groupable": false,
+		"hidden": false,
+		"locked": false,
+		"lockable": true,
+		"menu": true,
+		"sortable": true,
+		"template": null,
+		"title": "FldIndexName",
+		"width": 125
+	},	
+	{
+		"encoded": true,
+		"field": "FldStatus",
+		"filterable": true,
+		"format": null,
+		"groupable": false,
+		"hidden": false,
+		"locked": false,
+		"lockable": true,
+		"menu": true,
+		"sortable": true,
+		"template": null,
+		"title": "FldStatus",
+		"width": 125
+	},	
+	{
+		"encoded": true,
+		"field": "FldEnabled",
+		"filterable": true,
+		"format": null,
+		"groupable": false,
+		"hidden": false,
+		"locked": false,
+		"lockable": true,
+		"menu": true,
+		"sortable": true,
+		"template": null,
+		"title": "FldEnabled",
+		"width": 125
+	},	
+	{
+		"encoded": true,
+		"field": "FldLastIndexDate",
+		"filterable": true,
+		"format": null,
+		"groupable": false,
+		"hidden": false,
+		"locked": false,
+		"lockable": true,
+		"menu": true,
+		"sortable": true,
+		"template": null,
+		"title": "FldLastIndexDate",
+		"width": 125
+	},	
+	{
+		"encoded": true,
+		"field": "FldLastContentUpdateDate",
+		"filterable": true,
+		"format": null,
+		"groupable": false,
+		"hidden": false,
+		"locked": false,
+		"lockable": true,
+		"menu": true,
+		"sortable": true,
+		"template": null,
+		"title": "FldLastContentUpdateDate",
+		"width": 125
+	},	
+	{
+		"encoded": true,
+		"field": "FldStartDirectory",
+		"filterable": true,
+		"format": null,
+		"groupable": false,
+		"hidden": false,
+		"locked": false,
+		"lockable": true,
+		"menu": true,
+		"sortable": true,
+		"template": null,
+		"title": "FldStartDirectory",
+		"width": 125
+	},	
+	{
+		"encoded": true,
+		"field": "FldSpiderURL",
+		"filterable": true,
+		"format": null,
+		"groupable": false,
+		"hidden": false,
+		"locked": false,
+		"lockable": true,
+		"menu": true,
+		"sortable": true,
+		"template": null,
+		"title": "FldSpiderURL",
+		"width": 125
+	},	
+	{
+		"encoded": true,
+		"field": "FldBaseURL",
+		"filterable": true,
+		"format": null,
+		"groupable": false,
+		"hidden": false,
+		"locked": false,
+		"lockable": true,
+		"menu": true,
+		"sortable": true,
+		"template": null,
+		"title": "FldBaseURL",
+		"width": 125
+	},	
+	{
+		"encoded": true,
+		"field": "FldOutputDirectory",
+		"filterable": true,
+		"format": null,
+		"groupable": false,
+		"hidden": false,
+		"locked": false,
+		"lockable": true,
+		"menu": true,
+		"sortable": true,
+		"template": null,
+		"title": "FldOutputDirectory",
+		"width": 125
+	},	
+	{
+		"encoded": true,
+		"field": "FldTemplateFilename",
+		"filterable": true,
+		"format": null,
+		"groupable": false,
+		"hidden": false,
+		"locked": false,
+		"lockable": true,
+		"menu": true,
+		"sortable": true,
+		"template": null,
+		"title": "FldTemplateFilename",
+		"width": 125
+	},	
+	{
+		"encoded": true,
+		"field": "FldFilePrefix",
+		"filterable": true,
+		"format": null,
+		"groupable": false,
+		"hidden": false,
+		"locked": false,
+		"lockable": true,
+		"menu": true,
+		"sortable": true,
+		"template": null,
+		"title": "FldFilePrefix",
+		"width": 125
+	},	
+	{
+		"encoded": true,
+		"field": "FldStartJobTime",
+		"filterable": true,
+		"format": null,
+		"groupable": false,
+		"hidden": false,
+		"locked": false,
+		"lockable": true,
+		"menu": true,
+		"sortable": true,
+		"template": null,
+		"title": "FldStartJobTime",
+		"width": 125
+	},	
+	{
+		"encoded": true,
+		"field": "FldEndJobTime",
+		"filterable": true,
+		"format": null,
+		"groupable": false,
+		"hidden": false,
+		"locked": false,
+		"lockable": true,
+		"menu": true,
+		"sortable": true,
+		"template": null,
+		"title": "FldEndJobTime",
+		"width": 125
+	},	
+	{
+		"encoded": true,
+		"field": "FldLastPollTime",
+		"filterable": true,
+		"format": null,
+		"groupable": false,
+		"hidden": false,
+		"locked": false,
+		"lockable": true,
+		"menu": true,
+		"sortable": true,
+		"template": null,
+		"title": "FldLastPollTime",
+		"width": 125
+	},	
+	{
+		"encoded": true,
+		"field": "FldHasContent",
+		"filterable": true,
+		"format": null,
+		"groupable": false,
+		"hidden": false,
+		"locked": false,
+		"lockable": true,
+		"menu": true,
+		"sortable": true,
+		"template": null,
+		"title": "FldHasContent",
+		"width": 125
+	},	
+	{
+		"encoded": true,
+		"field": "FldTnEInactiveFlag",
+		"filterable": true,
+		"format": null,
+		"groupable": false,
+		"hidden": false,
+		"locked": false,
+		"lockable": true,
+		"menu": true,
+		"sortable": true,
+		"template": null,
+		"title": "FldTnEInactiveFlag",
+		"width": 125
+	},	
+	{
+		"encoded": true,
+		"field": "FldIndexMode",
+		"filterable": true,
+		"format": null,
+		"groupable": false,
+		"hidden": false,
+		"locked": false,
+		"lockable": true,
+		"menu": true,
+		"sortable": true,
+		"template": null,
+		"title": "FldIndexMode",
+		"width": 125
+	},	
+	{
+		"encoded": true,
+		"field": "FldLastIndexLapseMin",
+		"filterable": true,
+		"format": null,
+		"groupable": false,
+		"hidden": false,
+		"locked": false,
+		"lockable": true,
+		"menu": true,
+		"sortable": true,
+		"template": null,
+		"title": "FldLastIndexLapseMin",
+		"width": 125
+	}	
+]
+}
+
+function setMetaDataColumnIndices_TblIndexManager() {
+return { 
+ idxFldIndexId: 0,  
+ idxFldIndexName: 1,  
+ idxFldStatus: 2,  
+ idxFldEnabled: 3,  
+ idxFldLastIndexDate: 4,  
+ idxFldLastContentUpdateDate: 5,  
+ idxFldStartDirectory: 6,  
+ idxFldSpiderURL: 7,  
+ idxFldBaseURL: 8,  
+ idxFldOutputDirectory: 9,  
+ idxFldTemplateFilename: 10,  
+ idxFldFilePrefix: 11,  
+ idxFldStartJobTime: 12,  
+ idxFldEndJobTime: 13,  
+ idxFldLastPollTime: 14,  
+ idxFldHasContent: 15,  
+ idxFldTnEInactiveFlag: 16,  
+ idxFldIndexMode: 17,  
+ idxFldLastIndexLapseMin: 18  
+}}
+
