@@ -26,42 +26,130 @@
 {{!===============================================================}}
 
 // ACTIVE VARIABLES
-var MetaDataSchema_{{xSettings.TableAliasPrefix}}{{Alias}} = setMetaDataSchema_{{xSettings.TableAliasPrefix}}{{Alias}}();
-var MetaDataColumns_{{xSettings.TableAliasPrefix}}{{Alias}} = setMetaDataColumns_{{xSettings.TableAliasPrefix}}{{Alias}}();
-var MetaDataColumnIndices_{{xSettings.TableAliasPrefix}}{{Alias}} = setMetaDataColumnIndices_{{xSettings.TableAliasPrefix}}{{Alias}}();
-var MetaDataSources_{{xSettings.TableAliasPrefix}}{{Alias}} = null;
-if (typeof setMetaDataSources_{{xSettings.TableAliasPrefix}}{{Alias}} == 'function') {
-	MetaDataSources_{{xSettings.TableAliasPrefix}}{{Alias}} = setMetaDataSources_{{xSettings.TableAliasPrefix}}{{Alias}}();
+var MetaDataSchema_{{Alias}} = setMetaDataSchema_TblIndexManager();
+var MetaDataColumns_TblIndexManager = setMetaDataColumns_TblIndexManager();
+var MetaDataColumnIndices_TblIndexManager = setMetaDataColumnIndices_TblIndexManager();
+var MetaDataSources_TblIndexManager = null;
+if (typeof setMetaDataSources_TblIndexManager == 'function') {
+	MetaDataSources_TblIndexManager = setMetaDataSources_TblIndexManager();
 }
 
 // DEFAULT / STATIC VARIABLES
-var MetaDataSchema_Default_{{xSettings.TableAliasPrefix}}{{Alias}} = setMetaDataSchema_{{xSettings.TableAliasPrefix}}{{Alias}}();
-var MetaDataColumns_Default_{{xSettings.TableAliasPrefix}}{{Alias}} = setMetaDataColumns_{{xSettings.TableAliasPrefix}}{{Alias}}();
-var MetaDataColumnIndices_Default_{{xSettings.TableAliasPrefix}}{{Alias}} = setMetaDataColumnIndices_{{xSettings.TableAliasPrefix}}{{Alias}}();
-var MetaDataSources_Default_{{xSettings.TableAliasPrefix}}{{Alias}} = null
-if (typeof setMetaDataSources_{{xSettings.TableAliasPrefix}}{{Alias}} == 'function') {
-	MetaDataSources_Default_{{xSettings.TableAliasPrefix}}{{Alias}} = setMetaDataSources_{{xSettings.TableAliasPrefix}}{{Alias}}();
+var MetaDataSchema_Default_TblIndexManager = setMetaDataSchema_TblIndexManager();
+var MetaDataColumns_Default_TblIndexManager = setMetaDataColumns_TblIndexManager();
+var MetaDataColumnIndices_Default_TblIndexManager = setMetaDataColumnIndices_TblIndexManager();
+var MetaDataSources_Default_TblIndexManager = null
+if (typeof setMetaDataSources_TblIndexManager == 'function') {
+	MetaDataSources_Default_TblIndexManager = setMetaDataSources_TblIndexManager();
 }
 
 // FUNCTIONS
-function setMetaDataSchema_{{xSettings.TableAliasPrefix}}{{Alias}}() {
+function setMetaDataSchema_TblIndexManager() {
 return {
     "model": {
         "id": "key-column-name-goes-here",
         "fields": { 
-            {{#each Columns}}
-			"{{xSettings.ColumnAliasPrefix}}{{Alias}}": {
-			"type": "string",  
+			"FldIndexId": {
+			"type": "string",
 			"editable": false,
 			"nullable": false
-			}{{#xNotLast}}, {{/xNotLast}}
-            {{/each}}
+			}, 
+			"FldIndexName": {
+			"type": "string",
+			"editable": false,
+			"nullable": false
+			}, 
+			"FldStatus": {
+			"type": "string",
+			"editable": false,
+			"nullable": false
+			}, 
+			"FldEnabled": {
+			"type": "string",
+			"editable": false,
+			"nullable": false
+			}, 
+			"FldLastIndexDate": {
+			"type": "string",
+			"editable": false,
+			"nullable": false
+			}, 
+			"FldLastContentUpdateDate": {
+			"type": "string",
+			"editable": false,
+			"nullable": false
+			}, 
+			"FldStartDirectory": {
+			"type": "string",
+			"editable": false,
+			"nullable": false
+			}, 
+			"FldSpiderURL": {
+			"type": "string",
+			"editable": false,
+			"nullable": false
+			}, 
+			"FldBaseURL": {
+			"type": "string",
+			"editable": false,
+			"nullable": false
+			}, 
+			"FldOutputDirectory": {
+			"type": "string",
+			"editable": false,
+			"nullable": false
+			}, 
+			"FldTemplateFilename": {
+			"type": "string",
+			"editable": false,
+			"nullable": false
+			}, 
+			"FldFilePrefix": {
+			"type": "string",
+			"editable": false,
+			"nullable": false
+			}, 
+			"FldStartJobTime": {
+			"type": "string",
+			"editable": false,
+			"nullable": false
+			}, 
+			"FldEndJobTime": {
+			"type": "string",
+			"editable": false,
+			"nullable": false
+			}, 
+			"FldLastPollTime": {
+			"type": "string",
+			"editable": false,
+			"nullable": false
+			}, 
+			"FldHasContent": {
+			"type": "string",
+			"editable": false,
+			"nullable": false
+			}, 
+			"FldTnEInactiveFlag": {
+			"type": "string",
+			"editable": false,
+			"nullable": false
+			}, 
+			"FldIndexMode": {
+			"type": "string",
+			"editable": false,
+			"nullable": false
+			}, 
+			"FldLastIndexLapseMin": {
+			"type": "string",
+			"editable": false,
+			"nullable": false
+			} 
 		}
     }
 }
 }
 
-function setMetaDataColumns_{{xSettings.TableAliasPrefix}}{{Alias}}() {
+function setMetaDataColumns_TblIndexManager() {
 return [ 
 	{
 		"encoded": true,
@@ -351,7 +439,7 @@ return [
 ]
 }
 
-function setMetaDataColumnIndices_{{xSettings.TableAliasPrefix}}{{Alias}}() {
+function setMetaDataColumnIndices_TblIndexManager() {
 return { 
  idxFldIndexId: 0,  
  idxFldIndexName: 1,  
