@@ -136,6 +136,26 @@ function setMetaDataColumnIndices_{{xSettings.TableAliasPrefix}}{{Alias}}() {
 //|  Data Types not supported due to type mapping issues: money,  |
 //| date, varchar(1), nvarchar(1)                                 |
 //\===============================================================/
+{{!===============================================================}}
+{{! Release: razor grid local js (experimental)                   }}
+{{!===============================================================}}
+{{! Update:  8/08/2017 - Inital version                           }}
+{{!===============================================================}}
+{{! This template currently only works with a SQLServer database  }}
+{{!                                                               }}
+{{! Known Issues:                                                 }}
+{{!  Data Types not supported due to type mapping issues: money,  }}
+{{! date, varchar(1), nvarchar(1)                                 }}
+{{!                                                               }}
+{{!                                                               }}
+{{!                                                               }}
+{{!===============================================================}}
+.
+///===============================================================\
+//|  Note: This is a template file and should be copied to set    |
+//|        the TABLE-NAME-GOES-HERE and PRIMARY-KEY-GOES-HERE     |
+//\===============================================================/
+.
 function setMetaDataSources_{{xSettings.TableAliasPrefix}}{{Alias}}() {
     return {
 		{{#each Columns}}
