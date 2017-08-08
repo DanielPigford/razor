@@ -1,14 +1,14 @@
 {{#each Items}}
-///===============================================================\
-//| razor grid (experimental) - rev 4.2.880   EXPERIMENTAL        |
-//|---------------------------------------------------------------|
-//|  Template: gen.vb.sqlserver (experimental version)            |
-//|   Website: http://www.pigford.net/razor                       |
-//|                                                               |
-//| Known Issues:                                                 |
-//|  Data Types not supported due to type mapping issues: money,  |
-//| date, varchar(1), nvarchar(1)                                 |
-//\===============================================================/
+'/===============================================================\
+'| razor grid (experimental) - rev 4.2.880   EXPERIMENTAL        |
+'|---------------------------------------------------------------|
+'|  Template: gen.vb.sqlserver (experimental version)            |
+'|   Website: http://www.pigford.net/razor                       |
+'|                                                               |
+'| Known Issues:                                                 |
+'|  Data Types not supported due to type mapping issues: money,  |
+'| date, varchar(1), nvarchar(1)                                 |
+'\===============================================================/
 {{!===============================================================}}
 {{! Release: razor grid local js (experimental)                   }}
 {{!===============================================================}}
@@ -24,7 +24,7 @@
 {{!                                                               }}
 {{!                                                               }}
 {{!===============================================================}}
-.
+
 // ACTIVE VARIABLES
 var MetaDataSchema_{{xSettings.TableAliasPrefix}}{{Alias}} = setMetaDataSchema_{{xSettings.TableAliasPrefix}}{{Alias}}();
 var MetaDataColumns_{{xSettings.TableAliasPrefix}}{{Alias}} = setMetaDataColumns_{{xSettings.TableAliasPrefix}}{{Alias}}();
@@ -33,7 +33,7 @@ var MetaDataSources_{{xSettings.TableAliasPrefix}}{{Alias}} = null;
 if (typeof setMetaDataSources_{{xSettings.TableAliasPrefix}}{{Alias}} == 'function') {
 	MetaDataSources_{{xSettings.TableAliasPrefix}}{{Alias}} = setMetaDataSources_{{xSettings.TableAliasPrefix}}{{Alias}}();
 }
-.
+
 // DEFAULT / STATIC VARIABLES
 var MetaDataSchema_Default_{{xSettings.TableAliasPrefix}}{{Alias}} = setMetaDataSchema_{{xSettings.TableAliasPrefix}}{{Alias}}();
 var MetaDataColumns_Default_{{xSettings.TableAliasPrefix}}{{Alias}} = setMetaDataColumns_{{xSettings.TableAliasPrefix}}{{Alias}}();
@@ -42,85 +42,53 @@ var MetaDataSources_Default_{{xSettings.TableAliasPrefix}}{{Alias}} = null
 if (typeof setMetaDataSources_{{xSettings.TableAliasPrefix}}{{Alias}} == 'function') {
 	MetaDataSources_Default_{{xSettings.TableAliasPrefix}}{{Alias}} = setMetaDataSources_{{xSettings.TableAliasPrefix}}{{Alias}}();
 }
-.
-// FUNCTIONS
-function setMetaDataCustom_Default_{{xSettings.TableAliasPrefix}}{{Alias}}() {
-    // COPY THE SCHEMA
-    if (MetaDataSchema_{{xSettings.TableAliasPrefix}}{{Alias}} !== undefined && MetaDataSchema_{{xSettings.TableAliasPrefix}}{{Alias}}.model !== undefined && MetaDataSchema_{{xSettings.TableAliasPrefix}}{{Alias}}.model.fields !== undefined) {
-        MetaDataSchema_Default_{{xSettings.TableAliasPrefix}}{{Alias}}.model.id = MetaDataSchema_{{xSettings.TableAliasPrefix}}{{Alias}}.model.id;
-        MetaDataSchema_Default_{{xSettings.TableAliasPrefix}}{{Alias}}.model.fields = {};
-        for (var zField in MetaDataSchema_{{xSettings.TableAliasPrefix}}{{Alias}}.model.fields) {
-            MetaDataSchema_Default_{{xSettings.TableAliasPrefix}}{{Alias}}.model.fields[zField] = MetaDataSchema_{{xSettings.TableAliasPrefix}}{{Alias}}.model.fields[zField];
-        }
-    }
-    // COPY THE COLUMNS
-    if (MetaDataColumns_{{xSettings.TableAliasPrefix}}{{Alias}} !== undefined) {
-        MetaDataColumns_Default_{{xSettings.TableAliasPrefix}}{{Alias}} = [];
-        for (var x = 0; x < MetaDataColumns_{{xSettings.TableAliasPrefix}}{{Alias}}.length; x++) {
-            MetaDataColumns_Default_{{xSettings.TableAliasPrefix}}{{Alias}}[x] = MetaDataColumns_{{xSettings.TableAliasPrefix}}{{Alias}}[x];
-        }
-    }
-    // COPY THE INDICES
-    if (MetaDataColumnIndices_{{xSettings.TableAliasPrefix}}{{Alias}} !== undefined) {
-        MetaDataColumnIndices_Default_{{xSettings.TableAliasPrefix}}{{Alias}} = {};
-        for (var zField in MetaDataColumnIndices_{{xSettings.TableAliasPrefix}}{{Alias}}) {
-            MetaDataColumnIndices_Default_{{xSettings.TableAliasPrefix}}{{Alias}}[zField] = MetaDataColumnIndices_{{xSettings.TableAliasPrefix}}{{Alias}}[zField];
-        }
-    }
-    // COPY THE SOURCES
-    if (MetaDataSources_{{xSettings.TableAliasPrefix}}{{Alias}} !== undefined) {
-        MetaDataSources_Default_{{xSettings.TableAliasPrefix}}{{Alias}} = {};
-        for (var zField in MetaDataSources_{{xSettings.TableAliasPrefix}}{{Alias}}) {
-            MetaDataSources_Default_{{xSettings.TableAliasPrefix}}{{Alias}}[zField] = MetaDataSources_{{xSettings.TableAliasPrefix}}{{Alias}}[zField];
-        }
-    }
-}
-.
+
 // FUNCTIONS
 function setMetaDataSchema_{{xSettings.TableAliasPrefix}}{{Alias}}() {
-	return {
-	    "model": {
-	        "id": "key-column-name-goes-here",
-	        "fields": { 
-	            {{#each Columns}}
-				"{{xSettings.ColumnAliasPrefix}}{{Alias}}": {
-					"type": "string",  
-					"editable": false,
-					"nullable": false
-				}{{#xNotLast}},{{/xNotLast}}
-	            {{/each}}
-	    	}
+return {
+    "model": {
+        "id": "key-column-name-goes-here",
+        "fields": { 
+            {{#each Columns}}
+			"{{xSettings.ColumnAliasPrefix}}{{Alias}}": {
+			"type": "string",  
+			"editable": false,
+			"nullable": false
+			}{{#xNotLast}}, {{/xNotLast}}
+            {{/each}}
 		}
-	}
+    }
 }
+}
+
 function setMetaDataColumns_{{xSettings.TableAliasPrefix}}{{Alias}}() {
-	return [ 
+return [ 
 	{{#each Columns}}
-		{
-			"encoded": true,
-			"field": "{{xSettings.ColumnAliasPrefix}}{{Alias}}",
-			"filterable": true,
-			"format": null,
-			"groupable": false,
-			"hidden": false,
-			"locked": false,
-			"lockable": true,
-			"menu": true,
-			"sortable": true,
-			"template": null,
-			"title": "{{xSettings.ColumnAliasPrefix}}{{Alias}}",
-			"width": 125
-		}{{#xNotLast}},{{/xNotLast}}
+	{
+		"encoded": true,
+		"field": "{{xSettings.ColumnAliasPrefix}}{{Alias}}",
+		"filterable": true,
+		"format": null,
+		"groupable": false,
+		"hidden": false,
+		"locked": false,
+		"lockable": true,
+		"menu": true,
+		"sortable": true,
+		"template": null,
+		"title": "{{xSettings.ColumnAliasPrefix}}{{Alias}}",
+		"width": 125
+	}{{#xNotLast}}, {{/xNotLast}}
 	{{/each}}]
 }
-.
+
 function setMetaDataColumnIndices_{{xSettings.TableAliasPrefix}}{{Alias}}() {
-	return {
-		{{#each Columns}}
-		idx{{xSettings.ColumnAliasPrefix}}{{Alias}}: {{@index}}{{#xNotLast}},{{/xNotLast}}
-		{{/each}}
+return {
+	{{#each Columns}}
+	idx{{xSettings.ColumnAliasPrefix}}{{Alias}}: {{@index}}{{#xNotLast}}, {{/xNotLast}}
+	{{/each}}
 	}
 }
-.
-{{xFile Alias path=xSettings.OutputPath suffix="_{{VER}}" ext="js"}}
+
+{{xFile Alias path=xSettings.OutputPath suffix="_grid_local" ext="js"}}
 {{/each}}
