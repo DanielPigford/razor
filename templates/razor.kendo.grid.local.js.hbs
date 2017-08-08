@@ -136,7 +136,17 @@ function setMetaDataColumnIndices_{{xSettings.TableAliasPrefix}}{{Alias}}() {
 //|  Data Types not supported due to type mapping issues: money,  |
 //| date, varchar(1), nvarchar(1)                                 |
 //\===============================================================/
-	test
+function setMetaDataSources_{{xSettings.TableAliasPrefix}}{{Alias}}() {
+    return {
+		{{#each Columns}}
+        "{{xSettings.ColumnAliasPrefix}}{{Alias}}": {
+            "SrcField": "{{xSettings.ColumnAliasPrefix}}{{Alias}}",
+            "SrcTable": "<TABLE-NAME-GOES-HERE>",
+            "KeyField": "<PRIMARY-KEY-GOES-HERE>"
+        }{{#xNotLast}},{{/xNotLast}}
+		{{/each}}
+    }
+}
 {{xFile Alias path=xSettings.OutputPath suffix="_template_{{VER}}" ext="js"}}
 {{/each}}
 
