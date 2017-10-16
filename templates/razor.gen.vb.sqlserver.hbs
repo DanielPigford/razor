@@ -1,6 +1,6 @@
 {{#each Items}}
 '/===============================================================\
-'| razor data (experimental) - rev 4.2.879   EXPERIMENTAL        |
+'| razor data (experimental) - rev 4.2.880   EXPERIMENTAL        |
 '|---------------------------------------------------------------|
 '|  Template: gen.vb.sqlserver (experimental version)            |
 '|   Website: http://www.pigford.net/razor                       |
@@ -65,6 +65,8 @@
 {{!                      additional debug information             }}
 {{! Update: 11/18/2016 - Fixed issue with delete when auditing    }}
 {{! Update: 12/14/2016 - Adjusted the default config settings     }}
+{{! Update: 10/16/2017 - Fixed logic bug when saving data with    }}
+{{!                      both identity (non-PK) and separate PK   }}
 {{!===============================================================}}
 {{! This template currently only works with a SQLServer database  }}
 {{!                                                               }}
@@ -245,7 +247,7 @@ Namespace razor
 .
             Dim zCmd As New SQLCommand
             zCmd.CommandText = zSQL
-            If zMode <> "INSERTnoKey" Then
+            If zMode = "INSERTnoKey" or zMode = "UPDATE" Then
             {{#each Columns}}
             {{#xIfAny IsAutoKey IsInPrimaryKey "===" true}}
                 zCmd.Parameters.Add(New SQLParameter("@{{xSettings.ColumnAliasPrefix}}{{Alias}}", pRowData.{{xSettings.ColumnAliasPrefix}}{{Alias}}))
