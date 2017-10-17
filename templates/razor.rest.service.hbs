@@ -1,5 +1,5 @@
 '/=========================================================================\
-'| razor rest service (experimental) - rev 4.2.8                           |
+'| razor rest service (experimental) - rev 4.2.9                           |
 '|-------------------------------------------------------------------------|
 '|  Template: razor.rest.service (experimental version)                    |
 '|   Website: http://www.pigford.net/razor                                 |
@@ -15,6 +15,7 @@
 {{! Update: 12/14/2016 - Initial support for detail window        }}
 {{! Update: 12/27/2016 - Load and edit detail window support      }}
 {{! Update: 04/06/2017 - Added support for autocomplete           }}
+{{! Update: 10/17/2017 - Added IsTable checks for save and load   }}
 {{!===============================================================}}
 {{!                                                               }}
 {{!===============================================================}}
@@ -109,6 +110,7 @@ Namespace razor
 	        Return zReturn
 		End Function
 .
+    {{#if IsTable}}
 	    Public Function {{Alias}}_Window_SaveRowData(pJSON As String) As IO.Stream Implements I{{xSettings.RestServiceClassName}}.{{Alias}}_Window_SaveRowData
 	        Dim zReturn As System.IO.Stream
 	        Dim zRow As New {{xSettings.razorRowDataClassNamespace}}.{{xSettings.DataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}}
@@ -151,6 +153,7 @@ Namespace razor
 	        Return zReturn
 	    End Function
 .
+    {{/if}}
 {{/each}}
 .
 	    ' HELPER FUNCTION FOR RETURNING JSON
@@ -173,7 +176,7 @@ End Namespace
 {{xFile xSettings.RestServiceClassName path=xSettings.OutputPath ext="svc.vb"}}
 .
 '/=========================================================================\
-'| razor rest interface (experimental) - rev 4.2.8                         |
+'| razor rest interface (experimental) - rev 4.2.9                         |
 '|-------------------------------------------------------------------------|
 '|  Template: razor.rest.interface (experimental version)                  |
 '|   Website: http://www.pigford.net/razor                                 |
@@ -189,6 +192,7 @@ End Namespace
 {{! Update: 12/14/2016 - Initial support for detail window        }}
 {{! Update: 12/27/2016 - Load and edit detail window support      }}
 {{! Update: 04/06/2017 - Added support for autocomplete           }}
+{{! Update: 10/17/2017 - Added IsTable checks for save and load   }}
 {{!===============================================================}}
 {{!                                                               }}
 {{!===============================================================}}
@@ -212,12 +216,14 @@ Namespace razor
 	    <WebInvoke(ResponseFormat:=WebMessageFormat.Json, RequestFormat:=WebMessageFormat.Json, BodyStyle:=WebMessageBodyStyle.WrappedRequest)> _
 	    Function {{Alias}}_AutoCompleteServer_GetData(page As Nullable(Of Integer), pageSize As Nullable(Of Integer), skip As Nullable(Of Integer), take As Nullable(Of Integer), sort As String, filter As String) As System.IO.Stream
 .
+    {{#if IsTable}}
 	    <WebInvoke(ResponseFormat:=WebMessageFormat.Json, RequestFormat:=WebMessageFormat.Json, BodyStyle:=WebMessageBodyStyle.WrappedRequest)> _
 	    Function {{Alias}}_Window_SaveRowData(pJSON As String) As System.IO.Stream
 .
 		<WebInvoke(ResponseFormat:=WebMessageFormat.Json, RequestFormat:=WebMessageFormat.Json, BodyStyle:=WebMessageBodyStyle.WrappedRequest)> _
     	Function {{Alias}}_Window_LoadRowData(pJSON As String) As System.IO.Stream
 .
+    {{/if}}
 	{{/each}}
 	End Interface
 End Namespace
