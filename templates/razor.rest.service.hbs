@@ -1,5 +1,5 @@
 '/=========================================================================\
-'| razor rest service (experimental) - rev 4.2.9                           |
+'| razor rest service (experimental) - rev 4.2.10                           |
 '|-------------------------------------------------------------------------|
 '|  Template: razor.rest.service (experimental version)                    |
 '|   Website: http://www.pigford.net/razor                                 |
@@ -16,6 +16,7 @@
 {{! Update: 12/27/2016 - Load and edit detail window support      }}
 {{! Update: 04/06/2017 - Added support for autocomplete           }}
 {{! Update: 10/17/2017 - Added IsTable checks for save and load   }}
+{{! Update: 10/19/2017 - Fixed GirdServer to GridServer reference }}
 {{!===============================================================}}
 {{!                                                               }}
 {{!===============================================================}}
@@ -46,7 +47,7 @@ Namespace razor
 	        Return zReturn
 	    End Function
 .
-	    Public Function {{Alias}}_GirdServer_GetData(page As Nullable(Of Integer), pageSize As Nullable(Of Integer), skip As Nullable(Of Integer), take As Nullable(Of Integer), sort As String, filter As String) As IO.Stream Implements I{{xSettings.RestServiceClassName}}.{{Alias}}_GridServer_GetData
+	    Public Function {{Alias}}_GridServer_GetData(page As Nullable(Of Integer), pageSize As Nullable(Of Integer), skip As Nullable(Of Integer), take As Nullable(Of Integer), sort As String, filter As String) As IO.Stream Implements I{{xSettings.RestServiceClassName}}.{{Alias}}_GridServer_GetData
 	        Dim zReturn As System.IO.Stream
 	        Dim zJSON As New Dictionary(Of String, Object)
 	        Dim zUFD As New {{xSettings.razorFillDataClassNamespace}}.UtilFillData
