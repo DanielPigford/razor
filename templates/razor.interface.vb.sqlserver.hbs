@@ -33,13 +33,20 @@ Namespace razor
 	{{#each Columns}}{{#xIfNotAny IsComputed IsConcurrency "===" true}}
         Property {{xSettings.ColumnAliasPrefix}}{{Alias}}() As {{DotNet_NullableType}}
 	{{/xIfNotAny}}{{/each}}
-        Function IsDirty(pIndex As {{xSettings.DataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}}.FieldIndex) As Boolean
+        Function IsDirty(pIndex As I{{xSettings.DataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}}.FieldIndex) As Boolean
         Function IsDirty() As Boolean
 		Sub RaiseLoadedEvent(pUserState As Object)
 		Sub RaiseSavedEvent(pUserState As Object)
 		Sub RaiseDeletedEvent(pUserState As Object)
         Sub SetIsDirty(pDirty As Boolean)
-    End Interface
+.
+		Enum FieldIndex
+        {{#each Columns}}{{#xIfNotAny IsComputed IsConcurrency "===" true}}
+            {{xSettings.ColumnAliasPrefix}}{{Alias}} {{xFirst " = 1"}}
+        {{/xIfNotAny}}{{/each}}
+        End Enum
+.
+	End Interface
 .
 End Namespace
 .
