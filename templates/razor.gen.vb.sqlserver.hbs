@@ -1,6 +1,6 @@
 {{#each Items}}
 '/===============================================================\
-'| razor data (experimental) - rev 4.2.880   EXPERIMENTAL        |
+'| razor data (experimental) - rev 4.2.881   EXPERIMENTAL        |
 '|---------------------------------------------------------------|
 '|  Template: gen.vb.sqlserver (experimental version)            |
 '|   Website: http://www.pigford.net/razor                       |
@@ -67,6 +67,9 @@
 {{! Update: 12/14/2016 - Adjusted the default config settings     }}
 {{! Update: 10/16/2017 - Fixed logic bug when saving data with    }}
 {{!                      both identity (non-PK) and separate PK   }}
+{{! Update: 10/19/2017 - Added new function to row GetTableType() }}
+{{! Update: 10/19/2017 - Reworked Save when mode=InsertwithKey.   }}
+{{!                      Primary Key parameter value was not set. }}
 {{!===============================================================}}
 {{! This template currently only works with a SQLServer database  }}
 {{!                                                               }}
@@ -247,11 +250,24 @@ Namespace razor
 .
             Dim zCmd As New SQLCommand
             zCmd.CommandText = zSQL
-            If zMode = "INSERTnoKey" or zMode = "UPDATE" Then
+.
+			'IF UPDATE, SET PK PARAMETER
+            If zMode = "UPDATE" Then
             {{#each Columns}}
-            {{#xIfAny IsAutoKey IsInPrimaryKey "===" true}}
+            {{#xIfAny IsInPrimaryKey "===" true}}
                 zCmd.Parameters.Add(New SQLParameter("@{{xSettings.ColumnAliasPrefix}}{{Alias}}", pRowData.{{xSettings.ColumnAliasPrefix}}{{Alias}}))
             {{/xIfAny}}
+            {{/each}}
+            End If
+.
+			'IF INSERTING, KEY HAS VALUE AND KEY IS NOT IDENTITY, SET PK PARAMETER
+			If zMode = "INSERTwithKey" Then
+            {{#each Columns}}
+            {{#xIfAll IsInPrimaryKey "===" true}}
+			{{#xIfAll IsAutoKey "===" false}}
+                zCmd.Parameters.Add(New SQLParameter("@{{xSettings.ColumnAliasPrefix}}{{Alias}}", pRowData.{{xSettings.ColumnAliasPrefix}}{{Alias}}))
+            {{/xIfAll}}
+            {{/xIfAll}}
             {{/each}}
             End If
 .
@@ -657,6 +673,16 @@ Namespace razor
         {{/xIfNotAny}}{{/each}}
         End Sub
 .
+		 ''' <summary>
+        ''' Returns the type ({{xSettings.TableAliasPrefix}}{{Alias}}) that is able to save, update or delete using this row object.
+        ''' </summary>
+        ''' <returns>Returns the TblpmactivitiesCfc Type</returns>
+        ''' <remarks></remarks>
+		Public Shared Function GetTableType() As Type
+			Dim zObj As New {{xSettings.TableAliasPrefix}}{{Alias}}
+            Return zObj.GetType
+		End Function
+.
         Public Enum FieldIndex
         {{#each Columns}}{{#xIfNotAny IsComputed IsConcurrency "===" true}}
             {{xSettings.ColumnAliasPrefix}}{{Alias}} {{xFirst " = 1"}}
@@ -902,4 +928,5 @@ End namespace
 .
 {{xFile Alias path=xSettings.OutputPath prefix=xSettings.QueryAliasPrefix suffix="" ext="vb"}}
 {{/each}}
+.
 .
