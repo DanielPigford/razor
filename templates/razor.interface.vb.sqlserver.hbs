@@ -40,7 +40,7 @@ Namespace razor
 		Sub RaiseDeletedEvent(pUserState As Object)
         Sub SetIsDirty(pDirty As Boolean)
 .
-		Enum FieldIndex
+        Enum FieldIndex
         {{#each Columns}}{{#xIfNotAny IsComputed IsConcurrency "===" true}}
             {{xSettings.ColumnAliasPrefix}}{{Alias}} {{xFirst " = 1"}}
         {{/xIfNotAny}}{{/each}}
