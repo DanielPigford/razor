@@ -1,5 +1,5 @@
 '/===============================================================\
-'| razor engine (experimental) - rev 4.2.629                     |
+'| razor engine (experimental) - rev 4.2.630                     |
 '|---------------------------------------------------------------|
 '|  Template: razor.engine.vb.sqlserver (experimental version)   |
 '|   Website: http://www.pigford.net/razor                       |
@@ -76,6 +76,7 @@
 {{! Update: 11/09/2016 - Moved module variable to private and  }}
 {{!                      created public properties to support  }}
 {{!                      auditing connection management        }}
+{{! Update: 10/19/2017 - Added IN and NOT IN support to boolean}}
 {{!============================================================}}
 {{! This engine template only works with a SQL Server database }}
 {{!============================================================}}
@@ -1428,6 +1429,46 @@ Namespace razor
 .
             Public Overloads Function NotEqual(pValue As Boolean) As String
                 Return ColumnName & " <> " & CStr(Bit(pValue))
+            End Function
+.
+            Public Overloads Function [In](pValue() As Boolean) As String
+                Dim zNdx As Integer = 0
+                Dim zStringValue() As String
+                ReDim zStringValue(UBound(pValue))
+                For zNdx = 0 To UBound(pValue)
+                    zStringValue(zNdx) = pValue(zNdx).ToString
+                Next
+                Return ColumnName & " IN (" & Join(zStringValue, ",") & ")"
+            End Function
+.
+            Public Overloads Function [NotIn](pValue() As Boolean) As String
+                Dim zNdx As Integer = 0
+                Dim zStringValue() As String
+                ReDim zStringValue(UBound(pValue))
+                For zNdx = 0 To UBound(pValue)
+                    zStringValue(zNdx) = pValue(zNdx).ToString
+                Next
+                Return ColumnName & " NOT IN (" & Join(zStringValue, ",") & ")"
+            End Function
+.
+            Public Overloads Function [In](pValue() As String) As String
+                Dim zNdx As Integer = 0
+                Dim zStringValue() As String
+                ReDim zStringValue(UBound(pValue))
+                For zNdx = 0 To UBound(pValue)
+                    zStringValue(zNdx) = SQuote(pValue(zNdx).ToString)
+                Next
+                Return ColumnName & " IN (" & Join(zStringValue, ",") & ")"
+            End Function
+.
+            Public Overloads Function [NotIn](pValue() As String) As String
+                Dim zNdx As Integer = 0
+                Dim zStringValue() As String
+                ReDim zStringValue(UBound(pValue))
+                For zNdx = 0 To UBound(pValue)
+                    zStringValue(zNdx) = SQuote(pValue(zNdx).ToString)
+                Next
+                Return ColumnName & " NOT IN (" & Join(zStringValue, ",") & ")"
             End Function
         End Class
 .
