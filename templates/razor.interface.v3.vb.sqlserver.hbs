@@ -1,0 +1,68 @@
+'/===============================================================\
+'| razor interface (experimental) - rev 4.3.1   EXPERIMENTAL     |
+'|---------------------------------------------------------------|
+'|  Template: gen.interface.v3.vb.sqlserver (experimental)       |
+'|   Website: http://www.pigford.net/razor                       |
+'|                                                               |
+'| Known Issues:                                                 |
+'|  Data Types not supported due to type mapping issues: money,  |
+'| date, varchar(1), nvarchar(1)                                 |
+'\===============================================================/
+{{!===============================================================}}
+{{! Release: razor interface (experimental)                       }}
+{{!===============================================================}}
+{{! Update: 10/19/2017 - Initial version                          }}
+{{!===============================================================}}
+{{! This template currently only works with a SQLServer database  }}
+{{!                                                               }}
+{{! Known Issues:                                                 }}
+{{!  Data Types not supported due to type mapping issues: money,  }}
+{{! date, varchar(1), nvarchar(1)                                 }}
+{{!                                                               }}
+{{!                                                               }}
+{{!                                                               }}
+{{!===============================================================}}
+{{!  {                                                            }}
+{{!    "OutputPath": "C:\\M2G\\razor\\",                          }}
+{{!    "TableAliasPrefix": "",                                    }}
+{{!    "QueryAliasPrefix": "query",                               }}
+{{!    "ColumnAliasPrefix": "",                                   }}
+{{!    "DataObjectPrefix": "row",                                 }}
+{{!    "InterfaceDataObjectPrefix": "Irow",                       }}
+{{!    "AuditDateCreatedColumnName": "SysDateCreated",            }}
+{{!    "AuditUserCreatedColumnName": "SysUserCreated",            }}
+{{!    "AuditDateModifiedColumnName": "SysDateModified",          }}
+{{!    "AuditUserModifiedColumnName": "SysUserModified"           }}
+{{!  }                                                            }}
+{{!===============================================================}}
+
+{{#each Items}}	
+Namespace razor
+.
+	Public Interface {{xSettings.DataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}}
+        Event Loaded(pUserState As Object)
+        Event Saved(pUserState As Object)
+		Event Deleted(pUserState As Object)
+.
+	{{#each Columns}}{{#xIfNotAny IsComputed IsConcurrency "===" true}}
+        Property {{xSettings.ColumnAliasPrefix}}{{Alias}}() As {{DotNet_NullableType}}
+	{{/xIfNotAny}}{{/each}}
+        Function IsDirty(pIndex As {{xSettings.DataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}}.FieldIndex) As Boolean
+        Function IsDirty() As Boolean
+		Sub RaiseLoadedEvent(pUserState As Object)
+		Sub RaiseSavedEvent(pUserState As Object)
+		Sub RaiseDeletedEvent(pUserState As Object)
+        Sub SetIsDirty(pDirty As Boolean)
+.
+		Enum FieldIndex
+        {{#each Columns}}{{#xIfNotAny IsComputed IsConcurrency "===" true}}
+            {{xSettings.ColumnAliasPrefix}}{{Alias}} {{xFirst " = 1"}}
+        {{/xIfNotAny}}{{/each}}
+        End Enum
+.
+	End Interface
+.
+End Namespace
+.
+{{xFile Alias path=xSettings.OutputPath prefix=xSettings.DataObjectPrefix suffix="" ext="vb"}}
+{{/each}}

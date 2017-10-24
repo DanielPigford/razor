@@ -1,0 +1,873 @@
+{{#each Items}}
+'/===============================================================\
+'| razor data (experimental) - rev 4.3.1   EXPERIMENTAL          |
+'|---------------------------------------------------------------|
+'|  Template: gen.v3.vb.sqlserver (experimental)                 |
+'|   Website: http://www.pigford.net/razor                       |
+'|                                                               |
+'| Known Issues:                                                 |
+'|  Data Types not supported due to type mapping issues: money,  |
+'| date, varchar(1), nvarchar(1)                                 |
+'\===============================================================/
+{{!===============================================================}}
+{{! Release: razor data (experimental)                            }}
+{{!===============================================================}}
+{{! Update: 10/24/2017 - Initial version of the razor templates   }}
+{{!                      that support standalone library class    }}
+{{!                      interface source files for larger        }}
+{{!                      solution designs and architectures.      }}
+{{!===============================================================}}
+{{! This template currently only works with a SQLServer database  }}
+{{!                                                               }}
+{{! Known Issues:                                                 }}
+{{!  Data Types not supported due to type mapping issues: money,  }}
+{{! date, varchar(1), nvarchar(1)                                 }}
+{{!                                                               }}
+{{!                                                               }}
+{{!                                                               }}
+{{!===============================================================}}
+{{!  {                                                            }}
+{{!    "OutputPath": "C:\\M2G\\razor\\",                          }}
+{{!    "TableAliasPrefix": "",                                    }}
+{{!    "QueryAliasPrefix": "query",                               }}
+{{!    "ColumnAliasPrefix": "",                                   }}
+{{!    "DataObjectPrefix": "row",                                 }}
+{{!    "InterfaceDataObjectPrefix": "Irow",                       }}
+{{!    "InterfaceNamespace": "GRC.EDA.PM.DataInterfaceLib.razor", }}
+{{!    "AuditDateCreatedColumnName": "SysDateCreated",            }}
+{{!    "AuditUserCreatedColumnName": "SysUserCreated",            }}
+{{!    "AuditDateModifiedColumnName": "SysDateModified",          }}
+{{!    "AuditUserModifiedColumnName": "SysUserModified"           }}
+{{!  }                                                            }}
+{{!===============================================================}}
+
+Imports System.Data.SqlClient
+Imports {{xSettings.InterfaceNamespace}}
+.
+Namespace razor
+    Partial Public Class {{xSettings.TableAliasPrefix}}{{Alias}}
+    {{#if IsTable}}
+    {{#if PrimaryKeys}}
+    {{else}}
+        'No PrimaryKeys
+    {{/if}}
+    {{#if PrimaryKeys}}
+.
+        Public Shared Sub Delete(ByRef pRowData As {{xSettings.InterfaceDataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}})
+            Delete(pRowData, Nothing, Nothing)
+        End Sub
+.
+        Public Shared Sub Delete(ByRef pRowData As {{xSettings.InterfaceDataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}}, pDeleteEventUserState As Object)
+            Delete(pRowData, Nothing, pDeleteEventUserState)
+        End Sub
+.
+        Public Shared Sub Delete(ByRef pRowData As {{xSettings.InterfaceDataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}}, ByRef pTransaction As SqlClient.SqlTransaction)
+            Delete(pRowData, pTransaction, Nothing)
+        End Sub
+.
+        Public Shared Sub Delete(ByRef pRowData As {{xSettings.InterfaceDataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}}, ByRef pTransaction As SqlClient.SqlTransaction, pDeleteEventUserState As Object)
+            Dim zSQL As String = ""
+            Dim zMode As String = ""
+.
+            If {{#each PrimaryKeys}}razor.UtilSQLServer.IsKeySet(pRowData.{{xSettings.ColumnAliasPrefix}}{{Alias}}){{#xNotLast}} And {{/xNotLast}}{{/each}} Then
+.
+				{{#each Columns}}
+				{{#xIf Alias "===" xSettings.AuditUserModifiedColumnName}}
+				If UtilConfiguration.Auditing.AuditIsEnabled Then				
+					pRowData.{{xSettings.ColumnAliasPrefix}}{{xSettings.AuditUserModifiedColumnName}}=UtilConfiguration.Auditing.CurrentUserDelegate.Invoke()
+					pRowData.{{xSettings.ColumnAliasPrefix}}{{xSettings.AuditDateModifiedColumnName}}=Now()
+					Save(pRowData,pTransaction,Nothing) 'Save the person who is deleting this record to the AuditUserModifiedColumnName column.
+				End If
+				{{/xIf}}
+				{{/each}}
+.
+                'Delete
+                zMode = "DELETE"
+                zSQL = "DELETE FROM [{{Schema}}].[{{Name}}] " & _
+                        "WHERE {{#each PrimaryKeys}}[{{Name}}] = @{{xSettings.ColumnAliasPrefix}}{{Alias}}{{#xNotLast}} AND {{/xNotLast}}{{/each}}"
+.
+                Dim zCmd As New SQLCommand
+                zCmd.CommandText = zSQL
+                {{#each PrimaryKeys}}
+                zCmd.Parameters.Add(New SQLParameter("@{{xSettings.ColumnAliasPrefix}}{{Alias}}", pRowData.{{xSettings.ColumnAliasPrefix}}{{Alias}}))
+                {{/each}}
+.
+                zCmd.Transaction=pTransaction
+                razor.UtilSQLServer.ExecuteNonQuery(zCmd)
+.
+                pRowData.RaiseDeletedEvent(pDeleteEventUserState)
+.
+            End If
+.
+        End Sub
+.
+        Public Shared Sub Delete({{#each PrimaryKeys}}{{xNotFirst ", "}}p{{xSettings.ColumnAliasPrefix}}{{Alias}} As {{LanguageType}}{{/each}})
+            Delete({{#each PrimaryKeys}}{{xNotFirst ", "}}p{{xSettings.ColumnAliasPrefix}}{{Alias}}{{/each}}, Nothing, Nothing)
+        End Sub	
+.
+        Public Shared Sub Delete({{#each PrimaryKeys}}{{xNotFirst ", "}}p{{xSettings.ColumnAliasPrefix}}{{Alias}} As {{LanguageType}}{{/each}}, pDeleteEventUserState As Object)
+            Delete({{#each PrimaryKeys}}{{xNotFirst ", "}}p{{xSettings.ColumnAliasPrefix}}{{Alias}}{{/each}}, Nothing, pDeleteEventUserState)
+        End Sub	
+.
+        Public Shared Sub Delete({{#each PrimaryKeys}}{{xNotFirst ", "}}p{{xSettings.ColumnAliasPrefix}}{{Alias}} As {{LanguageType}}{{/each}}, ByRef pTransaction As SqlClient.SqlTransaction)
+        Delete({{#each PrimaryKeys}}{{xNotFirst ", "}}p{{xSettings.ColumnAliasPrefix}}{{Alias}}{{/each}}, pTransaction, Nothing)
+        End Sub	
+.
+        Public Shared Sub Delete({{#each PrimaryKeys}}{{xNotFirst ", "}}p{{xSettings.ColumnAliasPrefix}}{{Alias}} As {{LanguageType}}{{/each}}, ByRef pTransaction As SqlClient.SqlTransaction, pDeleteEventUserState As Object)
+        Dim zObj As {{xSettings.InterfaceDataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}} = LoadByPrimaryKey({{#each PrimaryKeys}}{{xNotFirst ", "}}p{{xSettings.ColumnAliasPrefix}}{{Alias}}{{/each}}, pTransaction, Nothing)
+        Delete(zObj, pTransaction, pDeleteEventUserState)
+        End Sub	
+.
+        Public Shared Sub Save(ByRef pRowData As {{xSettings.InterfaceDataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}})
+            Save(pRowData, Nothing, Nothing)
+        End Sub
+.
+        Public Shared Sub Save(ByRef pRowData As {{xSettings.InterfaceDataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}}, ByRef pTransaction As SqlClient.SqlTransaction)
+            Save(pRowData, pTransaction, Nothing)
+        End Sub
+.
+        Public Shared Sub Save(ByRef pRowData As {{xSettings.InterfaceDataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}}, ByRef pTransaction As SqlClient.SqlTransaction, pSavedEventUserState As Object)
+.
+		If pRowData.IsDirty() Then
+            Dim zSQL As String = ""
+            Dim zMode As String = ""
+            DIm zExistInDB As Long = -1
+            If {{#each PrimaryKeys}}razor.UtilSQLServer.IsKeySet(pRowData.{{xSettings.ColumnAliasPrefix}}{{Alias}}){{#xNotLast}} And {{/xNotLast}}{{/each}} Then
+.
+                zSQL = "SELECT COUNT(*) from [{{Schema}}].[{{Name}}] WHERE {{#each PrimaryKeys}}[{{Name}}] = @{{xSettings.ColumnAliasPrefix}}{{Alias}}{{#xNotLast}} AND {{/xNotLast}}{{/each}}"
+.
+                Dim zCmdDoesExist As New SQLCommand
+.
+                zCmdDoesExist.CommandText = zSQL
+.
+                {{#each PrimaryKeys}}
+                zCmdDoesExist.Parameters.Add(new SQLParameter("@{{xSettings.ColumnAliasPrefix}}{{Alias}}", pRowData.{{xSettings.ColumnAliasPrefix}}{{Alias}}))
+                {{/each}}
+.
+                'if zExistInDB > 0  then  PK exists in the DB
+                zCmdDoesExist.Transaction = pTransaction
+                zExistInDB = razor.UtilSQLServer.ExecuteScalar(zCmdDoesExist)
+            End If
+.
+            If {{#each PrimaryKeys}}razor.UtilSQLServer.IsKeySet(pRowData.{{xSettings.ColumnAliasPrefix}}{{Alias}}){{#xNotLast}} And {{/xNotLast}}{{/each}} And zExistInDB > 0 Then
+                zMode = "UPDATE"
+				{{#each Columns}}
+				{{#xIf Alias "===" xSettings.AuditUserModifiedColumnName}}
+				If UtilConfiguration.Auditing.AuditIsEnabled Then				
+					pRowData.{{xSettings.ColumnAliasPrefix}}{{xSettings.AuditUserModifiedColumnName}}=UtilConfiguration.Auditing.CurrentUserDelegate.Invoke()
+					pRowData.{{xSettings.ColumnAliasPrefix}}{{xSettings.AuditDateModifiedColumnName}}=Now()
+					End If			
+				{{/xIf}}
+				{{/each}}
+            End If
+            If {{#each PrimaryKeys}}razor.UtilSQLServer.IsKeySet(pRowData.{{xSettings.ColumnAliasPrefix}}{{Alias}}){{#xNotLast}} And {{/xNotLast}}{{/each}} And zExistInDB = 0 Then
+                zMode = "INSERTwithKey"
+				{{#each Columns}}
+				{{#xIf Alias "===" xSettings.AuditUserCreatedColumnName}}
+				If UtilConfiguration.Auditing.AuditIsEnabled Then
+					pRowData.{{xSettings.ColumnAliasPrefix}}{{xSettings.AuditUserCreatedColumnName}}=UtilConfiguration.Auditing.CurrentUserDelegate.Invoke()
+					pRowData.{{xSettings.ColumnAliasPrefix}}{{xSettings.AuditDateCreatedColumnName}}=Now()
+				End If
+				{{/xIf}}
+				{{/each}}
+            End If
+            If {{#each PrimaryKeys}}Not razor.UtilSQLServer.IsKeySet(pRowData.{{xSettings.ColumnAliasPrefix}}{{Alias}}){{#xNotLast}} Or {{/xNotLast}}{{/each}} Then
+                zMode = "INSERTnoKey"
+				{{#each Columns}}
+				{{#xIf Alias "===" xSettings.AuditUserCreatedColumnName}}
+				If UtilConfiguration.Auditing.AuditIsEnabled Then
+					pRowData.{{xSettings.ColumnAliasPrefix}}{{xSettings.AuditUserCreatedColumnName}}=UtilConfiguration.Auditing.CurrentUserDelegate.Invoke()
+					pRowData.{{xSettings.ColumnAliasPrefix}}{{xSettings.AuditDateCreatedColumnName}}=Now()
+				End If
+				{{/xIf}}
+				{{/each}}
+            End If
+.
+            Select Case zMode
+                Case "UPDATE"
+                    If pRowData.IsDirty Then
+                        Dim zUpdate As String = ""
+                        Dim zSet As String = ""
+                        Dim zWhere As String = ""
+                        zUpdate = "UPDATE [{{Schema}}].[{{Name}}] SET " 
+                        {{#each Columns}}
+                        {{#xIfNotAny IsComputed IsConcurrency IsAutoKey IsInPrimaryKey "===" true}}
+                        If pRowData.IsDirty({{xSettings.InterfaceNamespace}}.{{xSettings.InterfaceDataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{../../Alias}}.FieldIndex.{{xSettings.ColumnAliasPrefix}}{{Alias}}) Then 
+                            If zSet.Length > 0 Then zSet = zSet & ","
+                            zSet = zSet & " [{{Name}}] = @{{xSettings.ColumnAliasPrefix}}{{Alias}} "
+                        End If
+                        {{/xIfNotAny}}
+                        {{/each}}
+                        zWhere = " WHERE {{#each PrimaryKeys}}[{{Name}}] = @{{xSettings.ColumnAliasPrefix}}{{Alias}}{{#xNotLast}} AND {{/xNotLast}}{{/each}}"
+                        zSQL = zUpdate & zSet & zWhere
+                    End If
+                Case "INSERTwithKey"
+                    zSQL = "INSERT INTO [{{Schema}}].[{{Name}}] ({{#each Columns}}{{#xIfNotAny IsAutoKey IsComputed IsConcurrency "===" true}}{{xHashtable "Comma"}}[{{Name}}]{{xHashtable "Comma" ", "}}{{/xIfNotAny}}{{/each}}){{xHashtable}}" & _
+                            " VALUES ({{#each Columns}}{{#xIfNotAny IsComputed IsConcurrency IsAutoKey "===" true}}{{xHashtable "Comma"}}@{{xSettings.ColumnAliasPrefix}}{{Alias}}{{xHashtable "Comma" ", "}}{{/xIfNotAny}}{{/each}}){{xHashtable}}; SELECT SCOPE_IDENTITY()"
+                Case "INSERTnoKey"
+                    zSQL = "INSERT INTO [{{Schema}}].[{{Name}}] ({{#each Columns}}{{#xIfNotAny IsComputed IsConcurrency IsAutoKey IsInPrimaryKey "===" true}}{{xHashtable "Comma"}}[{{Name}}]{{xHashtable "Comma" ", "}}{{/xIfNotAny}}{{/each}}){{xHashtable}}" & _
+                            " VALUES ({{#each Columns}}{{#xIfNotAny IsComputed IsConcurrency IsAutoKey IsInPrimaryKey "===" true}}{{xHashtable "Comma"}}@{{xSettings.ColumnAliasPrefix}}{{Alias}}{{xHashtable "Comma" ", "}}{{/xIfNotAny}}{{/each}}){{xHashtable}}; SELECT SCOPE_IDENTITY()"
+                Case Else
+            End Select
+.
+            Dim zCmd As New SQLCommand
+            zCmd.CommandText = zSQL
+.
+			'IF UPDATE, SET PK PARAMETER
+            If zMode = "UPDATE" Then
+            {{#each Columns}}
+            {{#xIfAny IsInPrimaryKey "===" true}}
+                zCmd.Parameters.Add(New SQLParameter("@{{xSettings.ColumnAliasPrefix}}{{Alias}}", pRowData.{{xSettings.ColumnAliasPrefix}}{{Alias}}))
+            {{/xIfAny}}
+            {{/each}}
+            End If
+.
+			'IF INSERTING, KEY HAS VALUE AND KEY IS NOT IDENTITY, SET PK PARAMETER
+			If zMode = "INSERTwithKey" Then
+            {{#each Columns}}
+            {{#xIfAll IsInPrimaryKey "===" true}}
+			{{#xIfAll IsAutoKey "===" false}}
+                zCmd.Parameters.Add(New SQLParameter("@{{xSettings.ColumnAliasPrefix}}{{Alias}}", pRowData.{{xSettings.ColumnAliasPrefix}}{{Alias}}))
+            {{/xIfAll}}
+            {{/xIfAll}}
+            {{/each}}
+            End If
+.
+            {{#each Columns}}
+            {{#xIfAll IsAutoKey IsInPrimaryKey "===" false}}
+            {{#xIfNotAny IsComputed IsConcurrency "===" true}}
+                If zMode = "INSERTwithKey" Or zMode = "INSERTnoKey" Or pRowData.IsDirty({{xSettings.InterfaceNamespace}}.{{xSettings.InterfaceDataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{../../../Alias}}.FieldIndex.{{xSettings.ColumnAliasPrefix}}{{Alias}}) Then
+                    zCmd.Parameters.Add(New SqlParameter("@{{xSettings.ColumnAliasPrefix}}{{Alias}}", IIf(pRowData.{{xSettings.ColumnAliasPrefix}}{{Alias}} Is Nothing, DBNull.Value, pRowData.{{xSettings.ColumnAliasPrefix}}{{Alias}})))
+                End If
+            {{/xIfNotAny}}
+            {{/xIfAll}}
+            {{/each}}
+.
+            zCmd.Transaction=pTransaction
+            If zMode = "INSERTnoKey" Then
+                Dim zLastId As Long = 0
+                zLastId = razor.UtilSQLServer.ExecuteNonQueryRowId(zCmd)
+.
+            {{! TODO: Can you have multiple autokeys in a single table? }}
+            {{#each Columns}}
+            {{#xIfAny IsAutoKey IsInPrimaryKey "===" true}}
+                pRowData.{{xSettings.ColumnAliasPrefix}}{{Alias}} = zLastId
+            {{/xIfAny}}
+            {{/each}}
+            Else
+                razor.UtilSQLServer.ExecuteNonQuery(zCmd)
+            End If
+.
+            pRowData.SetIsDirty(False)
+            pRowData.RaiseSavedEvent(pSavedEventUserState)
+.
+		End If
+.
+        End Sub
+.
+        Public Shared Function LoadByPrimaryKey({{#each PrimaryKeys}}{{xNotFirst ", "}}p{{xSettings.ColumnAliasPrefix}}{{Alias}} As {{LanguageType}}{{/each}}) As {{xSettings.InterfaceDataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}}
+            Return LoadByPrimaryKey({{#each PrimaryKeys}}{{xNotFirst ", "}}p{{xSettings.ColumnAliasPrefix}}{{Alias}}{{/each}}, Nothing, Nothing)
+        End Function
+.
+        Public Shared Function LoadByPrimaryKey({{#each PrimaryKeys}}{{xNotFirst ", "}}p{{xSettings.ColumnAliasPrefix}}{{Alias}} As {{LanguageType}}{{/each}}, pLoadEventUserState As Object) As {{xSettings.InterfaceDataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}}
+            Return LoadByPrimaryKey({{#each PrimaryKeys}}{{xNotFirst ", "}}p{{xSettings.ColumnAliasPrefix}}{{Alias}}{{/each}}, Nothing, pLoadEventUserState)
+        End Function
+.
+        Public Shared Function LoadByPrimaryKey({{#each PrimaryKeys}}{{xNotFirst ", "}}p{{xSettings.ColumnAliasPrefix}}{{Alias}} As {{LanguageType}}{{/each}}, pTransaction As SqlClient.SqlTransaction) As {{xSettings.InterfaceDataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}}
+            Return LoadByPrimaryKey({{#each PrimaryKeys}}{{xNotFirst ", "}}p{{xSettings.ColumnAliasPrefix}}{{Alias}}{{/each}}, pTransaction, Nothing)
+        End Function
+.
+        Public Shared Function LoadByPrimaryKey({{#each PrimaryKeys}}{{xNotFirst ", "}}p{{xSettings.ColumnAliasPrefix}}{{Alias}} As {{LanguageType}}{{/each}}, pTransaction As SqlClient.SqlTransaction, pLoadEventUserState As Object) As {{xSettings.InterfaceDataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}}
+            Dim zReturn As New {{xSettings.DataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}}
+            Dim zSQL As String = "SELECT * FROM [{{Schema}}].[{{Name}}] WHERE {{#each PrimaryKeys}}{{xNotFirst ' AND '}}[{{Name}}] = @{{xSettings.ColumnAliasPrefix}}{{Alias}}{{/each}}"
+            Dim zCmd As New SQLCommand
+.
+            zCmd.CommandText = zSQL
+            {{#each PrimaryKeys}}
+            zCmd.Parameters.Add(New SQLParameter("@{{xSettings.ColumnAliasPrefix}}{{Alias}}", p{{xSettings.ColumnAliasPrefix}}{{Alias}}))
+            {{/each}}
+.
+            zCmd.Transaction=pTransaction
+.
+            Dim zList As IEnumerable(Of {{xSettings.InterfaceDataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}}) = ReadData(zCmd, pLoadEventUserState)
+.
+            If zList.Count=1 Then
+                Return zList(0)
+            Else
+                Return zReturn
+            End If
+.
+            End Function
+    {{/if}}
+.
+        {{#each Indexes}}
+        Public Shared Function LoadByIDX_{{Name}}({{#each Columns}}{{xNotFirst ", "}}p{{xSettings.ColumnAliasPrefix}}{{Alias}} As {{LanguageType}}{{/each}}) As IEnumerable(Of {{xSettings.InterfaceDataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{../Alias}})
+            Return LoadByIDX_{{Name}}({{#each Columns}}{{xNotFirst ", "}}p{{xSettings.ColumnAliasPrefix}}{{Alias}}{{/each}}, Nothing, Nothing)
+        End Function
+.
+        Public Shared Function LoadByIDX_{{Name}}({{#each Columns}}{{xNotFirst ", "}}p{{xSettings.ColumnAliasPrefix}}{{Alias}} As {{LanguageType}}{{/each}}, pLoadEventUserState As Object) As IEnumerable(Of {{xSettings.InterfaceDataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{../Alias}})
+            Return LoadByIDX_{{Name}}({{#each Columns}}{{xNotFirst ", "}}p{{xSettings.ColumnAliasPrefix}}{{Alias}}{{/each}}, Nothing, pLoadEventUserState)
+        End Function
+.
+        Public Shared Function LoadByIDX_{{Name}}({{#each Columns}}{{xNotFirst ", "}}p{{xSettings.ColumnAliasPrefix}}{{Alias}} As {{LanguageType}}{{/each}}, pTransaction As SqlClient.SqlTransaction) As IEnumerable(Of {{xSettings.InterfaceDataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{../Alias}})
+            Return LoadByIDX_{{Name}}({{#each Columns}}{{xNotFirst ", "}}p{{xSettings.ColumnAliasPrefix}}{{Alias}}{{/each}}, pTransaction, Nothing)
+        End Function
+.
+        Public Shared Function LoadByIDX_{{Name}}({{#each Columns}}{{xNotFirst ", "}}p{{xSettings.ColumnAliasPrefix}}{{Alias}} As {{LanguageType}}{{/each}}, pTransaction As SqlClient.SqlTransaction, pLoadEventUserState As Object) As IEnumerable(Of {{xSettings.InterfaceDataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{../Alias}})
+            Dim zReturn As New List(Of {{xSettings.InterfaceDataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{../Alias}})
+            Dim zSQL As String = "SELECT * FROM [{{../Schema}}].[{{../Name}}] WHERE {{#each Columns}}{{xNotFirst ' AND '}}[{{Name}}] = @{{xSettings.ColumnAliasPrefix}}{{Alias}}{{/each}}"
+            Dim zCmd As New SQLCommand       
+            zCmd.CommandText = zSQL 
+.
+            {{#each Columns}}{{#xIfNotAny IsComputed IsConcurrency "===" true}}
+            zCmd.Parameters.Add(New SQLParameter("@{{xSettings.ColumnAliasPrefix}}{{Alias}}", p{{xSettings.ColumnAliasPrefix}}{{Alias}}))
+            {{/xIfNotAny}}{{/each}}
+.
+            zCmd.Transaction=pTransaction
+            zReturn = ReadData(zCmd, pLoadEventUserState)	
+.
+            Return zReturn	
+        End Function
+        {{/each}}
+    {{/if}}
+.
+        Public Shared Function LoadData() As IEnumerable(Of {{xSettings.InterfaceDataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}})
+            Return LoadData(New SqlClient.SqlCommand(), Nothing, Nothing)
+        End Function
+.
+        Public Shared Function LoadData(pLoadEventUserState As Object) As IEnumerable(Of {{xSettings.InterfaceDataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}})
+            Return LoadData(New SqlClient.SqlCommand(), Nothing, pLoadEventUserState)
+        End Function
+.
+        Public Shared Function LoadData(pSQL As String) As IEnumerable(Of {{xSettings.InterfaceDataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}})
+            Dim zCmd As New SqlClient.SqlCommand(pSQL)
+            Return LoadData(zCmd, Nothing, Nothing)
+        End Function
+.
+        Public Shared Function LoadData(pSQL As String, ByRef pTransaction As SqlClient.SqlTransaction) As IEnumerable(Of {{xSettings.InterfaceDataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}})
+            Dim zCmd As New SqlClient.SqlCommand(pSQL)
+            Return LoadData(zCmd, pTransaction, Nothing)
+        End Function
+.
+        Public Shared Function LoadData(pSQL As String, ByRef pTransaction As SqlClient.SqlTransaction, pLoadEventUserState As Object) As IEnumerable(Of {{xSettings.InterfaceDataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}})
+            Dim zCmd As New SqlClient.SqlCommand(pSQL)
+            Return LoadData(zCmd, pTransaction, pLoadEventUserState)
+        End Function
+.
+        Public Shared Function LoadData(pCommand As SqlClient.SqlCommand)
+            Return LoadData(pCommand, Nothing, Nothing)
+        End Function
+.
+        Public Shared Function LoadData(pCommand As SqlClient.SqlCommand, pLoadEventUserState As Object)
+            Return LoadData(pCommand, Nothing, pLoadEventUserState)
+        End Function
+.
+        Public Shared Function LoadData(pCommand As SqlClient.SqlCommand, ByRef pTransaction As SqlClient.SqlTransaction)
+            Return LoadData(pCommand,pTransaction,Nothing)
+        End Function
+.
+        Public Shared Function LoadData(pCommand As SqlClient.SqlCommand, ByRef pTransaction As SqlClient.SqlTransaction, pLoadEventUserState As Object) As IEnumerable(Of {{xSettings.InterfaceDataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}})
+            Dim zReturn As New List(Of {{xSettings.InterfaceDataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}})
+            Dim zSQL As String = "SELECT * FROM [{{Schema}}].[{{Name}}]"
+            Dim zCmd As New SQLCommand
+.
+            If String.IsNullOrEmpty(pCommand.CommandText) Then zCmd.CommandText = zSQL Else zCmd = pCommand
+.
+            zCmd.Transaction=pTransaction
+            zReturn = ReadData(zCmd, pLoadEventUserState)	
+.
+            Return zReturn
+.
+        End Function
+.
+        Public Shared Function ReadData(pCommand As SqlClient.SqlCommand, pLoadEventUserState As Object) As IEnumerable(Of {{xSettings.InterfaceDataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}})
+.
+			Try
+	            Dim zReturn As New List(Of {{xSettings.InterfaceDataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}})		
+	            Dim zReader As SqlClient.SqlDataReader = razor.UtilSQLServer.ExecuteReader(pCommand)
+	            Dim zObj As New {{xSettings.DataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}}
+.
+	            Using pCommand
+	                Using zReader
+	                    If zReader.HasRows() Then
+	                        While zReader.Read
+	                            zObj = New {{xSettings.DataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}}		
+	                            ReadDataRow(zReader,zObj)											
+	                            zObj.RaiseLoadedEvent(pLoadEventUserState)
+	                            zReturn.Add(zObj)
+	                        End While
+	                    End If
+	                End Using
+	            End Using
+.
+	            zReader.Close()
+	            zReader = Nothing
+.
+	            Return zReturn
+.
+			Catch ex As Exception
+				ex.Data.Add("SQL", pCommand.CommandText)				
+	            For Each pParameter As SqlClient.SqlParameter In pCommand.Parameters
+					ex.Data.Add(pParameter.ParameterName, pParameter.Value)
+		        Next
+				Throw
+			End Try
+.
+        End function
+.
+        Public Shared Function ReadData(Of T)(pCommand As SqlClient.SqlCommand, pLoadEventUserState As Object) As IEnumerable(Of T)
+.
+			Try
+	            Dim zReturn As New List(Of T)		
+	            Dim zReader As SqlClient.SqlDataReader = razor.UtilSQLServer.ExecuteReader(pCommand)
+	            Dim zObj As Object = Activator.CreateInstance(Of T)()
+.
+	            Using pCommand
+	                Using zReader
+	                    If zReader.HasRows() Then
+	                        While zReader.Read
+	                            zObj  = Activator.CreateInstance(Of T)()	
+	                            ReadDataRow(zReader,zObj)					
+	                            zObj.RaiseLoadedEvent(pLoadEventUserState)
+	                            zReturn.Add(zObj)
+	                        End While			
+	                    End If
+	                End Using
+	            End Using
+.
+	            zReader.Close()
+	            zReader = Nothing
+.
+	            Return zReturn
+			Catch ex As Exception
+				ex.Data.Add("SQL", pCommand.CommandText)				
+	            For Each pParameter As SqlClient.SqlParameter In pCommand.Parameters
+					ex.Data.Add(pParameter.ParameterName, pParameter.Value)
+		        Next				
+				Throw
+			End Try
+.
+        End function
+.
+		Public Shared Function ReadDataRow(pReader As SqlClient.SqlDataReader, ByRef pObject As {{xSettings.InterfaceDataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}})
+			{{#each Columns}}{{#xIfNotAny IsComputed IsConcurrency "===" true}}
+			If Not pReader.IsDBNull(pReader.GetOrdinal("{{Name}}")) Then pObject.{{xSettings.ColumnAliasPrefix}}{{Alias}} = UtilSQLServer.SafeReader.SafeRead{{DotNet_Type}}(pReader, "{{Name}}")
+			{{/xIfNotAny}}{{/each}}
+			pObject.SetIsDirty(False)
+			Return pObject
+		End	 Function
+.
+    #Region "Reflection Based Load Functions"
+.
+    {{#if IsTable}}
+        {{#if PrimaryKeys}}
+        Public Shared Function LoadByPrimaryKey(Of T)({{#each PrimaryKeys}}{{xNotFirst ", "}}p{{xSettings.ColumnAliasPrefix}}{{Alias}} As {{LanguageType}}{{/each}}) As T
+            Return LoadByPrimaryKey(Of T)({{#each PrimaryKeys}}{{xNotFirst ", "}}p{{xSettings.ColumnAliasPrefix}}{{Alias}}{{/each}}, Nothing, Nothing)
+        End Function
+.
+        Public Shared Function LoadByPrimaryKey(Of T)({{#each PrimaryKeys}}{{xNotFirst ", "}}p{{xSettings.ColumnAliasPrefix}}{{Alias}} As {{LanguageType}}{{/each}}, pLoadEventUserState As Object) As T
+            Return LoadByPrimaryKey(Of T)({{#each PrimaryKeys}}{{xNotFirst ", "}}p{{xSettings.ColumnAliasPrefix}}{{Alias}}{{/each}}, Nothing, pLoadEventUserState)
+        End Function
+.
+        Public Shared Function LoadByPrimaryKey(Of T)({{#each PrimaryKeys}}{{xNotFirst ", "}}p{{xSettings.ColumnAliasPrefix}}{{Alias}} As {{LanguageType}}{{/each}}, pTransaction As SqlClient.SqlTransaction) As T
+            Return LoadByPrimaryKey(Of T)({{#each PrimaryKeys}}{{xNotFirst ", "}}p{{xSettings.ColumnAliasPrefix}}{{Alias}}{{/each}}, pTransaction, Nothing)
+        End Function
+.
+        Public Shared Function LoadByPrimaryKey(Of T)({{#each PrimaryKeys}}{{xNotFirst ", "}}p{{xSettings.ColumnAliasPrefix}}{{Alias}} As {{LanguageType}}{{/each}}, pTransaction As SqlClient.SqlTransaction, pLoadEventUserState As Object) As T
+.
+            Dim zReturn As Object = Activator.CreateInstance(Of T)()
+            If Not TypeOf zReturn Is {{xSettings.InterfaceDataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}} Then Throw New ArgumentException("Generic type is not type of {{xSettings.InterfaceDataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}}.","T")
+.
+            Dim zSQL As String = "SELECT * FROM [{{Schema}}].[{{Name}}] WHERE {{#each PrimaryKeys}}{{xNotFirst ' AND '}}[{{Name}}] = @{{xSettings.ColumnAliasPrefix}}{{Alias}}{{/each}}"
+            Dim zCmd As New SQLCommand
+.
+            zCmd.CommandText = zSQL
+            {{#each PrimaryKeys}}
+            zCmd.Parameters.Add(New SQLParameter("@{{xSettings.ColumnAliasPrefix}}{{Alias}}", p{{xSettings.ColumnAliasPrefix}}{{Alias}}))
+            {{/each}}
+.
+            zCmd.Transaction=pTransaction
+.
+            Dim zList As IEnumerable(Of T) = ReadData(Of T)(zCmd, pLoadEventUserState)
+            If zList.Count=1 Then
+                Return zList(0)
+            Else
+                Return zReturn
+            End If
+.
+        End Function
+        {{/if}}
+    {{/if}}
+.
+        {{#each Indexes}}
+        Public Shared Function LoadByIDX_{{Name}}(Of T)({{#each Columns}}{{xNotFirst ", "}}p{{xSettings.ColumnAliasPrefix}}{{Alias}} As {{LanguageType}}{{/each}}) As IEnumerable(Of T)
+            Return LoadByIDX_{{Name}}(Of T)({{#each Columns}}{{xNotFirst ", "}}p{{xSettings.ColumnAliasPrefix}}{{Alias}}{{/each}}, Nothing, Nothing)
+        End Function
+.
+        Public Shared Function LoadByIDX_{{Name}}(Of T)({{#each Columns}}{{xNotFirst ", "}}p{{xSettings.ColumnAliasPrefix}}{{Alias}} As {{LanguageType}}{{/each}}, pLoadEventUserState As Object) As IEnumerable(Of T)
+            Return LoadByIDX_{{Name}}(Of T)({{#each Columns}}{{xNotFirst ", "}}p{{xSettings.ColumnAliasPrefix}}{{Alias}}{{/each}}, Nothing, pLoadEventUserState)
+        End Function
+.
+        Public Shared Function LoadByIDX_{{Name}}(Of T)({{#each Columns}}{{xNotFirst ", "}}p{{xSettings.ColumnAliasPrefix}}{{Alias}} As {{LanguageType}}{{/each}}, pTransaction As SqlClient.SqlTransaction) As IEnumerable(Of T)
+            Return LoadByIDX_{{Name}}(Of T)({{#each Columns}}{{xNotFirst ", "}}p{{xSettings.ColumnAliasPrefix}}{{Alias}}{{/each}}, pTransaction, Nothing)
+        End Function
+.
+        ''' <summary>
+        ''' Loads a list of items based on the supplied object type (Reflection Based Function)
+        ''' </summary>
+        Public Shared Function LoadByIDX_{{Name}}(Of T)({{#each Columns}}{{xNotFirst ", "}}p{{xSettings.ColumnAliasPrefix}}{{Alias}} As {{LanguageType}}{{/each}}, pTransaction As SqlClient.SqlTransaction, pLoadEventUserState As Object) As IEnumerable(Of T)
+            Dim zReturn As New List(Of T)
+            Dim zSQL As String = "SELECT * FROM [{{../Schema}}].[{{../Name}}] WHERE {{#each Columns}}{{xNotFirst ' AND '}}[{{Name}}] = @{{xSettings.ColumnAliasPrefix}}{{Alias}}{{/each}}"
+            Dim zCmd As New SQLCommand
+            zCmd.CommandText = zSQL
+.
+            {{#each Columns}}{{#xIfNotAny IsComputed IsConcurrency "===" true}}
+            zCmd.Parameters.Add(New SQLParameter("@{{xSettings.ColumnAliasPrefix}}{{Alias}}", p{{xSettings.ColumnAliasPrefix}}{{Alias}}))
+            {{/xIfNotAny}}{{/each}}
+.
+            zCmd.Transaction=pTransaction
+            zReturn = ReadData(Of T)(zCmd, pLoadEventUserState)	
+.
+            Return zReturn
+        End Function
+.
+        {{/each}}
+        Public Shared Function LoadData(Of T)(pSQL As String) As IEnumerable(Of T)
+            Dim zCmd As New SqlClient.SqlCommand(pSQL)
+            Return LoadData(Of T)(zCmd, Nothing, Nothing)
+        End Function
+.
+        Public Shared Function LoadData(Of T)(pSQL As String, pLoadEventUserState As Object) As IEnumerable(Of T)
+            Dim zCmd As New SqlClient.SqlCommand(pSQL)
+            Return LoadData(Of T)(zCmd, Nothing, pLoadEventUserState)
+        End Function
+.
+        Public Shared Function LoadData(Of T)(pSQL As String, ByRef pTransaction As SqlClient.SqlTransaction, pLoadEventUserState As Object) As IEnumerable(Of T)
+            Dim zCmd As New SqlClient.SqlCommand(pSQL)
+            Return LoadData(Of T)(zCmd, pTransaction, pLoadEventUserState)
+        End Function
+.
+        Public Shared Function LoadData(Of T)() As IEnumerable(Of T)
+            Return LoadData(Of T)(New SqlClient.SqlCommand, Nothing, Nothing)
+        End Function
+.
+        Public Shared Function LoadData(Of T)(pLoadEventUserState As Object) As IEnumerable(Of T)
+            Return LoadData(Of T)(New SqlClient.SqlCommand, Nothing, pLoadEventUserState)
+        End Function
+.
+        Public Shared Function LoadData(Of T)(pCommand As SqlCommand) As IEnumerable(Of T)
+            Return LoadData(Of T)(pCommand, Nothing, Nothing)
+        End Function
+.
+        Public Shared Function LoadData(Of T)(pCommand As SqlCommand, pLoadEventUserState As Object) As IEnumerable(Of T)
+            Return LoadData(Of T)(pCommand, Nothing, pLoadEventUserState)
+        End Function
+.
+        Public Shared Function LoadData(Of T)(pCommand As SqlCommand, pTransaction As SqlClient.SqlTransaction) As IEnumerable(Of T)
+            Return LoadData(Of T)(pCommand, pTransaction, Nothing)
+        End Function
+.
+        Public Shared Function LoadData(Of T)(pCommand As SqlCommand, ByRef pTransaction As SqlClient.SqlTransaction, pLoadEventUserState As Object) As IEnumerable(Of T)
+            Dim zReturn As New List(Of T)
+            Dim zSQL As String = "SELECT * FROM [{{Schema}}].[{{Name}}]"
+            Dim zCmd As New SQLCommand
+.
+            If String.IsNullOrEmpty(pCommand.CommandText) Then zCmd.CommandText = zSQL Else zCmd = pCommand
+.
+            zCmd.Transaction=pTransaction
+            zReturn = ReadData(Of T)(zCmd, pLoadEventUserState)	
+.
+            Return zReturn
+.
+        End Function
+.
+    #End Region
+.
+.
+    End Class
+.
+    Partial Public Class {{xSettings.DataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}}
+        Implements {{xSettings.InterfaceDataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}}
+.
+        Public Event Loaded(pUserState As Object) Implements {{xSettings.InterfaceDataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}}.Loaded
+        Public Event Saved(pUserState As Object) Implements {{xSettings.InterfaceDataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}}.Saved
+        Public Event Deleted(pUserState As Object) Implements {{xSettings.InterfaceDataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}}.Deleted
+.
+.
+        Public Sub RaiseLoadedEvent(pUserState As Object) Implements {{xSettings.InterfaceDataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}}.RaiseLoadedEvent
+            RaiseEvent Loaded(pUserState)
+        End Sub
+.
+        Public Sub RaiseDeletedEvent(pUserState As Object) Implements {{xSettings.InterfaceDataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}}.RaiseDeletedEvent
+            RaiseEvent Deleted(pUserState)
+        End Sub
+.
+        Public Sub RaiseSavedEvent(pUserState As Object) Implements {{xSettings.InterfaceDataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}}.RaiseSavedEvent
+            RaiseEvent Saved(pUserState)
+        End Sub
+        {{#each Columns}}{{#xIfNotAny IsComputed IsConcurrency "===" true}}
+        Public Property {{xSettings.ColumnAliasPrefix}}{{Alias}}() As {{DotNet_NullableType}} Implements {{xSettings.InterfaceDataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{../../Alias}}.{{xSettings.ColumnAliasPrefix}}{{Alias}}
+            Get
+                Return m_{{xSettings.ColumnAliasPrefix}}{{Alias}}
+            End Get
+            Set
+                If Not Same(m_{{xSettings.ColumnAliasPrefix}}{{Alias}}, Value) Then
+                    m_{{xSettings.ColumnAliasPrefix}}{{Alias}} = Value
+                    m_IsDirty({{xSettings.InterfaceNamespace}}.{{xSettings.InterfaceDataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{../../Alias}}.FieldIndex.{{xSettings.ColumnAliasPrefix}}{{Alias}}) = True
+                End If
+            End Set
+        End Property
+        Private m_{{xSettings.ColumnAliasPrefix}}{{Alias}} As {{DotNet_NullableType}}
+.
+        {{/xIfNotAny}}{{/each}}
+.
+        Public Function IsDirty(pIndex As {{xSettings.InterfaceNamespace}}.{{xSettings.InterfaceDataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}}.FieldIndex) As Boolean Implements {{xSettings.InterfaceDataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}}.IsDirty
+            Return m_IsDirty(pIndex)
+        End Function
+.
+        Public Function IsDirty() As Boolean Implements {{xSettings.InterfaceDataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}}.IsDirty
+            Return m_IsDirty.Contains(True)
+        End Function
+.
+        Public Sub SetIsDirty(pDirty As Boolean) Implements {{xSettings.InterfaceDataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}}.SetIsDirty
+        {{#each Columns}}{{#xIfNotAny IsComputed IsConcurrency "===" true}}
+            m_IsDirty({{xSettings.InterfaceNamespace}}.{{xSettings.InterfaceDataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{../../Alias}}.FieldIndex.{{xSettings.ColumnAliasPrefix}}{{Alias}}) = pDirty
+        {{/xIfNotAny}}{{/each}}
+        End Sub
+.
+		 ''' <summary>
+        ''' Returns the type ({{xSettings.TableAliasPrefix}}{{Alias}}) that is able to save, update or delete using this row object.
+        ''' </summary>
+        ''' <returns>Returns the TblpmactivitiesCfc Type</returns>
+        ''' <remarks></remarks>
+		Public Shared Function GetTableType() As Type
+			Dim zObj As New {{xSettings.TableAliasPrefix}}{{Alias}}
+            Return zObj.GetType
+		End Function
+.
+        Private m_IsDirty({{Columns.Count}}) As Boolean
+.
+        Private Function [Same](pValue1 As Object, pValue2 As Object) As Boolean
+            If pValue1 Is Nothing And (Not pValue2 Is Nothing) Then
+                Return False
+            End If
+.
+            If (Not pValue1 Is Nothing) And pValue2 Is Nothing Then
+                Return False
+            End If
+.
+            If pValue1 <> pValue2 Then
+                Return False
+            End If
+.
+            Return True
+        End Function
+.
+    End Class
+.
+End Namespace
+.
+{{xFile Alias path=xSettings.OutputPath prefix=xSettings.TableAliasPrefix suffix="" ext="vb"}}
+{{/each}}
+.
+.
+{{!===============================================================}}
+{{! Release: razor JSON (experimental)                            }}
+{{!===============================================================}}
+{{! Update: 03/22/2016 - Initial Version                          }}
+{{! Update: 03/31/2016 - Updated to use LanguageType to detect    }}
+{{!                      string types when setting default values }}
+{{!===============================================================}}
+{{! This template currently only works with a SQLServer database  }}
+{{!                                                               }}
+{{! Known Issues:                                                 }}
+{{!                                                               }}
+{{!                                                               }}
+{{!                                                               }}
+{{!===============================================================}}
+{{#each Items}}
+/*/===============================================================\
+  | razor JSON (experimental) - rev 4.2.11                        |
+  |---------------------------------------------------------------|
+  |  Template: gen.vb.sqlserver (experimental version)            |
+  |   Website: http://www.pigford.net/razor                       |
+  |                                                               |
+  | Known Issues:                                                 |
+  \===============================================================/*/
+.
+[{
+	{{#each Columns}}
+	"{{xSettings.ColumnAliasPrefix}}{{Alias}}":{{#xIf LanguageType "===" "String"}}"{{Name}}"{{else}}{{#xIf DataTypeName "===" "int"}}1{{else}}{{#xIf DataTypeName "===" "numeric"}}1.5{{else}}null{{/xIf}}{{/xIf}}{{/xIf}}{{xNotLast ", "}}
+	{{/each}}
+}]
+{{xFile Alias path=xSettings.OutputPath prefix=xSettings.TableAliasPrefix suffix="" ext="json"}}
+{{/each}}
+.
+.
+{{!===============================================================}}
+{{! Release: razor doc (experimental)                             }}
+{{!===============================================================}}
+{{! Update: 03/22/2016 - Initial Version                          }}
+{{!===============================================================}}
+{{! This template currently only works with a SQLServer database  }}
+{{!                                                               }}
+{{! Known Issues:                                                 }}
+{{!                                                               }}
+{{!                                                               }}
+{{!                                                               }}
+{{!===============================================================}}
+{{#each Items}}
+/===============================================================\
+| razor doc (experimental) - rev 4.2.15                         |
+|---------------------------------------------------------------|
+|  Template: gen.vb.sqlserver (experimental version)            |
+|   Website: http://www.pigford.net/razor                       |
+|                                                               |
+| Known Issues:                                                 |
+\===============================================================/
+.
+{{#if IsTable}}Table{{else}}View{{/if}}: {{xSettings.TableAliasPrefix}}{{Alias}} --> [{{Name}}]
+.
+{{#each Columns}}
+  {{xSettings.ColumnAliasPrefix}}{{Alias}} --> [{{Name}}] {{DataTypeNameComplete}}{{#if IsInPrimaryKey}} **PK**{{/if}}{{#if IsAutoKey}} identity{{/if}}{{#if IsNullable}} null{{else}} not null{{/if}}
+{{/each}}
+.
+{{xFile Alias path=xSettings.OutputPath prefix=xSettings.TableAliasPrefix suffix="" ext="txt"}}
+{{/each}}
+.
+.
+{{!===============================================================}}
+{{! Release: razor query (experimental)                           }}
+{{!===============================================================}}
+{{! Update: 03/23/2016 - Initial Version                          }}
+{{! Update: 03/24/2016 - Moved query code into engine as base     }}
+{{! Update: 05/03/2016 - Added Object2Column to map row object    }}
+{{!                      attribute names to database column names }}
+{{! Update: 05/03/2016 - Added Object2LangType to map row object  }}
+{{!                      attribute types to return language types }}
+{{! Update: 05/03/2016 - Renamed Object2Column to MemberColumn    }}
+{{! Update: 05/03/2016 - Added Member to pull data column by name }}
+{{! Update: 05/03/2016 - Renamed Object2LangType to MemberLangType}}
+{{! Update: 06/02/2016 - Add filter for IsComputed and IsConcurr  }}
+{{! Update: 06/02/2016 - Added namespace of razor                 }}
+{{! Update: 06/03/2016 - Disabled namespace of razor              }}
+{{! Update: 06/07/2016 - Added namespace of razor                 }}
+{{! Update: 08/24/2016 - Added schema to table name function      }}
+{{! Update: 09/28/2016 - Fixed indentation level                  }}
+{{! Update: 10/13/2016 - Added Column2Member cross lookup function}}
+{{! Update: 11/30/2016 - Added alias value to Column2Member cross-}}
+{{!                      ref to support client side grid filtering}}
+{{! Update: 12/05/2016 - Added prefix and alias value to          }}
+{{!                      Column2Member cross-ref to support client}}
+{{!                      side combobox filtering                  }}
+{{!===============================================================}}
+{{! This template currently only works with a SQLServer database  }}
+{{!                                                               }}
+{{! Known Issues:                                                 }}
+{{!                                                               }}
+{{!                                                               }}
+{{!                                                               }}
+{{!===============================================================}}
+{{#each Items}}
+'/===============================================================\
+'| razor query (experimental) - rev 4.2.272                      |
+'|---------------------------------------------------------------|
+'|  Template: gen.vb.sqlserver (experimental version)            |
+'|   Website: http://www.pigford.net/razor                       |
+'|                                                               |
+'| Known Issues:                                                 |
+'\===============================================================/
+.
+Namespace razor
+    Public Class {{xSettings.QueryAliasPrefix}}{{Alias}}
+        Inherits razor.UtilSQLServer.Query
+.
+        Private _Members As New Dictionary(Of String, Object)
+.
+        {{#each Columns}}
+        {{#xIfNotAny IsComputed IsConcurrency "===" true}}
+        Public {{xSettings.ColumnAliasPrefix}}{{Alias}} As New razor.UtilSQLServer.{{LanguageType}}DataColumn
+        {{/xIfNotAny}}
+        {{/each}}
+.
+        Public Sub New()
+            MyBase.FirstColumn = _FirstColumn()
+            MyBase.TableName = _TableName()
+        {{#each Columns}}
+            {{#xIfNotAny IsComputed IsConcurrency "===" true}}
+            {{xSettings.ColumnAliasPrefix}}{{Alias}}.ColumnName = "[{{Name}}]"
+            {{/xIfNotAny}}
+        {{/each}}
+.
+        {{#each Columns}}
+            {{#xIfNotAny IsComputed IsConcurrency "===" true}}
+            _Members.Add("{{xSettings.ColumnAliasPrefix}}{{Alias}}", {{xSettings.ColumnAliasPrefix}}{{Alias}})
+            {{/xIfNotAny}}
+        {{/each}}
+        End Sub
+.
+        Public Function Member(pObjectName As String) As Object
+            Dim zReturn As Object = Nothing
+            If _Members.ContainsKey(pObjectName) Then
+                zReturn = _Members.Item(pObjectName)
+            Else
+                Throw New System.Exception("pObjectName=[" & pObjectName & "] does not exist in member dictionary.")
+            End If
+            Return zReturn
+        End Function
+.
+        Public Function MemberColumn(pObjectName As String) As String
+            Select Case pObjectName
+            {{#each Columns}}
+            {{#xIfNotAny IsComputed IsConcurrency "===" true}}
+                Case "{{xSettings.ColumnAliasPrefix}}{{Alias}}"
+                    Return "[{{Name}}]"
+            {{/xIfNotAny}}
+            {{/each}}
+                Case Else
+                    Throw New System.Exception("pObjectName=[" & pObjectName & "] does not exist in column list.")
+            End Select
+        End Function
+.
+        Public Function Column2Member(pColumnName As String) As String
+            Select Case pColumnName
+            {{#each Columns}}
+            {{#xIfNotAny IsComputed IsConcurrency "===" true}}
+                Case "[{{Name}}]", "{{Name}}", "{{Alias}}", "{{xSettings.ColumnAliasPrefix}}{{Alias}}"  
+                    Return "{{xSettings.ColumnAliasPrefix}}{{Alias}}"
+            {{/xIfNotAny}}
+            {{/each}}
+                Case Else
+                    Throw New System.Exception("pColumnName=[" & pColumnName & "] does not exist in column list.")
+            End Select
+        End Function
+.
+        Public Function MemberLangType(pObjectName As String) As String
+            Select Case pObjectName
+            {{#each Columns}}
+            {{#xIfNotAny IsComputed IsConcurrency "===" true}}
+                Case "{{xSettings.ColumnAliasPrefix}}{{Alias}}"
+                    Return "{{LanguageType}}"
+            {{/xIfNotAny}}
+            {{/each}}
+                Case Else
+                    Throw New System.Exception("pObjectName=[" & pObjectName & "] does not exist in column list.")
+            End Select
+        End Function
+.
+        Private Function _TableName() As String
+            Return "[{{Schema}}].[{{Name}}]"
+        End Function
+.
+        Private Function _FirstColumn() As String
+            Return "[{{Columns.[0].Name}}]"
+        End Function
+.
+    End Class
+End namespace
+.
+{{xFile Alias path=xSettings.OutputPath prefix=xSettings.QueryAliasPrefix suffix="" ext="vb"}}
+{{/each}}
+.
+.
+.
