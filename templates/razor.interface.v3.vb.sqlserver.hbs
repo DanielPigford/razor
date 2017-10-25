@@ -1,5 +1,6 @@
+{{#each Items}}	
 '/===============================================================\
-'| razor interface (experimental) - rev 4.3.1   EXPERIMENTAL     |
+'| razor interface (experimental) - rev 4.3.2   EXPERIMENTAL     |
 '|---------------------------------------------------------------|
 '|  Template: gen.interface.v3.vb.sqlserver (experimental)       |
 '|   Website: http://www.pigford.net/razor                       |
@@ -12,6 +13,7 @@
 {{! Release: razor interface (experimental)                       }}
 {{!===============================================================}}
 {{! Update: 10/19/2017 - Initial version                          }}
+{{! Update: 10/25/2017 - Moved the each loop above this comment   }}
 {{!===============================================================}}
 {{! This template currently only works with a SQLServer database  }}
 {{!                                                               }}
@@ -35,8 +37,7 @@
 {{!    "AuditUserModifiedColumnName": "SysUserModified"           }}
 {{!  }                                                            }}
 {{!===============================================================}}
-
-{{#each Items}}	
+.
 Namespace razor
 .
 	Public Interface {{xSettings.DataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}}
