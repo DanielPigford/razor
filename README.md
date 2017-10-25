@@ -34,7 +34,7 @@ Alternately you can download M2G Desktop (Windows only) and use the templates di
 1. Create an "ASP.NET Empty Web Application" using Visual Studio 2012.
 2. Select "Use Visual Studio Development Server" option in the "Web" tab of project settings.
 
-### Data - razor.engine.vb.sqlserver (4.2.629), razor.gen.vb.sqlserver (4.2.879)
+### Data - razor.engine.vb.sqlserver (4.2.630), razor.gen.v3.vb.sqlserver (4.3.1)
 
 1. Add a reference to "Newtonsoft.Json.dll" assembly.
 2. Create a folder for the generated data classes.  (i.e. Data)
@@ -45,7 +45,15 @@ Alternately you can download M2G Desktop (Windows only) and use the templates di
 7. Set configuration structure for desired schema tables; save to generate.  (template: razor.gen.vb.sqlserver)
 8. Compile and verify.
 
-### Core - razor.core.filldata (4.2.7)
+### Interface - razor.interface.v3.vb.sqlserver (4.3.2)
+
+1. Create a folder for the generated data classes.  (i.e. DataInterface)
+2. Set "Show All Files" option in Visual Studio Solution Explorer
+3. Add a new Item "My2ndGeneration Template" to the "DataInterface" folder.  (i.e. Tables.m2g) 
+4. Set configuration structure for desired schema tables; save to generate.  (template: razor.gen.v3.vb.sqlserver)
+5. Compile and verify.
+
+### Core - razor.core.filldata (4.2.8)
 
 1. Create a folder for the generated core classes.  (i.e. Core)
 2. Set "Show All Files" option in Visual Studio Solution Explorer
@@ -53,7 +61,7 @@ Alternately you can download M2G Desktop (Windows only) and use the templates di
 4. Set configuration structure for desired schema tables; save to generate.  (template: razor.core.filldata)
 5. Compile and verify.
 
-### REST - razor.rest.service (4.2.7)
+### REST - razor.rest.service (4.2.10)
 
 1. Add a reference to "System.ServiceModel" assembly.
 2. Add a reference to "System.ServiceModel.Web" assembly.
