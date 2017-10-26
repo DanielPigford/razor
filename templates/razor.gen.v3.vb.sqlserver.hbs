@@ -674,9 +674,7 @@ End Namespace
 {{!===============================================================}}
 {{! Release: razor JSON (experimental)                            }}
 {{!===============================================================}}
-{{! Update: 03/22/2016 - Initial Version                          }}
-{{! Update: 03/31/2016 - Updated to use LanguageType to detect    }}
-{{!                      string types when setting default values }}
+{{! Update: 10/24/2017 - Initial Version                          }}
 {{!===============================================================}}
 {{! This template currently only works with a SQLServer database  }}
 {{!                                                               }}
@@ -687,9 +685,9 @@ End Namespace
 {{!===============================================================}}
 {{#each Items}}
 /*/===============================================================\
-  | razor JSON (experimental) - rev 4.2.11                        |
+  | razor JSON (experimental) - rev 4.3.1                         |
   |---------------------------------------------------------------|
-  |  Template: gen.vb.sqlserver (experimental version)            |
+  |  Template: gen.vb.v3.sqlserver (experimental version)         |
   |   Website: http://www.pigford.net/razor                       |
   |                                                               |
   | Known Issues:                                                 |
@@ -718,9 +716,9 @@ End Namespace
 {{!===============================================================}}
 {{#each Items}}
 /===============================================================\
-| razor doc (experimental) - rev 4.2.15                         |
+| razor doc (experimental) - rev 4.3.1                          |
 |---------------------------------------------------------------|
-|  Template: gen.vb.sqlserver (experimental version)            |
+|  Template: gen.vb.v3.sqlserver (experimental version)         |
 |   Website: http://www.pigford.net/razor                       |
 |                                                               |
 | Known Issues:                                                 |
@@ -739,27 +737,7 @@ End Namespace
 {{!===============================================================}}
 {{! Release: razor query (experimental)                           }}
 {{!===============================================================}}
-{{! Update: 03/23/2016 - Initial Version                          }}
-{{! Update: 03/24/2016 - Moved query code into engine as base     }}
-{{! Update: 05/03/2016 - Added Object2Column to map row object    }}
-{{!                      attribute names to database column names }}
-{{! Update: 05/03/2016 - Added Object2LangType to map row object  }}
-{{!                      attribute types to return language types }}
-{{! Update: 05/03/2016 - Renamed Object2Column to MemberColumn    }}
-{{! Update: 05/03/2016 - Added Member to pull data column by name }}
-{{! Update: 05/03/2016 - Renamed Object2LangType to MemberLangType}}
-{{! Update: 06/02/2016 - Add filter for IsComputed and IsConcurr  }}
-{{! Update: 06/02/2016 - Added namespace of razor                 }}
-{{! Update: 06/03/2016 - Disabled namespace of razor              }}
-{{! Update: 06/07/2016 - Added namespace of razor                 }}
-{{! Update: 08/24/2016 - Added schema to table name function      }}
-{{! Update: 09/28/2016 - Fixed indentation level                  }}
-{{! Update: 10/13/2016 - Added Column2Member cross lookup function}}
-{{! Update: 11/30/2016 - Added alias value to Column2Member cross-}}
-{{!                      ref to support client side grid filtering}}
-{{! Update: 12/05/2016 - Added prefix and alias value to          }}
-{{!                      Column2Member cross-ref to support client}}
-{{!                      side combobox filtering                  }}
+{{! Update: 10/24/2017 - Initial Version                          }}
 {{!===============================================================}}
 {{! This template currently only works with a SQLServer database  }}
 {{!                                                               }}
@@ -770,9 +748,9 @@ End Namespace
 {{!===============================================================}}
 {{#each Items}}
 '/===============================================================\
-'| razor query (experimental) - rev 4.2.272                      |
+'| razor query (experimental) - rev 4.3.1                        |
 '|---------------------------------------------------------------|
-'|  Template: gen.vb.sqlserver (experimental version)            |
+'|  Template: gen.vb.v3.sqlserver (experimental version)         |
 '|   Website: http://www.pigford.net/razor                       |
 '|                                                               |
 '| Known Issues:                                                 |
