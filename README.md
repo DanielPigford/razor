@@ -50,7 +50,7 @@ Alternately you can download M2G Desktop (Windows only) and use the templates di
 1. Create a folder for the generated data classes.  (i.e. DataInterface)
 2. Set "Show All Files" option in Visual Studio Solution Explorer
 3. Add a new Item "My2ndGeneration Template" to the "DataInterface" folder.  (i.e. Tables.m2g) 
-4. Set configuration structure for desired schema tables; save to generate.  (template: razor.gen.v3.vb.sqlserver)
+4. Set configuration structure for desired schema tables; save to generate.  (template: razor.interface.v3.vb.sqlserver)
 5. Compile and verify.
 
 ### Core - razor.core.filldata (4.2.8)

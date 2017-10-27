@@ -19,15 +19,15 @@ This guide assumes you are already familiar with the information included in REA
 1. Create an "ASP.NET Empty Web Application" using Visual Studio 2012.  (Project Name: RT.Web, Solution Name: RT)
 2. Select "Use Visual Studio Development Server" option in the "Web" tab of project settings.
 3. Add a "Class Library" project to the solution (Project Name: RT.DataLib).
-4. Add a "Class Library" project to the solution (Project Name: RT.DataInterface).
+4. Add a "Class Library" project to the solution (Project Name: RT.DataInterfaceLib).
 5. Set "RT.Web" to the startup project.
 
-### Interface - razor.interface.v3.vb.sqlserver (4.3.2) - (RT.DataInterface)
+### Interface - razor.interface.v3.vb.sqlserver (4.3.2) - (RT.DataInterfaceLib)
 
-1. Select the "RT.DataInterface" project in the solution explorer.
-2. Create a folder for the generated data classes.  (i.e. DataInterface)
+1. Select the "RT.DataInterfaceLib" project in the solution explorer.
+2. Create a folder for the generated data classes.  (i.e. DataInterfaceLib)
 3. Set "Show All Files" option in Visual Studio Solution Explorer
-4. Add a new Item "My2ndGeneration Template" to the "DataInterface" folder.  (i.e. Tables.m2g) 
+4. Add a new Item "My2ndGeneration Template" to the "DataInterfaceLib" folder.  (i.e. Tables.m2g) 
 5. Set configuration structure for desired schema tables; save to generate.  (template: razor.interface.v3.vb.sqlserver)
 6. Compile and verify.
 
@@ -41,7 +41,6 @@ This guide assumes you are already familiar with the information included in REA
 6. Add a new Item "My2ndGeneration Template" to the "data" folder.  (i.e. Tables.m2g) 
 7. Set configuration structure for desired schema tables; save to generate.  (template: razor.gen.vb.sqlserver)
 8. Compile and verify.
-
 
 ### References 
 
