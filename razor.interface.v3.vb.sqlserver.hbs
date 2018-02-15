@@ -1,6 +1,6 @@
 {{#each Items}}	
 '/===============================================================\
-'| razor interface (experimental) - rev 4.3.2   EXPERIMENTAL     |
+'| razor interface (experimental) - rev 4.3.3   EXPERIMENTAL     |
 '|---------------------------------------------------------------|
 '|  Template: gen.interface.v3.vb.sqlserver (experimental)       |
 '|   Website: http://www.pigford.net/razor                       |
@@ -14,6 +14,9 @@
 {{!===============================================================}}
 {{! Update: 10/19/2017 - Initial version                          }}
 {{! Update: 10/25/2017 - Moved the each loop above this comment   }}
+{{! Update: 02/15/2018 - Fixed incorrect reference to             }}
+{{!                      DataObjectPrefix instead of              }}
+{{!                      InterfaceDataObjectPrefix                }}
 {{!===============================================================}}
 {{! This template currently only works with a SQLServer database  }}
 {{!                                                               }}
@@ -40,7 +43,7 @@
 .
 Namespace razor
 .
-	Public Interface {{xSettings.DataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}}
+	Public Interface {{xSettings.InterfaceDataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}}
         Event Loaded(pUserState As Object)
         Event Saved(pUserState As Object)
 		Event Deleted(pUserState As Object)
@@ -48,7 +51,7 @@ Namespace razor
 	{{#each Columns}}{{#xIfNotAny IsComputed IsConcurrency "===" true}}
         Property {{xSettings.ColumnAliasPrefix}}{{Alias}}() As {{DotNet_NullableType}}
 	{{/xIfNotAny}}{{/each}}
-        Function IsDirty(pIndex As {{xSettings.DataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}}.FieldIndex) As Boolean
+        Function IsDirty(pIndex As {{xSettings.InterfaceDataObjectPrefix}}{{xSettings.TableAliasPrefix}}{{Alias}}.FieldIndex) As Boolean
         Function IsDirty() As Boolean
 		Sub RaiseLoadedEvent(pUserState As Object)
 		Sub RaiseSavedEvent(pUserState As Object)
@@ -65,5 +68,5 @@ Namespace razor
 .
 End Namespace
 .
-{{xFile Alias path=xSettings.OutputPath prefix=xSettings.DataObjectPrefix suffix="" ext="vb"}}
+{{xFile Alias path=xSettings.OutputPath prefix=xSettings.InterfaceDataObjectPrefix suffix="" ext="vb"}}
 {{/each}}
